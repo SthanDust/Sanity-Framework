@@ -1,0 +1,137 @@
+{
+  "canvas": {
+    "version": "2.2.1",
+    "width": 2000,
+    "height": 2000,
+    "scrollTop": 0,
+    "scrollLeft": -1.3333333333333333,
+    "zoomLevel": 1,
+    "show": {
+      "tableComment": true,
+      "columnComment": true,
+      "columnDataType": true,
+      "columnDefault": true,
+      "columnAutoIncrement": false,
+      "columnPrimaryKey": true,
+      "columnUnique": false,
+      "columnNotNull": true,
+      "relationship": true
+    },
+    "database": "MySQL",
+    "databaseName": "",
+    "canvasType": "ERD",
+    "language": "GraphQL",
+    "tableCase": "pascalCase",
+    "columnCase": "camelCase",
+    "highlightTheme": "VS2015",
+    "bracketType": "none",
+    "setting": {
+      "relationshipDataTypeSync": true,
+      "columnOrder": [
+        "columnName",
+        "columnDataType",
+        "columnNotNull",
+        "columnUnique",
+        "columnAutoIncrement",
+        "columnDefault",
+        "columnComment"
+      ]
+    }
+  },
+  "table": {
+    "tables": [
+      {
+        "name": "Player",
+        "comment": "ActorValues",
+        "columns": [
+          {
+            "name": "SD_Sanity",
+            "comment": "Always a value between -1 and 1",
+            "dataType": "SMALLINT",
+            "default": "1",
+            "option": {
+              "autoIncrement": false,
+              "primaryKey": false,
+              "unique": false,
+              "notNull": true
+            },
+            "ui": {
+              "active": false,
+              "pk": false,
+              "fk": false,
+              "pfk": false,
+              "widthName": 63.419921875,
+              "widthComment": 120,
+              "widthDataType": 65.57177734375,
+              "widthDefault": 60
+            },
+            "id": "7c9fdc6b-4807-4a85-8bef-faa6ff712eda"
+          },
+          {
+            "name": "SD_Alignment",
+            "comment": "Always  a value between -1 and 1",
+            "dataType": "SMALLINT",
+            "default": "0",
+            "option": {
+              "autoIncrement": false,
+              "primaryKey": false,
+              "unique": false,
+              "notNull": true
+            },
+            "ui": {
+              "active": false,
+              "pk": false,
+              "fk": false,
+              "pfk": false,
+              "widthName": 85.09716796875,
+              "widthComment": 120,
+              "widthDataType": 65.57177734375,
+              "widthDefault": 60
+            },
+            "id": "f93807df-ecdd-4df2-9a72-2dc9aa32b4d9"
+          },
+          {
+            "name": "SD_Stress",
+            "comment": "Always a value between 0 and 1",
+            "dataType": "SMALLINT",
+            "default": "0",
+            "option": {
+              "autoIncrement": false,
+              "primaryKey": false,
+              "unique": false,
+              "notNull": true
+            },
+            "ui": {
+              "active": false,
+              "pk": false,
+              "fk": false,
+              "pfk": false,
+              "widthName": 64.130859375,
+              "widthComment": 120,
+              "widthDataType": 65.57177734375,
+              "widthDefault": 60
+            },
+            "id": "78e79b83-7cd1-4e05-8128-c7a026ce319d"
+          }
+        ],
+        "ui": {
+          "active": true,
+          "left": 72.6664,
+          "top": 84.6659,
+          "zIndex": 65,
+          "widthName": 60,
+          "widthComment": 71.1259765625
+        },
+        "visible": true,
+        "id": "28ba42a0-5d21-43a2-b41b-9f462f56ed05"
+      }
+    ],
+    "indexes": []
+  },
+  "memo": {
+    "memos": []
+  },
+  "relationship": {
+    "relationships": []
+  }
+}
