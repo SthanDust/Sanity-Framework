@@ -4,6 +4,7 @@ Scriptname SD:SanityFrameworkQuestScript extends Quest conditional
 import Actor
 import Debug
 import Game
+import MCM
 
 
 int iTimerID_SDQuestStartupComplete = 100 const
@@ -66,7 +67,7 @@ Group Player_Values
 EndGroup
 
 ; Can be accessed by other mods
-Group Settings 
+Group MCM_Settings 
     GlobalVariable Property SD_FVersion auto 
     GlobalVariable Property SD_Framework_Enabled auto
     GlobalVariable Property SD_Setting_Integrate_AAF auto  
@@ -75,6 +76,7 @@ Group Settings
     GlobalVariable Property SD_Setting_Integrate_FPE auto
     GlobalVariable Property SD_Setting_Integrate_WLD Auto 
     GlobalVariable Property SD_Setting_Integrate_JB auto
+    GlobalVariable Property SD_Setting_Debug auto
 EndGroup
 
 
@@ -87,9 +89,10 @@ CustomEvent OnStressUpdate
 CustomEvent OnAlignmentUpdate
 
 Event OnQuestInit()
-  RegisterForRemoteEvent(PlayerRef, "OnPlayerLoadGame")
-  RegisterForRemoteEvent(PlayerRef, "OnKill")
-    
+  
+    RegisterForRemoteEvent(PlayerRef, "OnPlayerLoadGame")
+    RegisterForRemoteEvent(PlayerRef, "OnKill")
+
 EndEvent
 
 Event OnTrackedStatsEvent(string arStatName, int aiStatValue)
@@ -134,8 +137,6 @@ EndEvent
 Function IntializeStartup()
   ; Do initial Startup for the quest
   DNotify("Sanity Framework Initializing...")
-  
-  
   PopulateTrackedStats()
   LoadSDF()
   SetStage(iStage_StartupComplete)
@@ -143,16 +144,14 @@ Function IntializeStartup()
 EndFunction
 
 Function DNotify(string text)
-  if showNotifications
-    Debug.Notification("Sanity: " + text)
+  if SD_Setting_Debug.GetValue() == 1.0
+    Debug.Notification("[ ] " + text)
+    Debug.Trace(text, 0)
   endif
 EndFunction
 
 Function LoadSDF()
-  
   DNotify("Sanity Framework Initialized...")
-  ;initialize everytime the game loads as save
-
 EndFunction
 
 
@@ -169,7 +168,6 @@ Function ModifySanity(float nSanity)
     Else
       DNotify("Sanity cannot be more or less than 100")
     EndIf
-   
 EndFunction
 
 float function GetAlignment()
