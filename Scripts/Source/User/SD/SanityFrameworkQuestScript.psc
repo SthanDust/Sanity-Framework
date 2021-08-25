@@ -146,7 +146,8 @@ EndFunction
 Function DNotify(string text)
   if SD_Setting_Debug.GetValue() == 1.0
     Debug.Notification("[ ] " + text)
-    Debug.Trace(text, 0)
+    Debug.Trace(text, 0) ; just to get started
+    
   endif
 EndFunction
 
