@@ -64,6 +64,7 @@ EndGroup
 Group MCM_Settings 
   GlobalVariable Property SD_FVersion auto 
   GlobalVariable Property SD_Framework_Enabled auto
+  GlobalVariable Property SD_Framework_Debugging auto
   GlobalVariable Property SD_Setting_Integrate_AAF auto  
   GlobalVariable Property SD_Setting_Integrate_SA auto 
   GlobalVariable Property SD_Setting_Integrate_Vio auto
@@ -105,9 +106,12 @@ Event OnPlayerSleepStart(float afSleepStartTime, float afDesiredSleepEndTime, Ob
   iSleepDesired = afDesiredSleepEndTime
 EndEvent
 
+;
 Event OnPlayerSleepStop(bool abInterrupted, ObjectReference akBed)
   iSleepEnd = Utility.GetCurrentGameTime() - iSleeptime
 EndEvent
+
+
 
 Event Actor.OnPlayerLoadGame(Actor akSender)
   DNotify("Loading Game...")
@@ -163,13 +167,36 @@ EndFunction
 
 Function DNotify(string text)
   if SD_Setting_Debug.GetValue() == 1.0
-    Debug.Notification("[" + Utility.GetCurrentGameTime() + " ] " + text)
+    Debug.Notification("[SDF] " + text)
     Debug.Trace(text, 0) ; just to get started
   endif
 EndFunction
 
+;Check for the MCM
+bool Function CheckForMCM(bool FirstLoad = false)
+	If !MCM.IsInstalled()
+		DNotify("MCM Not Found, default settings will be enabled.")
+		If FirstLoad
+			Utility.wait(0.2)
+			DNotify("MCM Not Found. Default settings will be used.")
+		EndIf
+		Return False
+	EndIf
+	; DTrace("MCM installed.")
+	Return True
+EndFunction
+
 Function LoadSDF()
   DNotify("Sanity Framework Initialized...")
+  If CheckForMCM() == true
+		RegisterForExternalEvent("OnMCMSettingChange|"+thisMod, "OnMCMSettingChange")
+		MCMUpdate()
+	EndIf
+EndFunction
+
+Function MCMUpdate()
+  SD_Framework_Debugging.SetValue(MCM.GetModSettingBool(thisMod, "bMCMDebugOn:Debug") as float)
+  SD_Framework_Enabled.SetValue(MCM.GetModSettingBool(thisMod, "bMCMModEnabled:Globals") as float)
 EndFunction
 
 
