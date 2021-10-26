@@ -1,6 +1,6 @@
 # Welcome to The Sanity Framework for Fallout 4 + (Other Mods)
 
-You may be asking why I am still playing and Modding Fallout 4.  Beause, I am committed to sparkle motion, bitches.
+You may be asking why I am still playing and Modding Fallout 4.  Beause, I am committed to sparkle motion! 
 
 ## Sanity Framework
 
