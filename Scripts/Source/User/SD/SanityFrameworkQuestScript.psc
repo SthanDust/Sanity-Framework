@@ -1,7 +1,7 @@
 Scriptname SD:SanityFrameworkQuestScript extends Quest conditional
 {Main Script for the Sanity Framework}
 
-int iTimerID_SDQuestStartupComplete = 100 const
+int iTimerID_SDQuestStartupComplete = 699 const
 
 int iStage_Started = 10 const
 int iStage_StartupComplete = 20 const 
@@ -12,48 +12,48 @@ int baseSanity = 100
 int baseStress = 0
 int baseAlignment = 0
 bool showNotifications = true
-string thisMod = "SD_SanityFramework"
+string thisMod = "SD_MainFramework"
 
 Group Filter_Properties
   Race[] Property SD_SanityRaces auto
 EndGroup
 
-Group Perks 
-  Perk Property SD_Align01 auto 
-  Perk Property SD_Align02 auto 
-  Perk Property SD_Align03 auto 
-  Perk Property SD_Align04 auto 
-  Perk Property SD_Align05 auto 
-  Perk Property SD_Insane00 auto 
-  Perk Property SD_Insane01 auto 
-  Perk Property SD_Insane02 auto  
-  Perk Property SD_Insane03 auto 
-  Perk Property SD_Insane04 auto 
-  Perk Property SD_Insane05 auto
-  Perk Property SD_Stressed00 auto 
-  Perk Property SD_Stressed01 auto 
-  Perk Property SD_Stressed02 auto
-  Perk Property SD_Stressed03 auto
-  Perk Property SD_Stressed04 auto
-  Perk Property SD_Stressed05 auto
-EndGroup
+; Group Perks 
+;   Perk Property SD_Align01 auto 
+;   Perk Property SD_Align02 auto 
+;   Perk Property SD_Align03 auto 
+;   Perk Property SD_Align04 auto 
+;   Perk Property SD_Align05 auto 
+;   Perk Property SD_Insane00 auto 
+;   Perk Property SD_Insane01 auto 
+;   Perk Property SD_Insane02 auto  
+;   Perk Property SD_Insane03 auto 
+;   Perk Property SD_Insane04 auto 
+;   Perk Property SD_Insane05 auto
+;   Perk Property SD_Stressed00 auto 
+;   Perk Property SD_Stressed01 auto 
+;   Perk Property SD_Stressed02 auto
+;   Perk Property SD_Stressed03 auto
+;   Perk Property SD_Stressed04 auto
+;   Perk Property SD_Stressed05 auto
+; EndGroup
 
-Group Mental_Effects
-  Spell Property SD_InsomniaSpell auto 
-  Spell Property SD_StressedSpell auto
-  Spell Property SD_DepressionSpell auto
-EndGroup
+; Group Mental_Effects
+;   Spell Property SD_InsomniaSpell auto 
+;   Spell Property SD_StressedSpell auto
+;   Spell Property SD_DepressionSpell auto
+; EndGroup
 
-Group Factions 
-  Faction Property SD_FactionInsane auto
-  Faction Property SD_FactionStressed auto
-  Faction Property SD_FactionEvil auto
-  Faction Property SD_FactionGood auto
-  Faction Property SD_FactionNeutral auto
-EndGroup
+; Group Factions 
+;   Faction Property SD_FactionInsane auto
+;   Faction Property SD_FactionStressed auto
+;   Faction Property SD_FactionEvil auto
+;   Faction Property SD_FactionGood auto
+;   Faction Property SD_FactionNeutral auto
+; EndGroup
 
 Group Player_Values
-  ReferenceAlias property PlayerRef auto const Mandatory
+  Actor property PlayerRef auto const Mandatory
   ActorValue Property SD_Sanity Auto Mandatory
   ActorValue Property SD_Stress Auto Mandatory
   ActorValue Property SD_Alignment auto 
@@ -71,7 +71,7 @@ Group MCM_Settings
   GlobalVariable Property SD_Setting_Integrate_FPE auto
   GlobalVariable Property SD_Setting_Integrate_WLD Auto 
   GlobalVariable Property SD_Setting_Integrate_JB auto
-  GlobalVariable Property SD_Setting_Debug auto
+  GlobalVariable Property SD_Setting_Integrate_HBW auto
   GlobalVariable Property SD_Internal_MCMLoaded auto 
 EndGroup
 
@@ -79,16 +79,21 @@ import MCM
 import Actor
 import Debug
 import Game
+import SUP_F4SE
 
 CustomEvent OnSanityUpdate
 CustomEvent OnStressUpdate
 CustomEvent OnAlignmentUpdate
 
+
 Event OnQuestInit()
+  StartTimer(1,0)
+  if MCM.IsInstalled() 
+		RegisterForExternalEvent("OnMCMSettingChange|"+thisMod, "OnMCMSettingChange")
+		MCMUpdate()
+  endif
   RegisterForRemoteEvent(PlayerRef, "OnPlayerLoadGame")
-  RegisterForRemoteEvent(PlayerRef, "OnKill")
-  RegisterForPlayerSleep()
-  RegisterForHitEvent(PlayerRef)
+  DNotify("Starting Quest")
 EndEvent
 
 Event OnTrackedStatsEvent(string arStatName, int aiStatValue)
@@ -111,18 +116,8 @@ Event OnPlayerSleepStop(bool abInterrupted, ObjectReference akBed)
   iSleepEnd = Utility.GetCurrentGameTime() - iSleeptime
 EndEvent
 
-
-
-Event Actor.OnPlayerLoadGame(Actor akSender)
-  DNotify("Loading Game...")
-  if (SD_FVersion.GetValue() != 0.2)
-    SD_FVersion.SetValue(0.2)
-  EndIf
-  LoadSDF()
-EndEvent
-
 Event Actor.OnKill(Actor akSender, Actor akVictim)
-  if akSender == PlayerRef.GetActorRef() && akVictim.GetRace() != HumanRace
+  if akSender == PlayerRef && akVictim.GetRace() != HumanRace
     DNotify("Player killed: " + akVictim.GetLeveledActorBase().GetName())
     ModifySanity(akSender, -0.1)
     ModifyStress(akSender, 0.1)
@@ -130,30 +125,17 @@ Event Actor.OnKill(Actor akSender, Actor akVictim)
 EndEvent
 
 Event OnHit(ObjectReference akTarget, ObjectReference akAggressor, Form akSource, Projectile akProjectile, bool abPowerAttack, bool abSneakAttack, bool abBashAttack, bool abHitBlocked, string apMaterial)
-   If akAggressor != PlayerRef.GetActorRef()
+   If akAggressor != PlayerRef
       DNotify("Player hit someone")
    EndIf
    RegisterForHitEvent(PlayerRef)
 EndEvent
 
-Event OnStageSet(int auiStageID, int auiItemID)
-  if (auiStageID == iStage_Started)
-    if (IsRunning())
-      IntializeStartup()
-    Else
-      StartTimer(2.0, iTimerID_SDQuestStartupComplete)
-    endif 
-  endif 
-EndEvent
 
 Event OnTimer(int aiTimerID)
-  	if(aiTimerID == iTimerID_SDQuestStartupComplete)
-		if(IsRunning())
-			IntializeStartup()
-		else
-			StartTimer(2.0, iTimerID_SDQuestStartupComplete)
-		endif
-	endif
+  if(aiTimerID == 0)
+       IntializeStartup()
+  EndIf
 EndEvent
 
 
@@ -161,42 +143,38 @@ Function IntializeStartup()
   ; Do initial Startup for the quest
   DNotify("Sanity Framework Initializing...")
   PopulateTrackedStats()
+  PlayerRef.SetValue(SD_Alignment, baseAlignment)
+  PlayerRef.SetValue(SD_Sanity, baseSanity)
+  PlayerRef.SetValue(SD_Stress, baseStress)
   LoadSDF()
-  SetStage(iStage_StartupComplete)
 EndFunction
 
 Function DNotify(string text)
-  if SD_Setting_Debug.GetValue() == 1.0
     Debug.Notification("[SDF] " + text)
     Debug.Trace(text, 0) ; just to get started
-  endif
 EndFunction
 
-;Check for the MCM
-bool Function CheckForMCM(bool FirstLoad = false)
-	If !MCM.IsInstalled()
-		DNotify("MCM Not Found, default settings will be enabled.")
-		If FirstLoad
-			Utility.wait(0.2)
-			DNotify("MCM Not Found. Default settings will be used.")
-		EndIf
-		Return False
-	EndIf
-	; DTrace("MCM installed.")
-	Return True
-EndFunction
+
 
 Function LoadSDF()
   DNotify("Sanity Framework Initialized...")
-  If CheckForMCM() == true
-		RegisterForExternalEvent("OnMCMSettingChange|"+thisMod, "OnMCMSettingChange")
-		MCMUpdate()
-	EndIf
+  RegisterForRemoteEvent(PlayerRef, "OnKill")
+  DNotify("Registering for Kill")
+  RegisterForPlayerSleep()
+  RegisterForHitEvent(PlayerRef)
+  DNotify("Loading Framework")
+EndFunction
+
+Function OnMCMSettingChange(string modName, string id)
+  if modName == thisMod
+    MCMUpdate()
+  endif
 EndFunction
 
 Function MCMUpdate()
   SD_Framework_Debugging.SetValue(MCM.GetModSettingBool(thisMod, "bMCMDebugOn:Debug") as float)
   SD_Framework_Enabled.SetValue(MCM.GetModSettingBool(thisMod, "bMCMModEnabled:Globals") as float)
+  DNotify("MCM Updated")
 EndFunction
 
 
