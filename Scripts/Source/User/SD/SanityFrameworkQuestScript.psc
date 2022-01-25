@@ -1,63 +1,42 @@
-Scriptname SD:SanityFrameworkQuestScript extends Quest conditional
+Scriptname SD:SanityFrameworkQuestScript extends Quest
 {Main Script for the Sanity Framework}
 
-int iTimerID_SDQuestStartupComplete = 699 const
-
-int iStage_Started = 10 const
-int iStage_StartupComplete = 20 const 
 
 string[] TrackedStatsName
 int[] TrackedStatsValue
 int baseSanity = 100
 int baseStress = 0
 int baseAlignment = 0
-bool showNotifications = true
 string thisMod = "SD_MainFramework"
+
+;Hyperbolic Tangent Function: tanh(x) = (ex – e-x) / (ex + e-x)
+float e = 2.718281828459045235360
+
+float Function Tanh(float x)
+  return (Math.pow(e, x) - Math.pow(e, -x) / (Math.pow(e, x) + Math.pow(e, -x))
+EndFunction
 
 Group Filter_Properties
   Race[] Property SD_SanityRaces auto
 EndGroup
 
-; Group Perks 
-;   Perk Property SD_Align01 auto 
-;   Perk Property SD_Align02 auto 
-;   Perk Property SD_Align03 auto 
-;   Perk Property SD_Align04 auto 
-;   Perk Property SD_Align05 auto 
-;   Perk Property SD_Insane00 auto 
-;   Perk Property SD_Insane01 auto 
-;   Perk Property SD_Insane02 auto  
-;   Perk Property SD_Insane03 auto 
-;   Perk Property SD_Insane04 auto 
-;   Perk Property SD_Insane05 auto
-;   Perk Property SD_Stressed00 auto 
-;   Perk Property SD_Stressed01 auto 
-;   Perk Property SD_Stressed02 auto
-;   Perk Property SD_Stressed03 auto
-;   Perk Property SD_Stressed04 auto
-;   Perk Property SD_Stressed05 auto
-; EndGroup
-
-; Group Mental_Effects
-;   Spell Property SD_InsomniaSpell auto 
-;   Spell Property SD_StressedSpell auto
-;   Spell Property SD_DepressionSpell auto
-; EndGroup
-
-; Group Factions 
-;   Faction Property SD_FactionInsane auto
-;   Faction Property SD_FactionStressed auto
-;   Faction Property SD_FactionEvil auto
-;   Faction Property SD_FactionGood auto
-;   Faction Property SD_FactionNeutral auto
-; EndGroup
 
 Group Player_Values
   Actor property PlayerRef auto const Mandatory
   ActorValue Property SD_Sanity Auto Mandatory
   ActorValue Property SD_Stress Auto Mandatory
-  ActorValue Property SD_Alignment auto 
-  Race Property HumanRace auto const 
+  ActorValue Property SD_Alignment auto Mandatory
+  Race Property HumanRace auto const
+  GlobalVariable Property SD_SanityMult auto
+  GlobalVariable Property SD_StressMult auto 
+  GlobalVariable Property SD_AlignMult auto
+  ActorValue Property Strength auto 
+  ActorValue Property Perception auto 
+  ActorValue Property Endurance auto 
+  ActorValue Property Charisma auto
+  ActorValue Property Intelligence auto 
+  ActorValue Property Agility auto
+  ActorValue Property Luck auto 
 EndGroup
 
 ; Can be accessed by other mods
@@ -73,6 +52,8 @@ Group MCM_Settings
   GlobalVariable Property SD_Setting_Integrate_JB auto
   GlobalVariable Property SD_Setting_Integrate_HBW auto
   GlobalVariable Property SD_Internal_MCMLoaded auto 
+  GlobalVariable Property SD_Internal_FirstLoad auto
+  Message Property SD_FrameworkInit Auto
 EndGroup
 
 import MCM
@@ -89,6 +70,7 @@ CustomEvent OnAlignmentUpdate
 Event OnQuestInit()
   StartTimer(1,0)
   if MCM.IsInstalled() 
+    SD_Internal_MCMLoaded.SetValue(1)
 		RegisterForExternalEvent("OnMCMSettingChange|"+thisMod, "OnMCMSettingChange")
 		MCMUpdate()
   endif
@@ -102,35 +84,41 @@ Event OnTrackedStatsEvent(string arStatName, int aiStatValue)
   RegisterForTrackedStatsEvent(arStatName, aiStatValue + 1)
 EndEvent
 
-float iSleeptime = 0.0
-float iSleepEnd = 0.0
-float iSleepDesired
 
-Event OnPlayerSleepStart(float afSleepStartTime, float afDesiredSleepEndTime, ObjectReference akBed)
-  iSleepTime = afSleepStartTime
-  iSleepDesired = afDesiredSleepEndTime
-EndEvent
 
-;
-Event OnPlayerSleepStop(bool abInterrupted, ObjectReference akBed)
-  iSleepEnd = Utility.GetCurrentGameTime() - iSleeptime
-EndEvent
 
+; This function looks to see what the player has killed in combat.  If its a creature, it has a set amount.Function AddInventoryEventFilter(Form akFilter)
+; If its a human, it has two outcomes.  If the Victim was aggressive, less sanity and stress are affected, otherwise, higher penalties.
 Event Actor.OnKill(Actor akSender, Actor akVictim)
   if akSender == PlayerRef && akVictim.GetRace() != HumanRace
     DNotify("Player killed: " + akVictim.GetLeveledActorBase().GetName())
     ModifySanity(akSender, -0.1)
     ModifyStress(akSender, 0.1)
+  ElseIf akSender == PlayerRef && akVictim.GetRace() == HumanRace
+    DNotify("Player Killed a human!")
+    if akVictim.GetValue(Game.GetAggressionAV()) >= 2
+      DNotify("Victim Aggression: " + Game.GetAggressionAV())
+      ModifySanity(PlayerRef, -0.2)
+      ModifyStress(PlayerRef, 0.2)
+    Else
+      DNotify("Victim Aggression: " + Game.GetAggressionAV())
+      ModifySanity(PlayerRef, -0.5)
+      ModifyStress(PlayerRef, 0.5)
+    Endif
+    
   Endif
 EndEvent
 
 Event OnHit(ObjectReference akTarget, ObjectReference akAggressor, Form akSource, Projectile akProjectile, bool abPowerAttack, bool abSneakAttack, bool abBashAttack, bool abHitBlocked, string apMaterial)
-   If akAggressor != PlayerRef
-      DNotify("Player hit someone")
+   If akTarget != PlayerRef
+      ModifyStress(PlayerRef, -0.05)
+      ModifySanity(PlayerRef, 0.05)
+   ElseIf akTarget == PlayerRef
+      ModifyStress(PlayerRef, 0.05)
+      ModifySanity(PlayerRef, -0.05)
    EndIf
    RegisterForHitEvent(PlayerRef)
 EndEvent
-
 
 Event OnTimer(int aiTimerID)
   if(aiTimerID == 0)
@@ -143,31 +131,33 @@ Function IntializeStartup()
   ; Do initial Startup for the quest
   DNotify("Sanity Framework Initializing...")
   PopulateTrackedStats()
-  PlayerRef.SetValue(SD_Alignment, baseAlignment)
-  PlayerRef.SetValue(SD_Sanity, baseSanity)
-  PlayerRef.SetValue(SD_Stress, baseStress)
+  if (SD_Internal_FirstLoad.GetValue() == 0)
+    PlayerRef.SetValue(SD_Alignment, baseAlignment)
+    PlayerRef.SetValue(SD_Sanity, baseSanity)
+    PlayerRef.SetValue(SD_Stress, baseStress)
+    SD_Internal_FirstLoad.SetValue(1)
+    SD_FrameworkInit.Show()
+  EndIf
+  CheckIntegrations()
   LoadSDF()
 EndFunction
 
 Function DNotify(string text)
+  If (SD_Framework_Debugging.GetValue() == 1)
     Debug.Notification("[SDF] " + text)
-    Debug.Trace(text, 0) ; just to get started
+    Debug.Trace("[SDF] " + text, 0) ; just to get started
+  EndIf
 EndFunction
 
-
-
 Function LoadSDF()
-  DNotify("Sanity Framework Initialized...")
   RegisterForRemoteEvent(PlayerRef, "OnKill")
-  DNotify("Registering for Kill")
-  RegisterForPlayerSleep()
   RegisterForHitEvent(PlayerRef)
   DNotify("Loading Framework")
 EndFunction
 
 Function OnMCMSettingChange(string modName, string id)
   if modName == thisMod
-    MCMUpdate()
+      MCMUpdate()
   endif
 EndFunction
 
@@ -177,6 +167,23 @@ Function MCMUpdate()
   DNotify("MCM Updated")
 EndFunction
 
+function Uninstall()
+  SD_Internal_FirstLoad.SetValue(0.0)
+  SD_Internal_MCMLoaded.SetValue(0.0)
+  Debug.MessageBox("You may now safely remove this mod from your load order.")
+  Stop()
+EndFunction
+
+Function CheckIntegrations()
+  ;Hard Requirement
+  SD_Setting_Integrate_AAF.SetValue(Game.IsPluginInstalled("AAF.esm") as float)
+  SD_Setting_Integrate_FPE.SetValue(Game.IsPluginInstalled("FP_FamilyPlanningEnhanced.esp") as float)
+  SD_Setting_Integrate_HBW.SetValue(Game.IsPluginInstalled("Beggar_Whore.esp") as float)
+  SD_Setting_Integrate_SA.SetValue(Game.IsPluginInstalled("FPAttributes.esp") as float)
+  SD_Setting_Integrate_Vio.SetValue(Game.IsPluginInstalled("AAF_Violate.esp") as float)
+  SD_Setting_Integrate_WLD.SetValue(Game.IsPluginInstalled("INVB_WastelandDairy.esp") as float)
+  SD_Setting_Integrate_JB.SetValue(Game.IsPluginInstalled("Just Business.esp") as float)
+EndFunction
 
 float function GetSanity(Actor akTarget)
   return akTarget.GetValue(SD_Sanity)
@@ -252,10 +259,15 @@ Function PopulateTrackedStats()
     TrackedStatsName[12] = "Trespasses"
     TrackedStatsValue[12] = Game.QueryStat(TrackedStatsName[12])
     DNotify("Tracked Stats initialized...")
+    
     int index = 0
     While (index < TrackedStatsName.Length)
       RegisterForTrackedStatsEvent(TrackedStatsName[index], TrackedStatsValue[index]+ 1)
       ; code
       index += 1
     EndWhile
+EndFunction
+
+Function ShowStatistics()
+  Debug.MessageBox("Test")
 EndFunction
