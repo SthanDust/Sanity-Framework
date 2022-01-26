@@ -2,91 +2,194 @@ Scriptname SD:PlayerScript extends ReferenceAlias
 {This will attach to the player.}
 
 Actor Property PlayerRef auto
+Actor Property Shaun auto
 
-GlobalVariable Property SD_Setting_Integrate_SA auto 
+GlobalVariable Property SD_Setting_Integrate_SA auto
 
-SD:SanityFrameworkQuestScript SF_Main
+GlobalVariable Property SD_DepressionLevel auto
+GlobalVariable Property SD_GriefLevel auto
+GlobalVariable Property SD_TraumaLevel auto 
+;bad things for bad problems
+Keyword Property ObjectTypeAlcohol auto 
+Keyword Property ObjectTypeChem auto
+;voices in my head can't stay quiet
+string[] Property WeatherDepressedMessages auto
+string[] Property DrugMessages auto
+string[] Property DrinkMessages auto
+string[] Property RandomThoughts auto
+string[] Property SleepMessages auto
 
-FPA:FPA_Main fpa_event
-int wear
-int willpower
-int selfesteem
-int spirit
-int orientation
-int sexReputation
-int trauma
-int intoxicationLevel
-int arousal
-
+;It can't rain all the time, can it?  When you're sad can you tell the difference between rain and shine, buttercup?
 Weather RainyWeather
 Weather CloudyWeather
+
+SD:SanityFrameworkQuestScript SF_Main
+float tickFrequency = 1.0
+int tickTimerID = 66
+
+FPA:FPA_Main fpa_event
+
+;0 none, <20 Weak, <50 Low, <60 Average, <80 High, <100 Strong, 100 Soaring
+int willpower
+;Same stratification as above
+int selfesteem
+; Same as above
+int spirit
+; 0 None, 1 Traumatized, 2 Increased, 3 greatly, 4 extremely, 5 overwhelmed
+int trauma
+;0 sober, 1 buzzed, 2 tipsy, 3 intoxicated, 4 drunk, 5 hammered
+int intoxicationLevel
+
+;this will be replaced with a function to reduce or improve tolerance over time.  See Main Framework script for TanH function. 
+float tolerance = 0.0
 
 Event OnInit()
     StartTimer(1,1)
 EndEvent
 
 Event OnPlayerLoadGame()
-    StartTimer(8, 1)
+    StartTimer(5, 1)
 EndEvent
 
 
 Event OnTimer(int aiTimerID)
   if(aiTimerID == 1)
     Quest Main = Game.GetFormFromFile(0x0001F59A, "SD_MainFramework.esp") as quest
-	SF_Main = Main as SD:SanityFrameworkQuestScript
+	  SF_Main = Main as SD:SanityFrameworkQuestScript
     SF_Main.CheckIntegrations()
-    SF_Main.DNotify("Checking Integrations")
+    
     RegisterForPlayerSleep()
     If SD_Setting_Integrate_SA.GetValue() == 1
         SetSexAttributes()
     EndIF
+    StartTimerGameTime(tickFrequency, tickTimerID)
   EndIf
 EndEvent
 
+Event OnTimerGameTime(int aiTimerID)
+  if (aiTimerID == tickTimerID)
+    OnTick()
+  EndIf
+EndEvent
+
+;I wasted time, now doth time waste me
+Function OnTick()
+  ;What's the weather like
+  Weather w = Weather.GetCurrentWeather()
+  if (w.GetClassification() == 1 || w.GetClassification() == 2)
+    ModDepression(0.005)
+    int i = Utility.RandomInt(0, WeatherDepressedMessages.Length)
+    DMessage(WeatherDepressedMessages[i])
+  Else
+    ModDepression(-0.005)
+  EndIf
+  ;The voices in my head
+  if Utility.RandomInt() < 30
+    int r = Utility.RandomInt(0, RandomThoughts.Length)
+    DMessage(RandomThoughts[r])
+  Endif
+  StartTimerGameTime(tickFrequency, tickTimerID)
+EndFunction
+
+
+
 Function SetSexAttributes()
-    wear = (Game.GetFormFromFile(0x01000FAA, "FPAttributes.esp") as GlobalVariable).getValueInt()
-    willpower = (Game.GetFormFromFile(0x01000FAB, "FPAttributes.esp") as GlobalVariable).getValueInt()
-    selfesteem = (Game.GetFormFromFile(0x01000FAC, "FPAttributes.esp") as GlobalVariable).getValueInt()
-    spirit = (Game.GetFormFromFile(0x01007A67, "FPAttributes.esp") as GlobalVariable).getValueInt()
-    orientation = (Game.GetFormFromFile(0x01000FAD, "FPAttributes.esp") as GlobalVariable).getValueInt()
-    sexReputation = (Game.GetFormFromFile(0x101944F, "FPAttributes.esp") as GlobalVariable).getValueInt()
-    trauma = (Game.GetFormFromFile(0x101E80B, "FPAttributes.esp") as GlobalVariable).getValueInt()
-    intoxicationLevel = (Game.GetFormFromFile(0x101E80C, "FPAttributes.esp") as GlobalVariable).getValueInt()
-    arousal = (Game.GetFormFromFile(0x101E80D, "FPAttributes.esp") as GlobalVariable).getValueInt()
-	
-    Quest Main = Game.GetFormFromFile(0x00000F99, "FPAttributes.esp") as quest
+  willpower = (Game.GetFormFromFile(0x01000FAB, "FPAttributes.esp") as GlobalVariable).getValueInt()
+  selfesteem = (Game.GetFormFromFile(0x01000FAC, "FPAttributes.esp") as GlobalVariable).getValueInt()
+  spirit = (Game.GetFormFromFile(0x01007A67, "FPAttributes.esp") as GlobalVariable).getValueInt()
+  trauma = (Game.GetFormFromFile(0x101E80B, "FPAttributes.esp") as GlobalVariable).getValueInt()
+  intoxicationLevel = (Game.GetFormFromFile(0x101E80C, "FPAttributes.esp") as GlobalVariable).getValueInt()
+  
+  Quest Main = Game.GetFormFromFile(0x00000F99, "FPAttributes.esp") as quest
+
 	fpa_event = Main as FPA:FPA_Main
 
-	RegisterForCustomEvent(fpa_event, "OnWearUpdate")
-	RegisterForCustomEvent(fpa_event, "OnWillpowerUpdate")
-	RegisterForCustomEvent(fpa_event, "OnSelfEsteemUpdate")
-	RegisterForCustomEvent(fpa_event, "OnSpiritUpdate")
-	RegisterForCustomEvent(fpa_event, "OnOrientationUpdate")
-    SF_Main.DNotify("Sex Attributes Loaded.")
+	; RegisterForCustomEvent(fpa_event, "OnWillpowerUpdate")
+	; RegisterForCustomEvent(fpa_event, "OnSelfEsteemUpdate")
+	; RegisterForCustomEvent(fpa_event, "OnSpiritUpdate")
+
 EndFunction
 
 Function EffectWeather()
     RainyWeather = Weather.FindWeather(2)
-    Utility.RandomInt()
+    CloudyWeather = Weather.FindWeather(1)
+    int s = Utility.RandomInt()
+    if s < 50
+      RainyWeather.SetActive()
+    Else
+      CloudyWeather.SetActive()
+    endif 
 EndFunction
 
-float iSleeptime = 0.0
-float iSleepEnd = 0.0
 float iSleepDesired = 0.0
 
 Event OnPlayerSleepStart(float afSleepStartTime, float afDesiredSleepEndTime, ObjectReference akBed)
-  iSleepTime = afSleepStartTime
   iSleepDesired = afDesiredSleepEndTime
 EndEvent
 
 Event OnPlayerSleepStop(bool abInterrupted, ObjectReference akBed)
-  iSleepEnd = Utility.GetCurrentGameTime() - iSleeptime
-  if iSleepEnd < iSleepDesired
-    SF_Main.DNotify("Player didn't get enough sleep. Time: " + (iSleepEnd as string))
-  else
-    SF_Main.DNotify("Player got enough sleep " + (iSleepEnd as string))
+  float x = Utility.GetCurrentGameTime();
+  ;You can't be happy if you want to sleep 8 hours and only get 5.  No stress relief for you otherwise.  That's why it's called desired sleep time, silly.
+  if x >= iSleepDesired && !abInterrupted
+    SF_Main.ModifyStress(PlayerRef, -0.5)
+    
+  Else
+    if Utility.RandomInt(0, 4) == 3
+      int s = Utility.RandomInt(0, SleepMessages.Length)
+      DMessage(SleepMessages[s])
+    Endif
   endif
+  
+  If (Shaun.IsDead())
+    ; code to deal with him when i get to him <3
+  Else
+    ModDepression(0.05)
+  EndIf
+  float rng =  Utility.RandomFloat() * 100
+  
+  If (rng < SD_DepressionLevel.GetValue())
+    EffectWeather()
+    int i = Utility.RandomInt(0, WeatherDepressedMessages.Length)
+    DMessage(WeatherDepressedMessages[i])
+  EndIf
 EndEvent
+
+; note, this constant will be a diminishing variable to simulate tolerance.
+Event OnItemEquipped(Form akBaseObject, ObjectReference akReference)
+
+  if akReference == PlayerRef && akBaseObject.HasKeyword(ObjectTypeAlcohol)
+    SF_Main.ModifyStress(PlayerRef, -0.005)
+    if Utility.RandomInt(0, 4) == 2
+      int a = Utility.RandomInt(0, DrinkMessages.Length)
+      DMessage(DrinkMessages[a])
+    endif
+  elseif akReference == PlayerRef || akBaseObject.HasKeyword(ObjectTypeChem)
+    SF_Main.ModifyStress(PlayerRef, -0.005)
+    if Utility.RandomInt(0, 4) == 3
+      int d = Utility.RandomInt(0, DrugMessages.Length)
+      DMessage(DrugMessages[d])
+    endif
+  EndIf
+EndEvent
+
+Function ModDepression(float val)
+  float newVal = SD_DepressionLevel.GetValue() + val
+  if newVal < 0
+    SD_DepressionLevel.SetValue(0.0)
+  elseif newVal > 100
+    SD_DepressionLevel.SetValue(100)
+  Else
+    SD_DepressionLevel.SetValue(newVal)
+  endif
+EndFunction
+
+Function ModGrief(float val)
+  
+EndFunction
+; These are crucial messages to keep the player engaged in the mod.  A constant reminder that you have other issues to deal with.
+Function DMessage(string text)
+   Debug.Notification(text)
+EndFunction
 
 
 

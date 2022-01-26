@@ -9,17 +9,14 @@ int baseStress = 0
 int baseAlignment = 0
 string thisMod = "SD_MainFramework"
 
-;Hyperbolic Tangent Function: tanh(x) = (ex – e-x) / (ex + e-x)
-float e = 2.718281828459045235360
-
-float Function Tanh(float x)
-  return (Math.pow(e, x) - Math.pow(e, -x) / (Math.pow(e, x) + Math.pow(e, -x))
-EndFunction
 
 Group Filter_Properties
   Race[] Property SD_SanityRaces auto
 EndGroup
 
+Group Calculated_Values
+  GlobalVariable Property SD_AverageSleep auto
+EndGroup
 
 Group Player_Values
   Actor property PlayerRef auto const Mandatory
@@ -54,6 +51,7 @@ Group MCM_Settings
   GlobalVariable Property SD_Internal_MCMLoaded auto 
   GlobalVariable Property SD_Internal_FirstLoad auto
   Message Property SD_FrameworkInit Auto
+  Message Property SD_StatisticsMessage auto
 EndGroup
 
 import MCM
@@ -80,42 +78,32 @@ EndEvent
 
 Event OnTrackedStatsEvent(string arStatName, int aiStatValue)
   TrackedStatsValue[TrackedStatsName.Find(arStatName)] = aiStatValue
-  DNotify("Tracked Stat: " + arStatName + " = " + aiStatValue )
   RegisterForTrackedStatsEvent(arStatName, aiStatValue + 1)
+  CalculateTrackedStats()
 EndEvent
-
-
-
 
 ; This function looks to see what the player has killed in combat.  If its a creature, it has a set amount.Function AddInventoryEventFilter(Form akFilter)
 ; If its a human, it has two outcomes.  If the Victim was aggressive, less sanity and stress are affected, otherwise, higher penalties.
 Event Actor.OnKill(Actor akSender, Actor akVictim)
   if akSender == PlayerRef && akVictim.GetRace() != HumanRace
-    DNotify("Player killed: " + akVictim.GetLeveledActorBase().GetName())
     ModifySanity(akSender, -0.1)
     ModifyStress(akSender, 0.1)
   ElseIf akSender == PlayerRef && akVictim.GetRace() == HumanRace
-    DNotify("Player Killed a human!")
-    if akVictim.GetValue(Game.GetAggressionAV()) >= 2
-      DNotify("Victim Aggression: " + Game.GetAggressionAV())
+    if akVictim.GetValue(Game.GetAggressionAV()) >= 2.0
       ModifySanity(PlayerRef, -0.2)
       ModifyStress(PlayerRef, 0.2)
     Else
-      DNotify("Victim Aggression: " + Game.GetAggressionAV())
       ModifySanity(PlayerRef, -0.5)
       ModifyStress(PlayerRef, 0.5)
     Endif
-    
   Endif
 EndEvent
 
 Event OnHit(ObjectReference akTarget, ObjectReference akAggressor, Form akSource, Projectile akProjectile, bool abPowerAttack, bool abSneakAttack, bool abBashAttack, bool abHitBlocked, string apMaterial)
    If akTarget != PlayerRef
-      ModifyStress(PlayerRef, -0.05)
-      ModifySanity(PlayerRef, 0.05)
+      ModifyStress(PlayerRef, -0.005)
    ElseIf akTarget == PlayerRef
-      ModifyStress(PlayerRef, 0.05)
-      ModifySanity(PlayerRef, -0.05)
+      ModifyStress(PlayerRef, 0.005)
    EndIf
    RegisterForHitEvent(PlayerRef)
 EndEvent
@@ -125,7 +113,6 @@ Event OnTimer(int aiTimerID)
        IntializeStartup()
   EndIf
 EndEvent
-
 
 Function IntializeStartup()
   ; Do initial Startup for the quest
@@ -158,6 +145,7 @@ EndFunction
 Function OnMCMSettingChange(string modName, string id)
   if modName == thisMod
       MCMUpdate()
+      MCM.RefreshMenu()
   endif
 EndFunction
 
@@ -191,12 +179,9 @@ EndFunction
 
 Function ModifySanity(Actor akTarget, float nSanity)
    float sanity = GetSanity(akTarget) + nSanity
-    if sanity < 100 && sanity > -100 ; can't go over 100
+    if sanity < 100 && sanity > 0 ; can't go over 100
       akTarget.ModValue(SD_Sanity, nSanity)
-      DNotify("Sanity has changed...")
       SendCustomEvent("OnSanityUpdate")
-    Else
-      DNotify("Sanity cannot be more or less than 100")
     EndIf
 EndFunction
 
@@ -209,8 +194,6 @@ Function ModifyAlignment(Actor akTarget, float nAlign)
   If align <= 100 && align >= -100
     akTarget.ModValue(SD_Alignment, nAlign)
     SendCustomEvent("OnAlignmentUpdate")
-  Else
-    DNotify("Alignment cannot be more or less than 100")
   EndIf
 EndFunction
 
@@ -224,8 +207,6 @@ Function ModifyStress(Actor akTarget, float nStress)
   if stress <= 100 && stress >=0
     akTarget.ModValue(SD_Stress, nStress)
     SendCustomEvent("OnStressUpdate")
-  Else
-    DNotify("Stress cannot be more than 100 or less than 0")
   EndIf
 EndFunction
 
@@ -258,7 +239,7 @@ Function PopulateTrackedStats()
     TrackedStatsValue[11] = Game.QueryStat(TrackedStatsName[11])
     TrackedStatsName[12] = "Trespasses"
     TrackedStatsValue[12] = Game.QueryStat(TrackedStatsName[12])
-    DNotify("Tracked Stats initialized...")
+    
     
     int index = 0
     While (index < TrackedStatsName.Length)
@@ -266,8 +247,18 @@ Function PopulateTrackedStats()
       ; code
       index += 1
     EndWhile
+    CalculateTrackedStats()
+EndFunction
+
+Function CalculateTrackedStats()
+  ;Calculates the average amount of sleep
+  float aSleep = TrackedStatsValue[8] / TrackedStatsValue[5] 
+  SD_AverageSleep.SetValue(aSleep)
 EndFunction
 
 Function ShowStatistics()
-  Debug.MessageBox("Test")
+  SD_StatisticsMessage.Show(PlayerRef.GetValue(SD_Sanity), PlayerRef.GetValue(SD_Stress), PlayerRef.GetValue(SD_Alignment), SD_AverageSleep.GetValue())
 EndFunction
+
+
+
