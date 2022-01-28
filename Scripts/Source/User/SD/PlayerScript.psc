@@ -8,7 +8,8 @@ GlobalVariable Property SD_Setting_Integrate_SA auto
 
 GlobalVariable Property SD_DepressionLevel auto
 GlobalVariable Property SD_GriefLevel auto
-GlobalVariable Property SD_TraumaLevel auto 
+GlobalVariable Property SD_TraumaLevel auto
+GlobalVariable Property SD_Setting_ThoughtFrequency auto
 ;bad things for bad problems
 Keyword Property ObjectTypeAlcohol auto 
 Keyword Property ObjectTypeChem auto
@@ -18,6 +19,8 @@ string[] Property DrugMessages auto
 string[] Property DrinkMessages auto
 string[] Property RandomThoughts auto
 string[] Property SleepMessages auto
+int messageFrequency = 20
+ 
 
 ;It can't rain all the time, can it?  When you're sad can you tell the difference between rain and shine, buttercup?
 Weather RainyWeather
@@ -25,7 +28,7 @@ Weather CloudyWeather
 
 SD:SanityFrameworkQuestScript SF_Main
 float tickFrequency = 1.0
-int tickTimerID = 66
+int tickTimerID = 34
 
 FPA:FPA_Main fpa_event
 
@@ -40,8 +43,22 @@ int trauma
 ;0 sober, 1 buzzed, 2 tipsy, 3 intoxicated, 4 drunk, 5 hammered
 int intoxicationLevel
 
-;this will be replaced with a function to reduce or improve tolerance over time.  See Main Framework script for TanH function. 
+;this will be replaced with a function to reduce or improve tolerance over time.   
 float tolerance = 0.0
+float baseDecay = 0.01
+
+float function CalculateModifiers()
+  float weightWill = 0.3
+  float weightEsteem = 0.1 
+  float weightSpirit = 0.2 
+  float weightTrauma = 0.4 
+  float baseNormal = 500.0
+
+  float DecayModifier = (weightWill * willpower) + (weightEsteem * selfesteem) + (weightSpirit * spirit) + (weightTrauma * (trauma * 20))
+  float finalVal = (DecayModifier / baseNormal) + baseDecay
+  DMessage("Decay : " + finalVal)
+  return finalVal
+EndFunction
 
 Event OnInit()
     StartTimer(1,1)
@@ -49,6 +66,7 @@ EndEvent
 
 Event OnPlayerLoadGame()
     StartTimer(5, 1)
+
 EndEvent
 
 
@@ -56,12 +74,12 @@ Event OnTimer(int aiTimerID)
   if(aiTimerID == 1)
     Quest Main = Game.GetFormFromFile(0x0001F59A, "SD_MainFramework.esp") as quest
 	  SF_Main = Main as SD:SanityFrameworkQuestScript
+    SF_Main.LoadSDF()
     SF_Main.CheckIntegrations()
-    
+    messageFrequency = SD_Setting_ThoughtFrequency.GetValueInt()
     RegisterForPlayerSleep()
-    If SD_Setting_Integrate_SA.GetValue() == 1
-        SetSexAttributes()
-    EndIF
+    SetSexAttributes()
+    
     StartTimerGameTime(tickFrequency, tickTimerID)
   EndIf
 EndEvent
@@ -74,24 +92,26 @@ EndEvent
 
 ;I wasted time, now doth time waste me
 Function OnTick()
+  string lastMessage;
+  tolerance = CalculateModifiers()
   ;What's the weather like
   Weather w = Weather.GetCurrentWeather()
   if (w.GetClassification() == 1 || w.GetClassification() == 2)
     ModDepression(0.005)
-    int i = Utility.RandomInt(0, WeatherDepressedMessages.Length)
-    DMessage(WeatherDepressedMessages[i])
+    int i = Utility.RandomInt(0, WeatherDepressedMessages.Length - 1)
+    lastMessage = WeatherDepressedMessages[i]
   Else
     ModDepression(-0.005)
   EndIf
   ;The voices in my head
-  if Utility.RandomInt() < 30
+  if Utility.RandomInt() < messageFrequency
     int r = Utility.RandomInt(0, RandomThoughts.Length)
-    DMessage(RandomThoughts[r])
+    lastMessage = RandomThoughts[r]
   Endif
+  ;don't want to overload the message queue
+  DMessage(lastMessage)
   StartTimerGameTime(tickFrequency, tickTimerID)
 EndFunction
-
-
 
 Function SetSexAttributes()
   willpower = (Game.GetFormFromFile(0x01000FAB, "FPAttributes.esp") as GlobalVariable).getValueInt()
@@ -99,15 +119,8 @@ Function SetSexAttributes()
   spirit = (Game.GetFormFromFile(0x01007A67, "FPAttributes.esp") as GlobalVariable).getValueInt()
   trauma = (Game.GetFormFromFile(0x101E80B, "FPAttributes.esp") as GlobalVariable).getValueInt()
   intoxicationLevel = (Game.GetFormFromFile(0x101E80C, "FPAttributes.esp") as GlobalVariable).getValueInt()
-  
-  Quest Main = Game.GetFormFromFile(0x00000F99, "FPAttributes.esp") as quest
-
-	fpa_event = Main as FPA:FPA_Main
-
-	; RegisterForCustomEvent(fpa_event, "OnWillpowerUpdate")
-	; RegisterForCustomEvent(fpa_event, "OnSelfEsteemUpdate")
-	; RegisterForCustomEvent(fpa_event, "OnSpiritUpdate")
-
+  tolerance = CalculateModifiers()
+  DMessage(tolerance as string)
 EndFunction
 
 Function EffectWeather()
@@ -132,10 +145,9 @@ Event OnPlayerSleepStop(bool abInterrupted, ObjectReference akBed)
   ;You can't be happy if you want to sleep 8 hours and only get 5.  No stress relief for you otherwise.  That's why it's called desired sleep time, silly.
   if x >= iSleepDesired && !abInterrupted
     SF_Main.ModifyStress(PlayerRef, -0.5)
-    
   Else
-    if Utility.RandomInt(0, 4) == 3
-      int s = Utility.RandomInt(0, SleepMessages.Length)
+    if Utility.RandomInt() < messageFrequency
+      int s = Utility.RandomInt(0, SleepMessages.Length - 1)
       DMessage(SleepMessages[s])
     Endif
   endif
@@ -149,8 +161,10 @@ Event OnPlayerSleepStop(bool abInterrupted, ObjectReference akBed)
   
   If (rng < SD_DepressionLevel.GetValue())
     EffectWeather()
-    int i = Utility.RandomInt(0, WeatherDepressedMessages.Length)
-    DMessage(WeatherDepressedMessages[i])
+    if Weather.GetCurrentWeather().GetClassification() == 2
+      int i = Utility.RandomInt(0, WeatherDepressedMessages.Length - 1)
+      DMessage(WeatherDepressedMessages[i])
+    EndIF
   EndIf
 EndEvent
 
@@ -159,14 +173,17 @@ Event OnItemEquipped(Form akBaseObject, ObjectReference akReference)
 
   if akReference == PlayerRef && akBaseObject.HasKeyword(ObjectTypeAlcohol)
     SF_Main.ModifyStress(PlayerRef, -0.005)
-    if Utility.RandomInt(0, 4) == 2
-      int a = Utility.RandomInt(0, DrinkMessages.Length)
+    
+    ModDepression(tolerance)
+    if Utility.RandomInt() < messageFrequency
+      int a = Utility.RandomInt(0, DrinkMessages.Length - 1)
       DMessage(DrinkMessages[a])
     endif
   elseif akReference == PlayerRef || akBaseObject.HasKeyword(ObjectTypeChem)
     SF_Main.ModifyStress(PlayerRef, -0.005)
-    if Utility.RandomInt(0, 4) == 3
-      int d = Utility.RandomInt(0, DrugMessages.Length)
+    ModDepression(tolerance * -1)
+    if Utility.RandomInt() < messageFrequency
+      int d = Utility.RandomInt(0, DrugMessages.Length - 1)
       DMessage(DrugMessages[d])
     endif
   EndIf
@@ -174,6 +191,7 @@ EndEvent
 
 Function ModDepression(float val)
   float newVal = SD_DepressionLevel.GetValue() + val
+  SF_Main.DNotify("Depression: " + SD_DepressionLevel.GetValue() + " Value: " + val)
   if newVal < 0
     SD_DepressionLevel.SetValue(0.0)
   elseif newVal > 100
@@ -184,16 +202,17 @@ Function ModDepression(float val)
 EndFunction
 
 Function ModGrief(float val)
-  
+  float newVal = SD_GriefLevel.GetValue() + val
+  if newVal < 0
+    SD_GriefLevel.SetValue(0.0)
+  Elseif newVal > 100
+    SD_GriefLevel.SetValue(100.0)
+  Else 
+    SD_GriefLevel.SetValue(newVal)
+  EndIf
 EndFunction
+
 ; These are crucial messages to keep the player engaged in the mod.  A constant reminder that you have other issues to deal with.
 Function DMessage(string text)
    Debug.Notification(text)
 EndFunction
-
-
-
-
-
-
-

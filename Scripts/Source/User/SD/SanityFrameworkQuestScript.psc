@@ -10,6 +10,7 @@ int baseAlignment = 0
 string thisMod = "SD_MainFramework"
 
 
+
 Group Filter_Properties
   Race[] Property SD_SanityRaces auto
 EndGroup
@@ -41,8 +42,6 @@ Group MCM_Settings
   GlobalVariable Property SD_FVersion auto 
   GlobalVariable Property SD_Framework_Enabled auto
   GlobalVariable Property SD_Framework_Debugging auto
-  GlobalVariable Property SD_Setting_Integrate_AAF auto  
-  GlobalVariable Property SD_Setting_Integrate_SA auto 
   GlobalVariable Property SD_Setting_Integrate_Vio auto
   GlobalVariable Property SD_Setting_Integrate_FPE auto
   GlobalVariable Property SD_Setting_Integrate_WLD Auto 
@@ -52,6 +51,7 @@ Group MCM_Settings
   GlobalVariable Property SD_Internal_FirstLoad auto
   Message Property SD_FrameworkInit Auto
   Message Property SD_StatisticsMessage auto
+  GlobalVariable Property SD_Setting_ThoughtFrequency auto
 EndGroup
 
 import MCM
@@ -73,8 +73,8 @@ Event OnQuestInit()
 		MCMUpdate()
   endif
   RegisterForRemoteEvent(PlayerRef, "OnPlayerLoadGame")
-  DNotify("Starting Quest")
 EndEvent
+
 
 Event OnTrackedStatsEvent(string arStatName, int aiStatValue)
   TrackedStatsValue[TrackedStatsName.Find(arStatName)] = aiStatValue
@@ -116,9 +116,9 @@ EndEvent
 
 Function IntializeStartup()
   ; Do initial Startup for the quest
-  DNotify("Sanity Framework Initializing...")
   PopulateTrackedStats()
   if (SD_Internal_FirstLoad.GetValue() == 0)
+    DNotify("Sanity Framework Initializing...")
     PlayerRef.SetValue(SD_Alignment, baseAlignment)
     PlayerRef.SetValue(SD_Sanity, baseSanity)
     PlayerRef.SetValue(SD_Stress, baseStress)
@@ -139,19 +139,19 @@ EndFunction
 Function LoadSDF()
   RegisterForRemoteEvent(PlayerRef, "OnKill")
   RegisterForHitEvent(PlayerRef)
-  DNotify("Loading Framework")
+  MCMUpdate()
 EndFunction
 
 Function OnMCMSettingChange(string modName, string id)
   if modName == thisMod
       MCMUpdate()
-      MCM.RefreshMenu()
   endif
 EndFunction
 
 Function MCMUpdate()
   SD_Framework_Debugging.SetValue(MCM.GetModSettingBool(thisMod, "bMCMDebugOn:Debug") as float)
   SD_Framework_Enabled.SetValue(MCM.GetModSettingBool(thisMod, "bMCMModEnabled:Globals") as float)
+  SD_Setting_ThoughtFrequency.SetValue(MCM.GetModSettingFloat(thisMod, "fMessageFrequency:Globals"))
   DNotify("MCM Updated")
 EndFunction
 
@@ -163,11 +163,8 @@ function Uninstall()
 EndFunction
 
 Function CheckIntegrations()
-  ;Hard Requirement
-  SD_Setting_Integrate_AAF.SetValue(Game.IsPluginInstalled("AAF.esm") as float)
   SD_Setting_Integrate_FPE.SetValue(Game.IsPluginInstalled("FP_FamilyPlanningEnhanced.esp") as float)
   SD_Setting_Integrate_HBW.SetValue(Game.IsPluginInstalled("Beggar_Whore.esp") as float)
-  SD_Setting_Integrate_SA.SetValue(Game.IsPluginInstalled("FPAttributes.esp") as float)
   SD_Setting_Integrate_Vio.SetValue(Game.IsPluginInstalled("AAF_Violate.esp") as float)
   SD_Setting_Integrate_WLD.SetValue(Game.IsPluginInstalled("INVB_WastelandDairy.esp") as float)
   SD_Setting_Integrate_JB.SetValue(Game.IsPluginInstalled("Just Business.esp") as float)
