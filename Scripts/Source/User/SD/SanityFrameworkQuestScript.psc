@@ -8,6 +8,7 @@ int baseSanity = 100
 int baseStress = 0
 int baseAlignment = 0
 string thisMod = "SD_MainFramework"
+string logName = "SanityFramework"
 
 
 
@@ -67,12 +68,14 @@ CustomEvent OnAlignmentUpdate
 
 Event OnQuestInit()
   StartTimer(1,0)
-  if MCM.IsInstalled() 
-    SD_Internal_MCMLoaded.SetValue(1)
-		RegisterForExternalEvent("OnMCMSettingChange|"+thisMod, "OnMCMSettingChange")
-		MCMUpdate()
-  endif
-  RegisterForRemoteEvent(PlayerRef, "OnPlayerLoadGame")
+  OpenLog()
+  DNotify("Main: Quest Init")
+EndEvent
+
+Event Actor.OnPlayerLoadGame(Actor akSender)
+  OpenLog()
+  DNotify("Main: Player Load")
+  StartTimer(2, 0)
 EndEvent
 
 
@@ -110,13 +113,13 @@ EndEvent
 
 Event OnTimer(int aiTimerID)
   if(aiTimerID == 0)
-       IntializeStartup()
+      IntializeStartup()
+      RegisterForRemoteEvent(PlayerRef, "OnPlayerLoadGame")
   EndIf
 EndEvent
 
 Function IntializeStartup()
   ; Do initial Startup for the quest
-  PopulateTrackedStats()
   if (SD_Internal_FirstLoad.GetValue() == 0)
     DNotify("Sanity Framework Initializing...")
     PlayerRef.SetValue(SD_Alignment, baseAlignment)
@@ -125,50 +128,29 @@ Function IntializeStartup()
     SD_Internal_FirstLoad.SetValue(1)
     SD_FrameworkInit.Show()
   EndIf
-  CheckIntegrations()
   LoadSDF()
+  PopulateTrackedStats()
 EndFunction
 
 Function DNotify(string text)
-  If (SD_Framework_Debugging.GetValue() == 1)
+
     Debug.Notification("[SDF] " + text)
     Debug.Trace("[SDF] " + text, 0) ; just to get started
-  EndIf
+    Debug.TraceUser(logName, "[SDF] " + text)
+
 EndFunction
 
 Function LoadSDF()
   RegisterForRemoteEvent(PlayerRef, "OnKill")
   RegisterForHitEvent(PlayerRef)
-  MCMUpdate()
+ 
 EndFunction
 
-Function OnMCMSettingChange(string modName, string id)
-  if modName == thisMod
-      MCMUpdate()
-  endif
+Function OpenLog()
+  Debug.Notification("Opening Debug Log...")
+  Debug.OpenUserLog(logName)
 EndFunction
 
-Function MCMUpdate()
-  SD_Framework_Debugging.SetValue(MCM.GetModSettingBool(thisMod, "bMCMDebugOn:Debug") as float)
-  SD_Framework_Enabled.SetValue(MCM.GetModSettingBool(thisMod, "bMCMModEnabled:Globals") as float)
-  SD_Setting_ThoughtFrequency.SetValue(MCM.GetModSettingFloat(thisMod, "fMessageFrequency:Globals"))
-  DNotify("MCM Updated")
-EndFunction
-
-function Uninstall()
-  SD_Internal_FirstLoad.SetValue(0.0)
-  SD_Internal_MCMLoaded.SetValue(0.0)
-  Debug.MessageBox("You may now safely remove this mod from your load order.")
-  Stop()
-EndFunction
-
-Function CheckIntegrations()
-  SD_Setting_Integrate_FPE.SetValue(Game.IsPluginInstalled("FP_FamilyPlanningEnhanced.esp") as float)
-  SD_Setting_Integrate_HBW.SetValue(Game.IsPluginInstalled("Beggar_Whore.esp") as float)
-  SD_Setting_Integrate_Vio.SetValue(Game.IsPluginInstalled("AAF_Violate.esp") as float)
-  SD_Setting_Integrate_WLD.SetValue(Game.IsPluginInstalled("INVB_WastelandDairy.esp") as float)
-  SD_Setting_Integrate_JB.SetValue(Game.IsPluginInstalled("Just Business.esp") as float)
-EndFunction
 
 float function GetSanity(Actor akTarget)
   return akTarget.GetValue(SD_Sanity)

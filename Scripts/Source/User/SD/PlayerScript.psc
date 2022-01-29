@@ -4,8 +4,6 @@ Scriptname SD:PlayerScript extends ReferenceAlias
 Actor Property PlayerRef auto
 Actor Property Shaun auto
 
-GlobalVariable Property SD_Setting_Integrate_SA auto
-
 GlobalVariable Property SD_DepressionLevel auto
 GlobalVariable Property SD_GriefLevel auto
 GlobalVariable Property SD_TraumaLevel auto
@@ -13,6 +11,7 @@ GlobalVariable Property SD_Setting_ThoughtFrequency auto
 ;bad things for bad problems
 Keyword Property ObjectTypeAlcohol auto 
 Keyword Property ObjectTypeChem auto
+Keyword Property AnimFaceArchetypeDepressed auto
 ;voices in my head can't stay quiet
 string[] Property WeatherDepressedMessages auto
 string[] Property DrugMessages auto
@@ -22,7 +21,7 @@ string[] Property SleepMessages auto
 int messageFrequency = 20
  
 
-;It can't rain all the time, can it?  When you're sad can you tell the difference between rain and shine, buttercup?
+;It can't rain all the time, can it?  When you're sad, can you tell the difference between rain and shine, buttercup?
 Weather RainyWeather
 Weather CloudyWeather
 
@@ -30,7 +29,6 @@ SD:SanityFrameworkQuestScript SF_Main
 float tickFrequency = 1.0
 int tickTimerID = 34
 
-FPA:FPA_Main fpa_event
 
 ;0 none, <20 Weak, <50 Low, <60 Average, <80 High, <100 Strong, 100 Soaring
 int willpower
@@ -56,7 +54,7 @@ float function CalculateModifiers()
 
   float DecayModifier = (weightWill * willpower) + (weightEsteem * selfesteem) + (weightSpirit * spirit) + (weightTrauma * (trauma * 20))
   float finalVal = (DecayModifier / baseNormal) + baseDecay
-  DMessage("Decay : " + finalVal)
+  ;DMessage("Decay : " + finalVal)
   return finalVal
 EndFunction
 
@@ -75,14 +73,14 @@ Event OnTimer(int aiTimerID)
     Quest Main = Game.GetFormFromFile(0x0001F59A, "SD_MainFramework.esp") as quest
 	  SF_Main = Main as SD:SanityFrameworkQuestScript
     SF_Main.LoadSDF()
-    SF_Main.CheckIntegrations()
     messageFrequency = SD_Setting_ThoughtFrequency.GetValueInt()
     RegisterForPlayerSleep()
     SetSexAttributes()
-    
+    ;RegisterForRemoteEvent(PlayerRef, "OnLocationChange")
     StartTimerGameTime(tickFrequency, tickTimerID)
   EndIf
 EndEvent
+
 
 Event OnTimerGameTime(int aiTimerID)
   if (aiTimerID == tickTimerID)
@@ -120,7 +118,7 @@ Function SetSexAttributes()
   trauma = (Game.GetFormFromFile(0x101E80B, "FPAttributes.esp") as GlobalVariable).getValueInt()
   intoxicationLevel = (Game.GetFormFromFile(0x101E80C, "FPAttributes.esp") as GlobalVariable).getValueInt()
   tolerance = CalculateModifiers()
-  DMessage(tolerance as string)
+  ;DMessage(tolerance as string)
 EndFunction
 
 Function EffectWeather()
@@ -173,7 +171,6 @@ Event OnItemEquipped(Form akBaseObject, ObjectReference akReference)
 
   if akReference == PlayerRef && akBaseObject.HasKeyword(ObjectTypeAlcohol)
     SF_Main.ModifyStress(PlayerRef, -0.005)
-    
     ModDepression(tolerance)
     if Utility.RandomInt() < messageFrequency
       int a = Utility.RandomInt(0, DrinkMessages.Length - 1)
@@ -191,7 +188,7 @@ EndEvent
 
 Function ModDepression(float val)
   float newVal = SD_DepressionLevel.GetValue() + val
-  SF_Main.DNotify("Depression: " + SD_DepressionLevel.GetValue() + " Value: " + val)
+  ;SF_Main.DNotify("Depression: " + SD_DepressionLevel.GetValue() + " Value: " + val)
   if newVal < 0
     SD_DepressionLevel.SetValue(0.0)
   elseif newVal > 100
@@ -199,6 +196,7 @@ Function ModDepression(float val)
   Else
     SD_DepressionLevel.SetValue(newVal)
   endif
+  
 EndFunction
 
 Function ModGrief(float val)
