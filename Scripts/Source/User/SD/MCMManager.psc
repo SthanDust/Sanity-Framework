@@ -44,7 +44,7 @@ Event Actor.OnPlayerLoadGame(Actor akSender)
     ;use this to repeat things
     Quest Main = Game.GetFormFromFile(0x0001F59A, "SD_MainFramework.esp") as quest
     SDF = Main as SD:SanityFrameworkQuestScript
-    
+    CheckIntegrations()
     ;SDF.DNotify("MCM: PlayerLoad")
     if (CheckForMCM())
         RegisterForMenuOpenCloseEvent("PauseMenu")

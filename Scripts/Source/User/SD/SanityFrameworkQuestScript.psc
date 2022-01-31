@@ -10,8 +10,6 @@ int baseAlignment = 0
 string thisMod = "SD_MainFramework"
 string logName = "SanityFramework"
 
-
-
 Group Filter_Properties
   Race[] Property SD_SanityRaces auto
 EndGroup
@@ -38,6 +36,13 @@ Group Player_Values
   ActorValue Property Luck auto 
 EndGroup
 
+Group Follower_Data
+  Keyword Property MeanKeyword auto const 
+  Keyword Property NiceKeyword auto Const
+  Keyword Property SelfishKeyword auto const 
+  Keyword Property ViolentKeyword auto const
+EndGroup
+
 ; Can be accessed by other mods
 Group MCM_Settings 
   GlobalVariable Property SD_FVersion auto 
@@ -59,25 +64,22 @@ import MCM
 import Actor
 import Debug
 import Game
-import SUP_F4SE
+import FollowersScript
 
 CustomEvent OnSanityUpdate
 CustomEvent OnStressUpdate
 CustomEvent OnAlignmentUpdate
 
-
 Event OnQuestInit()
   StartTimer(1,0)
   OpenLog()
-  DNotify("Main: Quest Init")
+  ;DNotify("Main: Quest Init")
 EndEvent
 
 Event Actor.OnPlayerLoadGame(Actor akSender)
   OpenLog()
-  DNotify("Main: Player Load")
   StartTimer(2, 0)
 EndEvent
-
 
 Event OnTrackedStatsEvent(string arStatName, int aiStatValue)
   TrackedStatsValue[TrackedStatsName.Find(arStatName)] = aiStatValue
@@ -115,6 +117,7 @@ Event OnTimer(int aiTimerID)
   if(aiTimerID == 0)
       IntializeStartup()
       RegisterForRemoteEvent(PlayerRef, "OnPlayerLoadGame")
+      RegisterForCustomEvent(FollowersScript.GetScript(), "AffinityEvent")
   EndIf
 EndEvent
 
@@ -144,13 +147,22 @@ Function LoadSDF()
   RegisterForRemoteEvent(PlayerRef, "OnKill")
   RegisterForHitEvent(PlayerRef)
  
+ CheckCompanion()
+EndFunction
+
+Function CheckCompanion()
+   Actor[] Followers =  Game.GetPlayerFollowers()
+   int index = 0
+   while index < Followers.Length
+   DNotify("Follower: " + Followers[index].GetLeveledActorBase().GetName())
+   index = index + 1
+   EndWhile
 EndFunction
 
 Function OpenLog()
-  Debug.Notification("Opening Debug Log...")
+  ;Debug.Notification("Opening Debug Log...")
   Debug.OpenUserLog(logName)
 EndFunction
-
 
 float function GetSanity(Actor akTarget)
   return akTarget.GetValue(SD_Sanity)
@@ -158,6 +170,7 @@ EndFunction
 
 Function ModifySanity(Actor akTarget, float nSanity)
    float sanity = GetSanity(akTarget) + nSanity
+   DNotify("Stress: " + sanity + " Adjusted by: " + nSanity)
     if sanity < 100 && sanity > 0 ; can't go over 100
       akTarget.ModValue(SD_Sanity, nSanity)
       SendCustomEvent("OnSanityUpdate")
@@ -183,6 +196,7 @@ EndFunction
 Function ModifyStress(Actor akTarget, float nStress) 
   float stress = 0
   stress = GetStress(akTarget) + nStress
+  DNotify("Stress: " + stress + " Adjusted by: " + nStress)
   if stress <= 100 && stress >=0
     akTarget.ModValue(SD_Stress, nStress)
     SendCustomEvent("OnStressUpdate")
@@ -238,6 +252,11 @@ EndFunction
 Function ShowStatistics()
   SD_StatisticsMessage.Show(PlayerRef.GetValue(SD_Sanity), PlayerRef.GetValue(SD_Stress), PlayerRef.GetValue(SD_Alignment), SD_AverageSleep.GetValue())
 EndFunction
+
+Event FollowersScript.AffinityEvent(FollowersScript akSender, Var[] akArgs)
+  AffinityEventData  aed = akArgs[0] as AffinityEventData
+  DNotify("Affinity Event: " + aed.EventKeyword + " Event Size: " + aed.EventSize + " Event Topic: " + aed.TopicSubType)
+EndEvent
 
 
 

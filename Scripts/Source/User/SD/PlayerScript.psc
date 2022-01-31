@@ -8,6 +8,8 @@ GlobalVariable Property SD_DepressionLevel auto
 GlobalVariable Property SD_GriefLevel auto
 GlobalVariable Property SD_TraumaLevel auto
 GlobalVariable Property SD_Setting_ThoughtFrequency auto
+GlobalVariable Property SD_Haha auto ;Do you believe in god?  Do you read comments?
+GlobalVariable Property SD_HumanFactor auto ; -1 missing a member and +1 you have the member
 ;bad things for bad problems
 Keyword Property ObjectTypeAlcohol auto 
 Keyword Property ObjectTypeChem auto
@@ -24,12 +26,10 @@ int messageFrequency = 20
 ;It can't rain all the time, can it?  When you're sad, can you tell the difference between rain and shine, buttercup?
 Weather RainyWeather
 Weather CloudyWeather
-
 SD:SanityFrameworkQuestScript SF_Main
 float tickFrequency = 1.0
 int tickTimerID = 34
-
-
+float iSleepDesired = 0.0
 ;0 none, <20 Weak, <50 Low, <60 Average, <80 High, <100 Strong, 100 Soaring
 int willpower
 ;Same stratification as above
@@ -40,7 +40,6 @@ int spirit
 int trauma
 ;0 sober, 1 buzzed, 2 tipsy, 3 intoxicated, 4 drunk, 5 hammered
 int intoxicationLevel
-
 ;this will be replaced with a function to reduce or improve tolerance over time.   
 float tolerance = 0.0
 float baseDecay = 0.01
@@ -64,9 +63,7 @@ EndEvent
 
 Event OnPlayerLoadGame()
     StartTimer(5, 1)
-
 EndEvent
-
 
 Event OnTimer(int aiTimerID)
   if(aiTimerID == 1)
@@ -81,7 +78,6 @@ Event OnTimer(int aiTimerID)
   EndIf
 EndEvent
 
-
 Event OnTimerGameTime(int aiTimerID)
   if (aiTimerID == tickTimerID)
     OnTick()
@@ -91,15 +87,20 @@ EndEvent
 ;I wasted time, now doth time waste me
 Function OnTick()
   string lastMessage;
+
   tolerance = CalculateModifiers()
+  
   ;What's the weather like
   Weather w = Weather.GetCurrentWeather()
-  if (w.GetClassification() == 1 || w.GetClassification() == 2)
+  if (w.GetClassification() == 2)
     ModDepression(0.005)
     int i = Utility.RandomInt(0, WeatherDepressedMessages.Length - 1)
     lastMessage = WeatherDepressedMessages[i]
   Else
     ModDepression(-0.005)
+    If !PlayerRef.IsInCombat()
+      SF_Main.ModifyStress(PlayerRef, -0.5)
+    EndIf
   EndIf
   ;The voices in my head
   if Utility.RandomInt() < messageFrequency
@@ -118,7 +119,7 @@ Function SetSexAttributes()
   trauma = (Game.GetFormFromFile(0x101E80B, "FPAttributes.esp") as GlobalVariable).getValueInt()
   intoxicationLevel = (Game.GetFormFromFile(0x101E80C, "FPAttributes.esp") as GlobalVariable).getValueInt()
   tolerance = CalculateModifiers()
-  ;DMessage(tolerance as string)
+  DMessage("Tolerance: " + tolerance as string)
 EndFunction
 
 Function EffectWeather()
@@ -131,8 +132,6 @@ Function EffectWeather()
       CloudyWeather.SetActive()
     endif 
 EndFunction
-
-float iSleepDesired = 0.0
 
 Event OnPlayerSleepStart(float afSleepStartTime, float afDesiredSleepEndTime, ObjectReference akBed)
   iSleepDesired = afDesiredSleepEndTime
@@ -154,6 +153,7 @@ Event OnPlayerSleepStop(bool abInterrupted, ObjectReference akBed)
     ; code to deal with him when i get to him <3
   Else
     ModDepression(0.05)
+    ModGrief(0.05)
   EndIf
   float rng =  Utility.RandomFloat() * 100
   
@@ -170,14 +170,14 @@ EndEvent
 Event OnItemEquipped(Form akBaseObject, ObjectReference akReference)
 
   if akReference == PlayerRef && akBaseObject.HasKeyword(ObjectTypeAlcohol)
-    SF_Main.ModifyStress(PlayerRef, -0.005)
+    SF_Main.ModifyStress(PlayerRef, -0.5)
     ModDepression(tolerance)
     if Utility.RandomInt() < messageFrequency
       int a = Utility.RandomInt(0, DrinkMessages.Length - 1)
       DMessage(DrinkMessages[a])
     endif
   elseif akReference == PlayerRef || akBaseObject.HasKeyword(ObjectTypeChem)
-    SF_Main.ModifyStress(PlayerRef, -0.005)
+    SF_Main.ModifyStress(PlayerRef, -0.5)
     ModDepression(tolerance * -1)
     if Utility.RandomInt() < messageFrequency
       int d = Utility.RandomInt(0, DrugMessages.Length - 1)
@@ -188,7 +188,7 @@ EndEvent
 
 Function ModDepression(float val)
   float newVal = SD_DepressionLevel.GetValue() + val
-  ;SF_Main.DNotify("Depression: " + SD_DepressionLevel.GetValue() + " Value: " + val)
+  SF_Main.DNotify("Depression: " + SD_DepressionLevel.GetValue() + " Value: " + val)
   if newVal < 0
     SD_DepressionLevel.SetValue(0.0)
   elseif newVal > 100
@@ -201,6 +201,7 @@ EndFunction
 
 Function ModGrief(float val)
   float newVal = SD_GriefLevel.GetValue() + val
+  SF_Main.DNotify("Grief: " + SD_GriefLevel.GetValue() + " Increased by: " + val)
   if newVal < 0
     SD_GriefLevel.SetValue(0.0)
   Elseif newVal > 100
