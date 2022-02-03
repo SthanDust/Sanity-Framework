@@ -1,4 +1,6 @@
 Scriptname SD:MCMManager extends Quest
+
+
 SD:SanityFrameworkQuestScript SDF
 string thisMod = "SD_MainFramework"
 Group General 
@@ -18,12 +20,12 @@ Group General
     GlobalVariable Property SD_Setting_ThoughtFrequency auto
 EndGroup
 
-
-
 import MCM
 import Actor
 import Debug
 import Game
+
+
 
 Event OnInit()
     Quest Main = Game.GetFormFromFile(0x0001F59A, "SD_MainFramework.esp") as quest
@@ -54,8 +56,8 @@ EndEvent
 
 Function CheckVersion()
     float current = SD_FVersion.GetValue()
-    float newVersion = 1.81
-    if  current < newVersion
+    float newVersion = MCM.GetModSettingFloat(thisMod, "fVersion")
+    if  current != newVersion
         SDF.DNotify("Updating...")
         SDF.Stop()
         SDF.Start()
@@ -75,6 +77,7 @@ bool Function CheckForMCM(bool FirstLoad = false)
         EndIf
         Return false
     EndIf
+    SD_Internal_MCMLoaded.SetValue(1)
     Return True
 EndFunction
 

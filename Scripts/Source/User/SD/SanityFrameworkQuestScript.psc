@@ -9,6 +9,7 @@ int baseStress = 0
 int baseAlignment = 0
 string thisMod = "SD_MainFramework"
 string logName = "SanityFramework"
+float hour = 0.04200
 
 Group Filter_Properties
   Race[] Property SD_SanityRaces auto
@@ -18,22 +19,19 @@ Group Calculated_Values
   GlobalVariable Property SD_AverageSleep auto
 EndGroup
 
-Group Player_Values
+Group Actor_Values
   Actor property PlayerRef auto const Mandatory
   ActorValue Property SD_Sanity Auto Mandatory
   ActorValue Property SD_Stress Auto Mandatory
   ActorValue Property SD_Alignment auto Mandatory
+  ActorValue Property SD_Depression auto Mandatory
+  ActorValue Property SD_Grief auto Mandatory
+  ActorValue Property SD_Trauma auto Mandatory
   Race Property HumanRace auto const
-  GlobalVariable Property SD_SanityMult auto
-  GlobalVariable Property SD_StressMult auto 
-  GlobalVariable Property SD_AlignMult auto
-  ActorValue Property Strength auto 
-  ActorValue Property Perception auto 
-  ActorValue Property Endurance auto 
-  ActorValue Property Charisma auto
-  ActorValue Property Intelligence auto 
-  ActorValue Property Agility auto
-  ActorValue Property Luck auto 
+  GlobalVariable Property SD_DepressionLevel auto
+  GlobalVariable Property SD_GriefLevel auto
+  GlobalVariable Property SD_TraumaLevel auto
+  Quest Property SD_PlayerQuest auto 
 EndGroup
 
 Group Follower_Data
@@ -69,11 +67,13 @@ import FollowersScript
 CustomEvent OnSanityUpdate
 CustomEvent OnStressUpdate
 CustomEvent OnAlignmentUpdate
+CustomEvent OnDepressionUpdate
+CustomEvent OnGriefUpdate
+CustomEvent OnTraumaUpdate
 
 Event OnQuestInit()
   StartTimer(1,0)
   OpenLog()
-  ;DNotify("Main: Quest Init")
 EndEvent
 
 Event Actor.OnPlayerLoadGame(Actor akSender)
@@ -91,15 +91,16 @@ EndEvent
 ; If its a human, it has two outcomes.  If the Victim was aggressive, less sanity and stress are affected, otherwise, higher penalties.
 Event Actor.OnKill(Actor akSender, Actor akVictim)
   if akSender == PlayerRef && akVictim.GetRace() != HumanRace
-    ModifySanity(akSender, -0.1)
-    ModifyStress(akSender, 0.1)
+    ModifySanity(akSender, -0.01)
+    ModifyStress(akSender, 0.01)
   ElseIf akSender == PlayerRef && akVictim.GetRace() == HumanRace
-    if akVictim.GetValue(Game.GetAggressionAV()) >= 2.0
-      ModifySanity(PlayerRef, -0.2)
-      ModifyStress(PlayerRef, 0.2)
+    int Aggro = akVictim.GetValue(Game.GetAggressionAV()) as int
+    if Aggro >= 2.0
+      ModifySanity(akSender, -0.02)
+      ModifyStress(akSender, 0.02)
     Else
-      ModifySanity(PlayerRef, -0.5)
-      ModifyStress(PlayerRef, 0.5)
+      ModifySanity(akSender, -0.5)
+      ModifyStress(akSender, 0.5)
     Endif
   Endif
 EndEvent
@@ -136,11 +137,11 @@ Function IntializeStartup()
 EndFunction
 
 Function DNotify(string text)
-
+  If SD_Framework_Debugging.GetValue() == 1
     Debug.Notification("[SDF] " + text)
+  EndIf
     Debug.Trace("[SDF] " + text, 0) ; just to get started
     Debug.TraceUser(logName, "[SDF] " + text)
-
 EndFunction
 
 Function LoadSDF()
@@ -154,7 +155,7 @@ Function CheckCompanion()
    Actor[] Followers =  Game.GetPlayerFollowers()
    int index = 0
    while index < Followers.Length
-   DNotify("Follower: " + Followers[index].GetLeveledActorBase().GetName())
+   ;DNotify("Follower: " + Followers[index].GetLeveledActorBase().GetName())
    index = index + 1
    EndWhile
 EndFunction
@@ -169,12 +170,13 @@ float function GetSanity(Actor akTarget)
 EndFunction
 
 Function ModifySanity(Actor akTarget, float nSanity)
-   float sanity = GetSanity(akTarget) + nSanity
-   DNotify("Stress: " + sanity + " Adjusted by: " + nSanity)
-    if sanity < 100 && sanity > 0 ; can't go over 100
-      akTarget.ModValue(SD_Sanity, nSanity)
-      SendCustomEvent("OnSanityUpdate")
+   float sanity = nSanity * -1
+    if nSanity < 0
+      akTarget.DamageValue(SD_Sanity, sanity)
+    ElseIf nSanity > 0
+      akTarget.RestoreValue(SD_Sanity, sanity)
     EndIf
+    SendCustomEvent("OnSanityUpdate")
 EndFunction
 
 float function GetAlignment(Actor akTarget)
@@ -182,11 +184,13 @@ float function GetAlignment(Actor akTarget)
 EndFunction
 
 Function ModifyAlignment(Actor akTarget, float nAlign)
-  float align = GetAlignment(akTarget) + nAlign
-  If align <= 100 && align >= -100
-    akTarget.ModValue(SD_Alignment, nAlign)
-    SendCustomEvent("OnAlignmentUpdate")
+  float align = nAlign * -1
+  If nAlign < 0
+    akTarget.DamageValue(SD_Alignment, align)
+  elseif nAlign > 0
+    akTarget.RestoreValue(SD_Alignment, align)
   EndIf
+  SendCustomEvent("OnAlignmentUpdate")
 EndFunction
 
 float function GetStress(Actor akTarget) 
@@ -194,13 +198,15 @@ float function GetStress(Actor akTarget)
 EndFunction
 
 Function ModifyStress(Actor akTarget, float nStress) 
-  float stress = 0
-  stress = GetStress(akTarget) + nStress
-  DNotify("Stress: " + stress + " Adjusted by: " + nStress)
-  if stress <= 100 && stress >=0
-    akTarget.ModValue(SD_Stress, nStress)
-    SendCustomEvent("OnStressUpdate")
+  float stress = nStress * -1
+  
+  if nStress < 0
+    akTarget.DamageValue(SD_Stress, stress)
+  ElseIf nStress > 0
+    akTarget.RestoreValue(SD_Stress, stress)
+    
   EndIf
+  SendCustomEvent("OnStressUpdate")
 EndFunction
 
 Function PopulateTrackedStats()
@@ -250,12 +256,12 @@ Function CalculateTrackedStats()
 EndFunction
 
 Function ShowStatistics()
-  SD_StatisticsMessage.Show(PlayerRef.GetValue(SD_Sanity), PlayerRef.GetValue(SD_Stress), PlayerRef.GetValue(SD_Alignment), SD_AverageSleep.GetValue())
+  SD_StatisticsMessage.Show(PlayerRef.GetValue(SD_Sanity), PlayerRef.GetValue(SD_Stress), PlayerRef.GetValue(SD_Alignment), SD_AverageSleep.GetValue(), SD_DepressionLevel.GetValue(), SD_GriefLevel.GetValue())
 EndFunction
 
 Event FollowersScript.AffinityEvent(FollowersScript akSender, Var[] akArgs)
-  AffinityEventData  aed = akArgs[0] as AffinityEventData
-  DNotify("Affinity Event: " + aed.EventKeyword + " Event Size: " + aed.EventSize + " Event Topic: " + aed.TopicSubType)
+  ;Keyword  aed = akArgs[0] as Keyword
+  ;DNotify("Affinity Event: " + akArgs[0])
 EndEvent
 
 

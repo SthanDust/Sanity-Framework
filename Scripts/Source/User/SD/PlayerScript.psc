@@ -21,6 +21,8 @@ string[] Property DrinkMessages auto
 string[] Property RandomThoughts auto
 string[] Property SleepMessages auto
 int messageFrequency = 20
+
+
  
 
 ;It can't rain all the time, can it?  When you're sad, can you tell the difference between rain and shine, buttercup?
@@ -109,6 +111,7 @@ Function OnTick()
   Endif
   ;don't want to overload the message queue
   DMessage(lastMessage)
+
   StartTimerGameTime(tickFrequency, tickTimerID)
 EndFunction
 
@@ -119,7 +122,6 @@ Function SetSexAttributes()
   trauma = (Game.GetFormFromFile(0x101E80B, "FPAttributes.esp") as GlobalVariable).getValueInt()
   intoxicationLevel = (Game.GetFormFromFile(0x101E80C, "FPAttributes.esp") as GlobalVariable).getValueInt()
   tolerance = CalculateModifiers()
-  DMessage("Tolerance: " + tolerance as string)
 EndFunction
 
 Function EffectWeather()
@@ -166,6 +168,8 @@ Event OnPlayerSleepStop(bool abInterrupted, ObjectReference akBed)
   EndIf
 EndEvent
 
+
+
 ; note, this constant will be a diminishing variable to simulate tolerance.
 Event OnItemEquipped(Form akBaseObject, ObjectReference akReference)
 
@@ -186,7 +190,7 @@ Event OnItemEquipped(Form akBaseObject, ObjectReference akReference)
   EndIf
 EndEvent
 
-Function ModDepression(float val)
+Function ModDepression(float val) 
   float newVal = SD_DepressionLevel.GetValue() + val
   SF_Main.DNotify("Depression: " + SD_DepressionLevel.GetValue() + " Value: " + val)
   if newVal < 0
@@ -214,4 +218,8 @@ EndFunction
 ; These are crucial messages to keep the player engaged in the mod.  A constant reminder that you have other issues to deal with.
 Function DMessage(string text)
    Debug.Notification(text)
+EndFunction
+
+Function LoadSmokes()
+  ;Smoke-able Cigars.esp
 EndFunction
