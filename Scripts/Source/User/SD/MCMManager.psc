@@ -31,36 +31,49 @@ Event OnInit()
     Quest Main = Game.GetFormFromFile(0x0001F59A, "SD_MainFramework.esp") as quest
     SDF = Main as SD:SanityFrameworkQuestScript
     SD_Internal_MCMLoaded.SetValue(0)
-    ;SDF.DNotify("MCM: OnInit")
+    SDF.DNotify("MCM: OnInit")
+    Debug.Notification("MCM: Init")
     if (CheckForMCM(True))
         RegisterForMenuOpenCloseEvent("PauseMenu")
         CheckVersion()
+        SD_Internal_MCMLoaded.SetValue(1)
     endif
     CheckIntegrations()
     RegisterForRemoteEvent(PlayerRef, "OnPlayerLoadGame")
 	RegisterForExternalEvent("OnMCMSettingChange|"+thisMod, "OnMCMSettingChange")
-    SD_Internal_MCMLoaded.SetValue(1)
+    
 EndEvent
 
 Event Actor.OnPlayerLoadGame(Actor akSender)
     ;use this to repeat things
     Quest Main = Game.GetFormFromFile(0x0001F59A, "SD_MainFramework.esp") as quest
     SDF = Main as SD:SanityFrameworkQuestScript
-    CheckIntegrations()
-    ;SDF.DNotify("MCM: PlayerLoad")
+    Debug.Notification("MCM: PlayerLoad")
+    SDF.DNotify("MCM: PlayerLoad")
     if (CheckForMCM())
         RegisterForMenuOpenCloseEvent("PauseMenu")
         CheckVersion()
+        CheckIntegrations()
+        RegisterForRemoteEvent(PlayerRef, "OnPlayerLoadGame")
+        RegisterForExternalEvent("OnMCMSettingChange|"+thisMod, "OnMCMSettingChange")
+        SD_Internal_MCMLoaded.SetValue(1)
     endif
 EndEvent
 
 Function CheckVersion()
+    SDF.DNotify("Checking Version...")
+    Debug.Notification("MCM: Checking Version")
     float current = SD_FVersion.GetValue()
-    float newVersion = MCM.GetModSettingFloat(thisMod, "fVersion")
-    if  current != newVersion
+    float newVersion = 1.22
+    SDF.DNotify("New Version Detected: " + newVersion)
+    if  current < newVersion
+        SDF.DNotify("New Version Detected: " + newVersion)
         SDF.DNotify("Updating...")
         SDF.Stop()
         SDF.Start()
+        While !SDF.IsRunning()
+            Utility.Wait(1)
+        EndWhile
         SDF.DNotify("Update Complete to version ")
         SD_FVersion.SetValue(newVersion)
     EndIf
@@ -92,7 +105,6 @@ Event OnMenuOpenCloseEvent(string asMenuName, bool abOpening)
 EndEvent
 
 Function MCMUpdate()
-    SD_FVersion.SetValue(MCM.GetModSettingFloat(thisMod, "fVersion"))
     SD_Framework_Debugging.SetValue(MCM.GetModSettingBool(thisMod, "bMCMDebugOn:Debug") as float)
     SD_Framework_Enabled.SetValue(MCM.GetModSettingBool(thisMod, "bMCMModEnabled:Globals") as float)
     SD_Setting_ThoughtFrequency.SetValue(MCM.GetModSettingFloat(thisMod, "fMessageFrequency:Globals"))
@@ -101,7 +113,7 @@ EndFunction
 
 function Uninstall()
     SDF.DNotify("Uninstalling Framework.")
-    SD_Internal_FirstLoad.SetValue(0.0)
+    SD_Internal_FirstLoad.SetValue(1.0)
     SD_Internal_MCMLoaded.SetValue(0.0)
     SD_FVersion.SetValue(0.0)
     SDF.DNotify("You may now safely remove this mod from your load order.")
@@ -110,14 +122,18 @@ EndFunction
 
 function ResetMod()
     SDF.DNotify("Resetting the framework... Please wait")
-    SD_Internal_FirstLoad.SetValue(0.0)
-    SD_Internal_MCMLoaded.SetValue(0.0)
+    SD_Internal_FirstLoad.SetValue(1.0)
     SD_FVersion.SetValue(0.0)
     SDF.Stop()
     SDF.Start()
-    CheckVersion()
-    CheckIntegrations()
-    SDF.DNotify("Framework has now reset.  Check your MCM for setting changes")
+    If CheckForMCM()
+        MCMUpdate()
+        CheckIntegrations()
+        SDF.DNotify("Framework has now reset.  Check your MCM for setting changes")
+    Else
+        SDF.DNotify("Error: MCM is not running.")
+    EndIF
+    
 EndFunction
 
 Function CheckIntegrations()

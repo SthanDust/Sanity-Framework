@@ -72,8 +72,8 @@ CustomEvent OnGriefUpdate
 CustomEvent OnTraumaUpdate
 
 Event OnQuestInit()
-  StartTimer(1,0)
   OpenLog()
+  StartTimer(1,0)
 EndEvent
 
 Event Actor.OnPlayerLoadGame(Actor akSender)
@@ -124,14 +124,18 @@ EndEvent
 
 Function IntializeStartup()
   ; Do initial Startup for the quest
-  if (SD_Internal_FirstLoad.GetValue() == 0)
+  if (SD_Internal_FirstLoad.GetValue() == 1.0)
     DNotify("Sanity Framework Initializing...")
     PlayerRef.SetValue(SD_Alignment, baseAlignment)
     PlayerRef.SetValue(SD_Sanity, baseSanity)
     PlayerRef.SetValue(SD_Stress, baseStress)
-    SD_Internal_FirstLoad.SetValue(1)
+    PlayerRef.SetValue(SD_Depression, 0)
+    PlayerRef.SetValue(SD_Grief, 0)
+    PlayerRef.SetValue(SD_Trauma, 0)
+    SD_Internal_FirstLoad.SetValue(0.0)
     SD_FrameworkInit.Show()
   EndIf
+  
   LoadSDF()
   PopulateTrackedStats()
 EndFunction
@@ -147,8 +151,7 @@ EndFunction
 Function LoadSDF()
   RegisterForRemoteEvent(PlayerRef, "OnKill")
   RegisterForHitEvent(PlayerRef)
- 
- CheckCompanion()
+  CheckCompanion()
 EndFunction
 
 Function CheckCompanion()
@@ -163,6 +166,48 @@ EndFunction
 Function OpenLog()
   ;Debug.Notification("Opening Debug Log...")
   Debug.OpenUserLog(logName)
+EndFunction
+
+float function GetDepression(Actor akTarget)
+  return akTarget.GetValue(SD_Depression)
+endfunction
+
+Function ModifyDepression(Actor akTarget, float nDepress)
+  float depress = nDepress * -1
+  If nDepress < 0
+    akTarget.DamageValue(SD_Depression, depress)
+  ElseIf nDepress > 0
+    akTarget.RestoreValue(SD_Depression, depress)
+  EndIf
+  SendCustomEvent("OnDepressionUpdate")
+EndFunction
+
+float Function GetGrief(Actor akTarget)
+  return akTarget.GetValue(SD_Grief)
+EndFunction
+
+Function ModifyGrief(Actor akTarget, float nGrief)
+  float grief = nGrief * -1
+  If nGrief < 0
+    akTarget.DamageValue(SD_Grief, grief)
+  ElseIf nGrief > 0
+    akTarget.RestoreValue(SD_Grief, grief)
+  EndIf
+  SendCustomEvent("OnGriefUpdate")
+EndFunction
+
+float Function GetTrauma(Actor akTarget)
+  return akTarget.GetValue(SD_Trauma)
+EndFunction
+
+Function ModifyTrauma(Actor akTarget, float nTrauma)
+  float trauma = nTrauma * -1
+  If (nTrauma < 0)
+    akTarget.DamageValue(SD_Trauma, trauma)
+  ElseIf (nTrauma > 0)
+    akTarget.RestoreValue(SD_Trauma, trauma)
+  EndIf
+  SendCustomEvent("OnTraumaUpdate")
 EndFunction
 
 float function GetSanity(Actor akTarget)

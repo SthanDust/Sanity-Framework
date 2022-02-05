@@ -96,6 +96,7 @@ Function OnTick()
   Weather w = Weather.GetCurrentWeather()
   if (w.GetClassification() == 2)
     ModDepression(0.005)
+    SF_Main.ModifyDepression(PlayerRef, 0.005)
     int i = Utility.RandomInt(0, WeatherDepressedMessages.Length - 1)
     lastMessage = WeatherDepressedMessages[i]
   Else

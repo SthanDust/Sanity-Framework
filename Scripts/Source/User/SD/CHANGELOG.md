@@ -1,9 +1,8 @@
 - Retooling Git
 - Merge branch 'master' of https://github.com/SthanDust/SanityFramework
-- Set theme jekyll-theme-hacker
+-- Set theme jekyll-theme-hacker
 - Create CNAME
-- Create index.md
-- Set theme jekyll-theme-hacker
+- Create index.md - Set theme jekyll-theme-hacker
 - Create CNAME
 - MCM Work
 - Moved Readme
