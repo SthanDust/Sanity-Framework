@@ -2,7 +2,6 @@
 
 Greetings, Fellow demented Wastelanders!
 
-This is the main site for the Sanity Framework for Fallout 4, as well as any additional Mods I may work on.
 
 # Current Release Notes: 1.22
 
