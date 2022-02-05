@@ -19,7 +19,7 @@
             "html": true
         },
         {
-            "text": "<font size=\"18\"><p align = \"center\">v 1.2a</p></font>",
+            "text": "<font size=\"18\"><p align = \"center\">v 1.23a</p></font>",
             "type": "text",
             "html": true
         },
@@ -33,9 +33,9 @@
             
         },
         {
-            "text": "Special Thanks",
-            "type": "section",
-            "align": "center"
+            "text": "<font size=\"24\"><p align = \"center\">Special Thanks</p></font>",
+            "type": "text",
+            "html": true
         },
         {
             "text": "Special thanks to everyone, literally everyone, on LoversLab.Com.  One of the best Fallout/Skyrim communities I've ever be with.  Inclusion, acceptence, and empathy.  A beautiful Community.",

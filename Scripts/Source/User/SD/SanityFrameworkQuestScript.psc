@@ -11,6 +11,7 @@ string thisMod = "SD_MainFramework"
 string logName = "SanityFramework"
 float hour = 0.04200
 
+
 Group Filter_Properties
   Race[] Property SD_SanityRaces auto
 EndGroup
