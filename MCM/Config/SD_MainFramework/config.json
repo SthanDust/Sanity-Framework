@@ -1,0 +1,202 @@
+{
+    "modName": "SD_MainFramework",
+    "displayName": "Sanity Framework",
+    "minMcmVersion": 2,
+    "content": [
+
+        {
+            "type": "spacer",
+            "numLines": 5
+        },
+        {
+            "text": "<font size=\"48\"><p align = \"center\">Sanity Framework</p></font>",
+            "type": "text",
+            "html": true
+        },
+        {
+            "text": "<font size=\"24\"><p align = \"center\">By Sthan Dust</p></font>",
+            "type": "text",
+            "html": true
+        },
+        {
+            "text": "<font size=\"18\"><p align = \"center\">v 1.2a</p></font>",
+            "type": "text",
+            "html": true
+        },
+        {
+            "type": "spacer"
+        },
+        {
+            "text": "Keeping Players and Characters Sane or Insane since 2077",
+            "type": "text",
+            "align": "center"
+            
+        },
+        {
+            "text": "Special Thanks",
+            "type": "section",
+            "align": "center"
+        },
+        {
+            "text": "Special thanks to everyone, literally everyone, on LoversLab.Com.  One of the best Fallout/Skyrim communities I've ever be with.  Inclusion, acceptence, and empathy.  A beautiful Community.",
+            "type": "text",
+            "align": "center"
+        }
+
+
+    ],
+    "pages": [
+        {
+            "pageDisplayName": "Settings",
+            "content":[
+                {
+                    "text": "Global Settings",
+                    "align": "Left",
+                    "type": "section"
+                },
+                {
+                    "id": "bMCMModEnabled:Globals",
+                    "text": "Mod On/Off",
+                    "type": "switcher",
+                    "help": "Enable/Disable SanityFramework from this mod. Default: Off (Not Currently Implemented)",
+                    "valueOptions": {
+                        "sourceType": "ModSettingBool"
+                    }
+                },
+                {
+                    "id": "fMessageFrequency:Globals",
+                    "text": "Thought Frequency",
+                    "help": "How often you'll hear the voices in your head",
+                    "type": "slider",
+                    "valueOptions": {
+                        "min": 1,
+                        "max": 100,
+                        "step": 1,
+                        "sourceType": "ModSettingFloat"
+                    }
+                },
+                {
+                    "text": "Mod Integrations",
+                    "align": "Left",
+                    "type": "section"
+                },
+                {
+                    "id": "bEnableAFV:Integrate",
+                    "text": "AAF Violate",
+                    "help": "Turns off Violate Integration",
+                    "type": "switcher",
+                    "valueOptions": {
+                        "sourceType": "ModSettingBool"
+                    }
+                },
+                {
+                    "id": "bEnableFPE:Integrate",
+                    "text": "Family Planning Enhanced Redux",
+                    "help": "Turns off FPER Integration.",
+                    "type": "switcher",
+                    "valueOptions": {
+                        "sourceType": "ModSettingBool"
+                    }
+                },
+                {
+                    "id": "bEnableWLD:Integrate",
+                    "text": "Wasteland Dairy Framework",
+                    "help": "Turns off Wasteland Dairy Framework Integration.",
+                    "type": "switcher",
+                    "valueOptions": {
+                        "sourceType": "ModSettingBool"
+                    }
+                },
+                {
+                    "id": "bEnableHBW:Integrate",
+                    "text": "Hardship Beggar Whore",
+                    "help": "Turns off Hardship Beggar Whore Integration.",
+                    "type": "switcher",
+                    "valueOptions": {
+                        "sourceType": "ModSettingBool"
+                    }
+                }
+            ]
+        },
+        {
+            "pageDisplayName": "Debug",
+            "content": [
+                {
+                    "text": "Debug",
+                    "align": "center",
+                    "type": "section"
+                },
+                {
+                    "id": "bMCMDebugOn:Debug",
+                    "text": "Notifications On/Off",
+                    "type": "switcher",
+                    "help": "Enable/Disable Debug Notifications. Default: Off",
+                    "valueOptions": {
+                        "sourceType": "ModSettingBool"
+                    }
+                },
+                {
+                    "text": "Uninstall Mod",
+                    "type": "button",
+                    "help": "Click this button then exit MCM.",
+                    "action":{ 
+                        "type": "CallFunction",
+                        "form": "SD_MainFramework.esp|5B92",
+                        "function": "Uninstall"
+                    }
+                },
+                {
+                    "text": "Show Statistics",
+                    "type": "button",
+                    "help": "Displays calculates statistics for the player.  Exit MCM to see message.",
+                    "action": {
+                        "type": "CallFunction",
+                        "form": "SD_MainFramework.esp|1F59A",
+                        "function": "ShowStatistics"
+                    }
+                },
+                {
+                    "text": "Reset Mod",
+                    "type": "button",
+                    "help": "Resets the mod back to the beginning.",
+                    "action": {
+                        "type": "CallFunction",
+                        "form": "SD_MainFramework.esp|5B92",
+                        "function": "ResetMod"
+                    }
+                }
+            ]
+        },
+        {
+            "pageDisplayName": "Help",
+            "content": [
+                {
+                    "text": "The Sanity Framework:",
+                    "align": "Left",
+                    "type": "section"
+                },
+                {
+                    "text": "This framework was intended to allow the PC to experience mental effects as a result of various things that happen in game.  Many current mental health mods are focused on sexual assault or drug addiction.  This mod integrates with several of those mods.",
+                    "type": "text"
+                },
+                {
+                    "text": "What to Expect:",
+                    "align": "Left",
+                    "type": "section"
+                },
+                {
+                    "text": "There are several factors that go into a player's sanity, which include combat, encounters, addiction, sexual depravity, and simply existing in the wasteland.",
+                    "type": "text"
+                },
+                {
+                    "text": "Three new Actor Values have been added for tracking the mental state of the Player: Stress, Sanity and Alignment.  Sanity is the current player sanity, and is measured between 100 and 0.  Stress is a measure of the player's current stress levels.  This has a decay associated with it as time passes, or medication is taken.  Alignment is how evil or good the player is as a result of their actions.",
+                    "type": "text"
+                },
+                {
+                    "text": "All players start off with 3 hidden variables, with associated perks/debuffs: Depression, Grief and long term Trauma.  These will manifest themselves in a variety of new ways.  There will be clues given throughout the game via notifications, as well as journal pages you will find throughout the wasteland.",
+                    "type": "text"
+                }
+            ]
+        }
+    ]
+}
