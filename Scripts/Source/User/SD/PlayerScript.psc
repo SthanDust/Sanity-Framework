@@ -13,14 +13,17 @@ Keyword Property ObjectTypeAlcohol auto
 Keyword Property ObjectTypeChem auto
 Keyword Property AnimFaceArchetypeDepressed auto
 ;voices in my head can't stay quiet
-string[] Property WeatherDepressedMessages auto
-string[] Property DrugMessages auto
-string[] Property DrinkMessages auto
-string[] Property RandomThoughts auto
-string[] Property SleepMessages auto
+
 int messageFrequency = 20
 
 Keyword Property SD_RandomThought auto 
+Keyword Property SD_RandomDrugThought auto 
+Keyword Property SD_RandomDrinkThought auto 
+Keyword Property SD_RandomDepressionThought auto 
+Keyword Property SD_RandomWeatherThought auto 
+Keyword Property SD_RandomGriefThought auto 
+Keyword Property SD_RandomStressThought auto 
+Keyword Property SD_RandomSleepThought auto 
 
 
  
@@ -99,8 +102,7 @@ Function OnTick()
   if (w.GetClassification() == 2)
     
     SF_Main.ModifyDepression(PlayerRef, 0.005 + tolerance)
-    int i = Utility.RandomInt(0, WeatherDepressedMessages.Length - 1)
-    lastMessage = WeatherDepressedMessages[i]
+    PlayerRef.SayCustom(SD_RandomDepressionThought, PlayerRef, true, None) 
   Else
     
     SF_Main.ModifyDepression(PlayerRef, -0.005 + negTolerance)
@@ -112,10 +114,7 @@ Function OnTick()
   if Utility.RandomInt() < messageFrequency
     PlayerRef.SayCustom(SD_RandomThought, PlayerRef, true, None)    
   Endif
-  
-  
-  ;don't want to overload the message queue
-  DMessage(lastMessage)
+
 
   StartTimerGameTime(tickFrequency, tickTimerID)
 EndFunction
@@ -143,29 +142,34 @@ EndEvent
 
 Event OnPlayerSleepStop(bool abInterrupted, ObjectReference akBed)
   float x = Utility.GetCurrentGameTime();
+  bool alreadySaid = false
+  float rng =  Utility.RandomFloat() * 100
   ;You can't be happy if you want to sleep 8 hours and only get 5.  No stress relief for you otherwise.  That's why it's called desired sleep time, silly.
   if x >= iSleepDesired && !abInterrupted
     SF_Main.ModifyStress(PlayerRef, -0.5)
   Else
     if Utility.RandomInt() < messageFrequency
-      int s = Utility.RandomInt(0, SleepMessages.Length - 1)
-      DMessage(SleepMessages[s])
+      PlayerRef.SayCustom(SD_RandomSleepThought, PlayerRef, true, None)    
+      alreadySaid = true
     Endif
   endif
   
   If (Shaun.IsDead())
     ; code to deal with him when i get to him <3
   Else
+    rng = Utility.RandomFloat() * 100
     SF_Main.ModifyDepression(PlayerRef, 0.05 + tolerance)
-    SF_Main.ModifyGrief(PlayerRef, 0.05 + Tolerance)
+    SF_Main.ModifyGrief(PlayerRef, 0.05 + tolerance)
+    If !alreadySaid && rng < SF_Main.GetGrief(PlayerRef)
+      PlayerRef.SayCustom(SD_RandomGriefThought, PlayerRef, true, None)  
+    EndIf
   EndIf
-  float rng =  Utility.RandomFloat() * 100
+  
   
   If (rng < SF_Main.GetDepression(PlayerRef))
     EffectWeather()
-    if Weather.GetCurrentWeather().GetClassification() == 2
-      int i = Utility.RandomInt(0, WeatherDepressedMessages.Length - 1)
-      DMessage(WeatherDepressedMessages[i])
+    if Weather.GetCurrentWeather().GetClassification() == 2 && !alreadySaid
+      PlayerRef.SayCustom(SD_RandomDepressionThought, PlayerRef, true, None)   
     EndIF
   EndIf
 EndEvent
@@ -179,15 +183,13 @@ Event OnItemEquipped(Form akBaseObject, ObjectReference akReference)
     SF_Main.ModifyStress(PlayerRef, -0.05 + negTolerance)
     SF_Main.ModifyDepression(PlayerRef, -0.05 + negTolerance)
     if Utility.RandomInt() < messageFrequency
-      int a = Utility.RandomInt(0, DrinkMessages.Length - 1)
-      DMessage(DrinkMessages[a])
+      PlayerRef.SayCustom(SD_RandomDrinkThought, PlayerRef, true, None)   
     endif
   elseif akReference == PlayerRef || akBaseObject.HasKeyword(ObjectTypeChem)
     SF_Main.ModifyStress(PlayerRef, -0.5 + negTolerance)
     SF_Main.ModifyDepression(PlayerRef, -0.5 + negTolerance)
     if Utility.RandomInt() < messageFrequency
-      int d = Utility.RandomInt(0, DrugMessages.Length - 1)
-      DMessage(DrugMessages[d])
+      PlayerRef.SayCustom(SD_RandomDrugThought, PlayerRef, true, None)   
     endif
   EndIf
 EndEvent
