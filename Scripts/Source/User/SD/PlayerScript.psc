@@ -55,6 +55,7 @@ float function CalculateModifiers()
 
   float DecayModifier = (weightWill * willpower) + (weightEsteem * selfesteem) + (weightSpirit * spirit) + (weightTrauma * (trauma * 20))
   float finalVal = (DecayModifier / baseNormal) + baseDecay
+  ;
   ;DMessage("Decay : " + finalVal)
   return finalVal
 EndFunction
