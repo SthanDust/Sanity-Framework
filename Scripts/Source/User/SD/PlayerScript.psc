@@ -4,9 +4,7 @@ Scriptname SD:PlayerScript extends ReferenceAlias
 Actor Property PlayerRef auto
 Actor Property Shaun auto
 
-GlobalVariable Property SD_DepressionLevel auto
-GlobalVariable Property SD_GriefLevel auto
-GlobalVariable Property SD_TraumaLevel auto
+
 GlobalVariable Property SD_Setting_ThoughtFrequency auto
 GlobalVariable Property SD_Haha auto ;Do you believe in god?  Do you read comments?
 GlobalVariable Property SD_HumanFactor auto ; -1 missing a member and +1 you have the member
@@ -22,12 +20,14 @@ string[] Property RandomThoughts auto
 string[] Property SleepMessages auto
 int messageFrequency = 20
 
+Keyword Property SD_RandomThought auto 
+
 
  
 
 ;It can't rain all the time, can it?  When you're sad, can you tell the difference between rain and shine, buttercup?
 Weather RainyWeather
-Weather CloudyWeather
+
 SD:SanityFrameworkQuestScript SF_Main
 float tickFrequency = 1.0
 int tickTimerID = 34
@@ -44,6 +44,7 @@ int trauma
 int intoxicationLevel
 ;this will be replaced with a function to reduce or improve tolerance over time.   
 float tolerance = 0.0
+float negTolerance = 0.0
 float baseDecay = 0.01
 
 float function CalculateModifiers()
@@ -56,7 +57,6 @@ float function CalculateModifiers()
   float DecayModifier = (weightWill * willpower) + (weightEsteem * selfesteem) + (weightSpirit * spirit) + (weightTrauma * (trauma * 20))
   float finalVal = (DecayModifier / baseNormal) + baseDecay
   ;
-  ;DMessage("Decay : " + finalVal)
   return finalVal
 EndFunction
 
@@ -65,7 +65,7 @@ Event OnInit()
 EndEvent
 
 Event OnPlayerLoadGame()
-    StartTimer(5, 1)
+    StartTimer(3, 1)
 EndEvent
 
 Event OnTimer(int aiTimerID)
@@ -92,25 +92,28 @@ Function OnTick()
   string lastMessage;
 
   tolerance = CalculateModifiers()
+  negTolerance = tolerance * -1
   
   ;What's the weather like
   Weather w = Weather.GetCurrentWeather()
   if (w.GetClassification() == 2)
-    ModDepression(0.005)
-    SF_Main.ModifyDepression(PlayerRef, 0.005)
+    
+    SF_Main.ModifyDepression(PlayerRef, 0.005 + tolerance)
     int i = Utility.RandomInt(0, WeatherDepressedMessages.Length - 1)
     lastMessage = WeatherDepressedMessages[i]
   Else
-    ModDepression(-0.005)
+    
+    SF_Main.ModifyDepression(PlayerRef, -0.005 + negTolerance)
     If !PlayerRef.IsInCombat()
-      SF_Main.ModifyStress(PlayerRef, -0.5)
+    SF_Main.ModifyStress(PlayerRef, -0.5 + negTolerance)
     EndIf
   EndIf
   ;The voices in my head
   if Utility.RandomInt() < messageFrequency
-    int r = Utility.RandomInt(0, RandomThoughts.Length)
-    lastMessage = RandomThoughts[r]
+    PlayerRef.SayCustom(SD_RandomThought, PlayerRef, true, None)    
   Endif
+  
+  
   ;don't want to overload the message queue
   DMessage(lastMessage)
 
@@ -128,12 +131,9 @@ EndFunction
 
 Function EffectWeather()
     RainyWeather = Weather.FindWeather(2)
-    CloudyWeather = Weather.FindWeather(1)
     int s = Utility.RandomInt()
     if s < 50
       RainyWeather.SetActive()
-    Else
-      CloudyWeather.SetActive()
     endif 
 EndFunction
 
@@ -156,12 +156,12 @@ Event OnPlayerSleepStop(bool abInterrupted, ObjectReference akBed)
   If (Shaun.IsDead())
     ; code to deal with him when i get to him <3
   Else
-    ModDepression(0.05)
-    ModGrief(0.05)
+    SF_Main.ModifyDepression(PlayerRef, 0.05 + tolerance)
+    SF_Main.ModifyGrief(PlayerRef, 0.05 + Tolerance)
   EndIf
   float rng =  Utility.RandomFloat() * 100
   
-  If (rng < SD_DepressionLevel.GetValue())
+  If (rng < SF_Main.GetDepression(PlayerRef))
     EffectWeather()
     if Weather.GetCurrentWeather().GetClassification() == 2
       int i = Utility.RandomInt(0, WeatherDepressedMessages.Length - 1)
@@ -176,15 +176,15 @@ EndEvent
 Event OnItemEquipped(Form akBaseObject, ObjectReference akReference)
 
   if akReference == PlayerRef && akBaseObject.HasKeyword(ObjectTypeAlcohol)
-    SF_Main.ModifyStress(PlayerRef, -0.5)
-    ModDepression(tolerance)
+    SF_Main.ModifyStress(PlayerRef, -0.05 + negTolerance)
+    SF_Main.ModifyDepression(PlayerRef, -0.05 + negTolerance)
     if Utility.RandomInt() < messageFrequency
       int a = Utility.RandomInt(0, DrinkMessages.Length - 1)
       DMessage(DrinkMessages[a])
     endif
   elseif akReference == PlayerRef || akBaseObject.HasKeyword(ObjectTypeChem)
-    SF_Main.ModifyStress(PlayerRef, -0.5)
-    ModDepression(tolerance * -1)
+    SF_Main.ModifyStress(PlayerRef, -0.5 + negTolerance)
+    SF_Main.ModifyDepression(PlayerRef, -0.5 + negTolerance)
     if Utility.RandomInt() < messageFrequency
       int d = Utility.RandomInt(0, DrugMessages.Length - 1)
       DMessage(DrugMessages[d])
@@ -192,30 +192,6 @@ Event OnItemEquipped(Form akBaseObject, ObjectReference akReference)
   EndIf
 EndEvent
 
-Function ModDepression(float val) 
-  float newVal = SD_DepressionLevel.GetValue() + val
-  SF_Main.DNotify("Depression: " + SD_DepressionLevel.GetValue() + " Value: " + val)
-  if newVal < 0
-    SD_DepressionLevel.SetValue(0.0)
-  elseif newVal > 100
-    SD_DepressionLevel.SetValue(100)
-  Else
-    SD_DepressionLevel.SetValue(newVal)
-  endif
-  
-EndFunction
-
-Function ModGrief(float val)
-  float newVal = SD_GriefLevel.GetValue() + val
-  SF_Main.DNotify("Grief: " + SD_GriefLevel.GetValue() + " Increased by: " + val)
-  if newVal < 0
-    SD_GriefLevel.SetValue(0.0)
-  Elseif newVal > 100
-    SD_GriefLevel.SetValue(100.0)
-  Else 
-    SD_GriefLevel.SetValue(newVal)
-  EndIf
-EndFunction
 
 ; These are crucial messages to keep the player engaged in the mod.  A constant reminder that you have other issues to deal with.
 Function DMessage(string text)

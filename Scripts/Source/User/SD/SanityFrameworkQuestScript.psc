@@ -28,9 +28,6 @@ Group Actor_Values
   ActorValue Property SD_Grief auto Mandatory
   ActorValue Property SD_Trauma auto Mandatory
   Race Property HumanRace auto const
-  GlobalVariable Property SD_DepressionLevel auto
-  GlobalVariable Property SD_GriefLevel auto
-  GlobalVariable Property SD_TraumaLevel auto
   Quest Property SD_PlayerQuest auto 
 EndGroup
 
@@ -132,12 +129,24 @@ Function IntializeStartup()
     PlayerRef.SetValue(SD_Depression, 0)
     PlayerRef.SetValue(SD_Grief, 0)
     PlayerRef.SetValue(SD_Trauma, 0)
+    ResetActorValues()
     SD_Internal_FirstLoad.SetValue(0.0)
     SD_FrameworkInit.Show()
   EndIf
   
   LoadSDF()
   PopulateTrackedStats()
+EndFunction
+
+Function ResetActorValues()
+  ;to be removed
+  DNotify("Resetting Actor Values.")
+
+    PlayerRef.RestoreValue(SD_Sanity, 100)
+    PlayerRef.RestoreValue(SD_Stress, 100)
+    PlayerRef.DamageValue(SD_Depression, 10)
+    PlayerRef.DamageValue(SD_Grief, 10)
+    PlayerRef.DamageValue(SD_Trauma, 5)
 EndFunction
 
 Function DNotify(string text)
@@ -158,7 +167,6 @@ Function CheckCompanion()
    Actor[] Followers =  Game.GetPlayerFollowers()
    int index = 0
    while index < Followers.Length
-   ;DNotify("Follower: " + Followers[index].GetLeveledActorBase().GetName())
    index = index + 1
    EndWhile
 EndFunction
@@ -301,7 +309,8 @@ Function CalculateTrackedStats()
 EndFunction
 
 Function ShowStatistics()
-  SD_StatisticsMessage.Show(PlayerRef.GetValue(SD_Sanity), PlayerRef.GetValue(SD_Stress), PlayerRef.GetValue(SD_Alignment), SD_AverageSleep.GetValue(), SD_DepressionLevel.GetValue(), SD_GriefLevel.GetValue())
+  DNotify("Version: " + MCM.GetModSettingFloat(thisMod, "fVersion"))
+  SD_StatisticsMessage.Show(PlayerRef.GetValue(SD_Sanity), PlayerRef.GetValue(SD_Stress), PlayerRef.GetValue(SD_Alignment), SD_AverageSleep.GetValue(), self.GetDepression(PlayerRef), self.GetGrief(PlayerRef))
 EndFunction
 
 Event FollowersScript.AffinityEvent(FollowersScript akSender, Var[] akArgs)

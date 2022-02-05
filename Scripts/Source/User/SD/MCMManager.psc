@@ -3,6 +3,7 @@ Scriptname SD:MCMManager extends Quest
 
 SD:SanityFrameworkQuestScript SDF
 string thisMod = "SD_MainFramework"
+string logName = "SanityFramework"
 Group General 
     Actor Property PlayerRef auto const 
     GlobalVariable Property SD_FVersion auto 
@@ -15,6 +16,8 @@ Group General
     GlobalVariable Property SD_Setting_Integrate_HBW auto
     GlobalVariable Property SD_Internal_MCMLoaded auto 
     GlobalVariable Property SD_Internal_FirstLoad auto
+    ActorValue property SD_Sanity auto 
+    ActorValue property SD_Stress auto
     Message Property SD_FrameworkInit Auto
     Message Property SD_StatisticsMessage auto
     GlobalVariable Property SD_Setting_ThoughtFrequency auto
@@ -28,27 +31,28 @@ import Game
 
 
 Event OnInit()
+    OpenLog()
     Quest Main = Game.GetFormFromFile(0x0001F59A, "SD_MainFramework.esp") as quest
     SDF = Main as SD:SanityFrameworkQuestScript
     SD_Internal_MCMLoaded.SetValue(0)
-    SDF.DNotify("MCM: OnInit")
-    Debug.Notification("MCM: Init")
+    DNotify(logName, "MCM: OnInit")
     if (CheckForMCM(True))
         RegisterForMenuOpenCloseEvent("PauseMenu")
         CheckVersion()
+        CheckIntegrations()
         SD_Internal_MCMLoaded.SetValue(1)
     endif
-    CheckIntegrations()
+   
     RegisterForRemoteEvent(PlayerRef, "OnPlayerLoadGame")
 	RegisterForExternalEvent("OnMCMSettingChange|"+thisMod, "OnMCMSettingChange")
     
 EndEvent
 
 Event Actor.OnPlayerLoadGame(Actor akSender)
+    OpenLog()
     ;use this to repeat things
     Quest Main = Game.GetFormFromFile(0x0001F59A, "SD_MainFramework.esp") as quest
     SDF = Main as SD:SanityFrameworkQuestScript
-    Debug.Notification("MCM: PlayerLoad")
     SDF.DNotify("MCM: PlayerLoad")
     if (CheckForMCM())
         RegisterForMenuOpenCloseEvent("PauseMenu")
@@ -60,33 +64,56 @@ Event Actor.OnPlayerLoadGame(Actor akSender)
     endif
 EndEvent
 
+Function OpenLog()
+  ;Debug.Notification("Opening Debug Log...")
+  Debug.OpenUserLog(logName)
+EndFunction
+
 Function CheckVersion()
-    SDF.DNotify("Checking Version...")
-    Debug.Notification("MCM: Checking Version")
+    
+   
     float current = SD_FVersion.GetValue()
-    float newVersion = 1.22
-    SDF.DNotify("New Version Detected: " + newVersion)
+    DNotify(logName, "MCM: Checking Version: " + current)
+    float newVersion = 1.23
+    
+
     if  current < newVersion
-        SDF.DNotify("New Version Detected: " + newVersion)
-        SDF.DNotify("Updating...")
+        DNotify(logName, "MCM: New Version Detected: " + newVersion)
+        DNotify(logName, "MCM: Updating...")
         SDF.Stop()
         SDF.Start()
-        While !SDF.IsRunning()
-            Utility.Wait(1)
-        EndWhile
-        SDF.DNotify("Update Complete to version ")
+        DNotify(logName, "MCM: Update Complete to version " + newVersion)
         SD_FVersion.SetValue(newVersion)
+        MCM.SetModSettingFloat(thisMod, "fVersion", newVersion)
+    Else
+        DNotify(logName, "MCM: Update not Needed for v" + current)
     EndIf
+
+    ;will be removed
+    if (current < 1.22) 
+      float sanity = PlayerRef.GetValue(SD_Sanity)
+      float stress = PlayerRef.GetValue(SD_Stress)
+      if sanity < 100
+        PlayerRef.ModValue(SD_Sanity, 100.0 - sanity)
+      EndIf
+      if stress > 0
+          PlayerRef.ModValue(SD_Stress, stress * -1)
+      EndIF
+    EndIf
+
 EndFunction
+
+; one time function that will be removed after this release
+
 
 bool Function CheckForMCM(bool FirstLoad = false)
     ;SDF.DNotify("Checking MCM...")
     If !MCM.IsInstalled()
         If (FirstLoad)
             Utility.Wait(1.0)
-            SDF.DNotify("Waiting for MCM to be found")
+            DNotify(logName, "Waiting for MCM to be found")
         else 
-            SDF.DNotify("Reinstall the MCM then reset Sanity Framework.")
+            DNotify(logName, "Reinstall the MCM then reset Sanity Framework.")
         EndIf
         Return false
     EndIf
@@ -108,30 +135,30 @@ Function MCMUpdate()
     SD_Framework_Debugging.SetValue(MCM.GetModSettingBool(thisMod, "bMCMDebugOn:Debug") as float)
     SD_Framework_Enabled.SetValue(MCM.GetModSettingBool(thisMod, "bMCMModEnabled:Globals") as float)
     SD_Setting_ThoughtFrequency.SetValue(MCM.GetModSettingFloat(thisMod, "fMessageFrequency:Globals"))
-    ;SDF.DNotify("MCM: Setting Updated")
 EndFunction
 
 function Uninstall()
-    SDF.DNotify("Uninstalling Framework.")
+    DNotify(logName,"Uninstalling Framework.")
     SD_Internal_FirstLoad.SetValue(1.0)
     SD_Internal_MCMLoaded.SetValue(0.0)
     SD_FVersion.SetValue(0.0)
-    SDF.DNotify("You may now safely remove this mod from your load order.")
+    DNotify(logName,"You may now safely remove this mod from your load order.")
     SDF.Stop()
 EndFunction
 
 function ResetMod()
-    SDF.DNotify("Resetting the framework... Please wait")
+    DNotify(logName,"Resetting the framework... Please wait")
     SD_Internal_FirstLoad.SetValue(1.0)
     SD_FVersion.SetValue(0.0)
+    
     SDF.Stop()
     SDF.Start()
     If CheckForMCM()
         MCMUpdate()
         CheckIntegrations()
-        SDF.DNotify("Framework has now reset.  Check your MCM for setting changes")
+        DNotify(logName,"Framework has now reset.  Check your MCM for setting changes")
     Else
-        SDF.DNotify("Error: MCM is not running.")
+        DNotify(logName,"Error: MCM is not running.")
     EndIF
     
 EndFunction
@@ -147,4 +174,12 @@ Function CheckIntegrations()
   MCM.SetModSettingBool(thisMod, "bEnableWLD", SD_Setting_Integrate_WLD.GetValue() as bool)
   SD_Setting_Integrate_JB.SetValue(Game.IsPluginInstalled("Just Business.esp") as float)
   MCM.SetModSettingBool(thisMod, "bEnableJB", SD_Setting_Integrate_FPE as bool)
+EndFunction
+
+Function DNotify(string lname, string text)
+  If SD_Framework_Debugging.GetValue() == 1
+    Debug.Notification("[SDF] " + text)
+  EndIf
+    Debug.Trace("[SDF] " + text, 0) ; just to get started
+    Debug.TraceUser(lname, "[SDF] " + text)
 EndFunction
