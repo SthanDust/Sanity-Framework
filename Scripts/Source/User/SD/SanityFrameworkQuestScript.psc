@@ -105,9 +105,9 @@ EndEvent
 
 Event OnHit(ObjectReference akTarget, ObjectReference akAggressor, Form akSource, Projectile akProjectile, bool abPowerAttack, bool abSneakAttack, bool abBashAttack, bool abHitBlocked, string apMaterial)
    If akTarget != PlayerRef
-      ModifyStress(PlayerRef, -0.005)
+      ModifyStress(PlayerRef, -0.002)
    ElseIf akTarget == PlayerRef
-      ModifyStress(PlayerRef, 0.005)
+      ModifyStress(PlayerRef, -0.005)
    EndIf
    RegisterForHitEvent(PlayerRef)
 EndEvent
@@ -142,12 +142,13 @@ EndFunction
 Function ResetActorValues()
   ;to be removed
   DNotify("Resetting Actor Values.")
-
-    PlayerRef.RestoreValue(SD_Sanity, 100)
-    PlayerRef.RestoreValue(SD_Stress, 100)
-    PlayerRef.DamageValue(SD_Depression, 10)
-    PlayerRef.DamageValue(SD_Grief, 10)
-    PlayerRef.DamageValue(SD_Trauma, 5)
+  PlayerRef.RestoreValue(SD_Sanity, 100)
+  PlayerRef.RestoreValue(SD_Stress, 100)
+  PlayerRef.RestoreValue(SD_Depression, 100)
+  PlayerRef.RestoreValue(SD_Grief, 100)
+  PlayerRef.DamageValue(SD_Depression, 10)
+  PlayerRef.DamageValue(SD_Grief, 10)
+  PlayerRef.DamageValue(SD_Trauma, 5)
 EndFunction
 
 Function DNotify(string text)
@@ -182,11 +183,11 @@ float function GetDepression(Actor akTarget)
 endfunction
 
 Function ModifyDepression(Actor akTarget, float nDepress)
-  float depress = nDepress * -1
+  
   If nDepress < 0
-    akTarget.DamageValue(SD_Depression, depress)
+    akTarget.DamageValue(SD_Depression, ndepress)
   ElseIf nDepress > 0
-    akTarget.RestoreValue(SD_Depression, depress)
+    akTarget.RestoreValue(SD_Depression, ndepress)
   EndIf
   SendCustomEvent("OnDepressionUpdate")
 EndFunction
@@ -196,11 +197,11 @@ float Function GetGrief(Actor akTarget)
 EndFunction
 
 Function ModifyGrief(Actor akTarget, float nGrief)
-  float grief = nGrief * -1
+  
   If nGrief < 0
-    akTarget.DamageValue(SD_Grief, grief)
+    akTarget.DamageValue(SD_Grief, ngrief)
   ElseIf nGrief > 0
-    akTarget.RestoreValue(SD_Grief, grief)
+    akTarget.RestoreValue(SD_Grief, ngrief)
   EndIf
   SendCustomEvent("OnGriefUpdate")
 EndFunction
@@ -210,11 +211,11 @@ float Function GetTrauma(Actor akTarget)
 EndFunction
 
 Function ModifyTrauma(Actor akTarget, float nTrauma)
-  float trauma = nTrauma * -1
+  
   If (nTrauma < 0)
-    akTarget.DamageValue(SD_Trauma, trauma)
+    akTarget.DamageValue(SD_Trauma, Ntrauma)
   ElseIf (nTrauma > 0)
-    akTarget.RestoreValue(SD_Trauma, trauma)
+    akTarget.RestoreValue(SD_Trauma, ntrauma)
   EndIf
   SendCustomEvent("OnTraumaUpdate")
 EndFunction
@@ -224,11 +225,11 @@ float function GetSanity(Actor akTarget)
 EndFunction
 
 Function ModifySanity(Actor akTarget, float nSanity)
-   float sanity = nSanity * -1
+   
     if nSanity < 0
-      akTarget.DamageValue(SD_Sanity, sanity)
+      akTarget.DamageValue(SD_Sanity, nSanity)
     ElseIf nSanity > 0
-      akTarget.RestoreValue(SD_Sanity, sanity)
+      akTarget.RestoreValue(SD_Sanity, nSanity)
     EndIf
     SendCustomEvent("OnSanityUpdate")
 EndFunction
@@ -238,11 +239,11 @@ float function GetAlignment(Actor akTarget)
 EndFunction
 
 Function ModifyAlignment(Actor akTarget, float nAlign)
-  float align = nAlign * -1
+  
   If nAlign < 0
-    akTarget.DamageValue(SD_Alignment, align)
+    akTarget.DamageValue(SD_Alignment, nalign)
   elseif nAlign > 0
-    akTarget.RestoreValue(SD_Alignment, align)
+    akTarget.RestoreValue(SD_Alignment, nalign)
   EndIf
   SendCustomEvent("OnAlignmentUpdate")
 EndFunction
@@ -252,12 +253,12 @@ float function GetStress(Actor akTarget)
 EndFunction
 
 Function ModifyStress(Actor akTarget, float nStress) 
-  float stress = nStress * -1
+  
   
   if nStress < 0
-    akTarget.DamageValue(SD_Stress, stress)
+    akTarget.DamageValue(SD_Stress, nstress)
   ElseIf nStress > 0
-    akTarget.RestoreValue(SD_Stress, stress)
+    akTarget.RestoreValue(SD_Stress, nstress)
     
   EndIf
   SendCustomEvent("OnStressUpdate")
@@ -310,7 +311,6 @@ Function CalculateTrackedStats()
 EndFunction
 
 Function ShowStatistics()
-  DNotify("Version: " + MCM.GetModSettingFloat(thisMod, "fVersion"))
   SD_StatisticsMessage.Show(PlayerRef.GetValue(SD_Sanity), PlayerRef.GetValue(SD_Stress), PlayerRef.GetValue(SD_Alignment), SD_AverageSleep.GetValue(), self.GetDepression(PlayerRef), self.GetGrief(PlayerRef))
 EndFunction
 

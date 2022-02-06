@@ -94,28 +94,28 @@ EndEvent
 Function OnTick()
   string lastMessage;
 
-  tolerance = CalculateModifiers()
-  negTolerance = tolerance * -1
+  SetSexAttributes()
   
+  bool alreadySaid = false
   ;What's the weather like
   Weather w = Weather.GetCurrentWeather()
   if (w.GetClassification() == 2)
     
-    SF_Main.ModifyDepression(PlayerRef, 0.005 + tolerance)
-    PlayerRef.SayCustom(SD_RandomDepressionThought, PlayerRef, true, None) 
-  Else
-    
     SF_Main.ModifyDepression(PlayerRef, -0.005 + negTolerance)
+    if !alreadySaid && (Utility.RandomInt(0,100) < SF_Main.GetDepression(PlayerRef))
+      PlayerRef.SayCustom(SD_RandomDepressionThought, PlayerRef, true, None) 
+      alreadySaid = true
+    EndIf
+    
+  Else
     If !PlayerRef.IsInCombat()
-    SF_Main.ModifyStress(PlayerRef, -0.5 + negTolerance)
+    SF_Main.ModifyStress(PlayerRef, 0.5 + tolerance)
     EndIf
   EndIf
   ;The voices in my head
-  if Utility.RandomInt() < messageFrequency
+  if (Utility.RandomInt() < messageFrequency) && !alreadySaid
     PlayerRef.SayCustom(SD_RandomThought, PlayerRef, true, None)    
   Endif
-
-
   StartTimerGameTime(tickFrequency, tickTimerID)
 EndFunction
 
@@ -126,6 +126,7 @@ Function SetSexAttributes()
   trauma = (Game.GetFormFromFile(0x101E80B, "FPAttributes.esp") as GlobalVariable).getValueInt()
   intoxicationLevel = (Game.GetFormFromFile(0x101E80C, "FPAttributes.esp") as GlobalVariable).getValueInt()
   tolerance = CalculateModifiers()
+  negTolerance = tolerance * -1
 EndFunction
 
 Function EffectWeather()
@@ -148,7 +149,7 @@ Event OnPlayerSleepStop(bool abInterrupted, ObjectReference akBed)
   if x >= iSleepDesired && !abInterrupted
     SF_Main.ModifyStress(PlayerRef, -0.5)
   Else
-    if Utility.RandomInt() < messageFrequency
+    if Utility.RandomInt(0,100) < messageFrequency && !alreadySaid
       PlayerRef.SayCustom(SD_RandomSleepThought, PlayerRef, true, None)    
       alreadySaid = true
     Endif
@@ -160,7 +161,7 @@ Event OnPlayerSleepStop(bool abInterrupted, ObjectReference akBed)
     rng = Utility.RandomFloat() * 100
     SF_Main.ModifyDepression(PlayerRef, 0.05 + tolerance)
     SF_Main.ModifyGrief(PlayerRef, 0.05 + tolerance)
-    If !alreadySaid && rng < SF_Main.GetGrief(PlayerRef)
+    If !alreadySaid && (rng < SF_Main.GetGrief(PlayerRef))
       PlayerRef.SayCustom(SD_RandomGriefThought, PlayerRef, true, None)  
     EndIf
   EndIf
@@ -168,7 +169,7 @@ Event OnPlayerSleepStop(bool abInterrupted, ObjectReference akBed)
   
   If (rng < SF_Main.GetDepression(PlayerRef))
     EffectWeather()
-    if Weather.GetCurrentWeather().GetClassification() == 2 && !alreadySaid
+    if (Weather.GetCurrentWeather().GetClassification() == 2) && !alreadySaid
       PlayerRef.SayCustom(SD_RandomDepressionThought, PlayerRef, true, None)   
     EndIF
   EndIf
@@ -180,14 +181,14 @@ EndEvent
 Event OnItemEquipped(Form akBaseObject, ObjectReference akReference)
 
   if akReference == PlayerRef && akBaseObject.HasKeyword(ObjectTypeAlcohol)
-    SF_Main.ModifyStress(PlayerRef, -0.05 + negTolerance)
-    SF_Main.ModifyDepression(PlayerRef, -0.05 + negTolerance)
+    SF_Main.ModifyStress(PlayerRef, 0.05 + tolerance)
+    SF_Main.ModifyDepression(PlayerRef, 0.05 + tolerance)
     if Utility.RandomInt() < messageFrequency
       PlayerRef.SayCustom(SD_RandomDrinkThought, PlayerRef, true, None)   
     endif
   elseif akReference == PlayerRef || akBaseObject.HasKeyword(ObjectTypeChem)
-    SF_Main.ModifyStress(PlayerRef, -0.5 + negTolerance)
-    SF_Main.ModifyDepression(PlayerRef, -0.5 + negTolerance)
+    SF_Main.ModifyStress(PlayerRef, 0.1 + negTolerance)
+    SF_Main.ModifyDepression(PlayerRef, 0.1 + negTolerance)
     if Utility.RandomInt() < messageFrequency
       PlayerRef.SayCustom(SD_RandomDrugThought, PlayerRef, true, None)   
     endif

@@ -20,6 +20,7 @@ Group General
     ActorValue property SD_Stress auto
     Message Property SD_FrameworkInit Auto
     Message Property SD_StatisticsMessage auto
+    message Property SD_Updated auto 
     GlobalVariable Property SD_Setting_ThoughtFrequency auto
 EndGroup
 
@@ -70,8 +71,6 @@ Function OpenLog()
 EndFunction
 
 Function CheckVersion()
-    
-   
     float current = SD_FVersion.GetValue()
     DNotify(logName, "MCM: Checking Version: " + current)
     float newVersion = 1.23
@@ -85,21 +84,27 @@ Function CheckVersion()
         DNotify(logName, "MCM: Update Complete to version " + newVersion)
         SD_FVersion.SetValue(newVersion)
         MCM.SetModSettingFloat(thisMod, "fVersion", newVersion)
+            ;will be removed
+        if (current < 1.22) 
+            PlayerRef.RestoreValue(SD_Sanity, 100.0)
+            PlayerRef.RestoreValue(SD_Stress, 100.0)
+            float sanity = PlayerRef.GetValue(SD_Sanity)
+            float stress = PlayerRef.GetValue(SD_Stress)
+            if sanity < 100.0
+                DNotify(logName, "Mod Sanity")
+                PlayerRef.ModValue(SD_Sanity, 100.0 - sanity)
+            EndIf
+            if stress > 0.0
+                DNotify(logName, "Mod Stress") 
+                PlayerRef.ModValue(SD_Stress, stress * -1)
+            EndIF
+        EndIf
+        SD_Updated.Show()
     Else
         DNotify(logName, "MCM: Update not Needed for v" + current)
     EndIf
 
-    ;will be removed
-    if (current < 1.22) 
-      float sanity = PlayerRef.GetValue(SD_Sanity)
-      float stress = PlayerRef.GetValue(SD_Stress)
-      if sanity < 100
-        PlayerRef.ModValue(SD_Sanity, 100.0 - sanity)
-      EndIf
-      if stress > 0
-          PlayerRef.ModValue(SD_Stress, stress * -1)
-      EndIF
-    EndIf
+
 
 EndFunction
 
