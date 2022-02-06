@@ -49,6 +49,10 @@ int intoxicationLevel
 float tolerance = 0.0
 float negTolerance = 0.0
 float baseDecay = 0.01
+float ModH = 8.0
+float ModM = 5.0
+float ModL = 1.0
+
 
 float function CalculateModifiers()
   float weightWill = 0.3
@@ -199,6 +203,10 @@ EndEvent
 ; These are crucial messages to keep the player engaged in the mod.  A constant reminder that you have other issues to deal with.
 Function DMessage(string text)
    Debug.Notification(text)
+EndFunction
+
+Function GetVars()
+  
 EndFunction
 
 Function LoadSmokes()

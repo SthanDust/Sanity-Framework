@@ -72,10 +72,12 @@ CustomEvent OnTraumaUpdate
 Event OnQuestInit()
   OpenLog()
   StartTimer(1,0)
+  DNotify("Main: OnInit")
 EndEvent
 
 Event Actor.OnPlayerLoadGame(Actor akSender)
   OpenLog()
+  DNotify("Main: PlayerLoad.")
   StartTimer(2, 0)
 EndEvent
 
@@ -96,9 +98,11 @@ Event Actor.OnKill(Actor akSender, Actor akVictim)
     if Aggro >= 2.0
       ModifySanity(akSender, -0.02)
       ModifyStress(akSender, 0.02)
+      DNotify("Player Killed a bad person.")
     Else
       ModifySanity(akSender, -0.5)
       ModifyStress(akSender, 0.5)
+      Dnotify("Player Killed an innocent.")
     Endif
   Endif
 EndEvent
@@ -134,7 +138,7 @@ Function IntializeStartup()
     SD_Internal_FirstLoad.SetValue(0.0)
     SD_FrameworkInit.Show()
   EndIf
-  
+  DNotify("Loading...")
   LoadSDF()
   PopulateTrackedStats()
 EndFunction
@@ -189,6 +193,7 @@ Function ModifyDepression(Actor akTarget, float nDepress)
   ElseIf nDepress > 0
     akTarget.RestoreValue(SD_Depression, ndepress)
   EndIf
+  DNotify("Depression Modified.")
   SendCustomEvent("OnDepressionUpdate")
 EndFunction
 
@@ -204,6 +209,7 @@ Function ModifyGrief(Actor akTarget, float nGrief)
     akTarget.RestoreValue(SD_Grief, ngrief)
   EndIf
   SendCustomEvent("OnGriefUpdate")
+  DNotify("Grief Modified.")
 EndFunction
 
 float Function GetTrauma(Actor akTarget)
