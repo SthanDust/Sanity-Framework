@@ -8,6 +8,7 @@ Actor Property Shaun auto
 GlobalVariable Property SD_Setting_ThoughtFrequency auto
 GlobalVariable Property SD_Haha auto ;Do you believe in god?  Do you read comments?
 GlobalVariable Property SD_HumanFactor auto ; -1 missing a member and +1 you have the member
+
 ;bad things for bad problems
 Keyword Property ObjectTypeAlcohol auto 
 Keyword Property ObjectTypeChem auto
@@ -24,6 +25,12 @@ Keyword Property SD_RandomWeatherThought auto
 Keyword Property SD_RandomGriefThought auto 
 Keyword Property SD_RandomStressThought auto 
 Keyword Property SD_RandomSleepThought auto 
+
+GlobalVariable Property SD_Tolerance auto 
+GlobalVariable Property SD_Decay auto
+GlobalVariable Property SD_ModH auto
+GlobalVariable Property SD_ModM auto
+GlobalVariable Property SD_ModL auto
 
 
  
@@ -49,9 +56,7 @@ int intoxicationLevel
 float tolerance = 0.0
 float negTolerance = 0.0
 float baseDecay = 0.01
-float ModH = 8.0
-float ModM = 5.0
-float ModL = 1.0
+
 
 
 float function CalculateModifiers()
@@ -60,7 +65,7 @@ float function CalculateModifiers()
   float weightSpirit = 0.2 
   float weightTrauma = 0.4 
   float baseNormal = 500.0
-
+ 
   float DecayModifier = (weightWill * willpower) + (weightEsteem * selfesteem) + (weightSpirit * spirit) + (weightTrauma * (trauma * 20))
   float finalVal = (DecayModifier / baseNormal) + baseDecay
   ;
@@ -131,6 +136,8 @@ Function SetSexAttributes()
   intoxicationLevel = (Game.GetFormFromFile(0x101E80C, "FPAttributes.esp") as GlobalVariable).getValueInt()
   tolerance = CalculateModifiers()
   negTolerance = tolerance * -1
+  SD_Tolerance.SetValue(tolerance)
+  SD_Decay.SetValue(negTolerance)
 EndFunction
 
 Function EffectWeather()
@@ -205,9 +212,6 @@ Function DMessage(string text)
    Debug.Notification(text)
 EndFunction
 
-Function GetVars()
-  
-EndFunction
 
 Function LoadSmokes()
   ;Smoke-able Cigars.esp

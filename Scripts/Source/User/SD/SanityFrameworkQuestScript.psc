@@ -189,11 +189,11 @@ endfunction
 Function ModifyDepression(Actor akTarget, float nDepress)
   
   If nDepress < 0
-    akTarget.DamageValue(SD_Depression, ndepress)
+    akTarget.DamageValue(SD_Depression, nDepress)
   ElseIf nDepress > 0
-    akTarget.RestoreValue(SD_Depression, ndepress)
+    akTarget.RestoreValue(SD_Depression, nDepress)
   EndIf
-  DNotify("Depression Modified.")
+  DNotify("Depression Modified. " + nDepress)
   SendCustomEvent("OnDepressionUpdate")
 EndFunction
 
@@ -204,12 +204,12 @@ EndFunction
 Function ModifyGrief(Actor akTarget, float nGrief)
   
   If nGrief < 0
-    akTarget.DamageValue(SD_Grief, ngrief)
+    akTarget.DamageValue(SD_Grief, nGrief)
   ElseIf nGrief > 0
-    akTarget.RestoreValue(SD_Grief, ngrief)
+    akTarget.RestoreValue(SD_Grief, nGrief)
   EndIf
   SendCustomEvent("OnGriefUpdate")
-  DNotify("Grief Modified.")
+  DNotify("Grief Modified. " + nGrief )
 EndFunction
 
 float Function GetTrauma(Actor akTarget)
@@ -259,13 +259,10 @@ float function GetStress(Actor akTarget)
 EndFunction
 
 Function ModifyStress(Actor akTarget, float nStress) 
-  
-  
   if nStress < 0
     akTarget.DamageValue(SD_Stress, nstress)
   ElseIf nStress > 0
     akTarget.RestoreValue(SD_Stress, nstress)
-    
   EndIf
   SendCustomEvent("OnStressUpdate")
 EndFunction
