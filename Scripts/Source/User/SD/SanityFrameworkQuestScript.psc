@@ -61,6 +61,7 @@ import Actor
 import Debug
 import Game
 import FollowersScript
+AAF:AAF_API AAF_API
 
 CustomEvent OnSanityUpdate
 CustomEvent OnStressUpdate
@@ -72,12 +73,10 @@ CustomEvent OnTraumaUpdate
 Event OnQuestInit()
   OpenLog()
   StartTimer(1,0)
-  DNotify("Main: OnInit")
 EndEvent
 
 Event Actor.OnPlayerLoadGame(Actor akSender)
   OpenLog()
-  DNotify("Main: PlayerLoad.")
   StartTimer(2, 0)
 EndEvent
 
@@ -97,11 +96,10 @@ Event Actor.OnKill(Actor akSender, Actor akVictim)
     int Aggro = akVictim.GetValue(Game.GetAggressionAV()) as int
     if Aggro >= 2.0
       ModifySanity(akSender, -0.02)
-      ModifyStress(akSender, 0.02)
-      DNotify("Player Killed a bad person.")
+      ModifyStress(akSender, -0.02)
     Else
       ModifySanity(akSender, -0.5)
-      ModifyStress(akSender, 0.5)
+      ModifyStress(akSender, -0.5)
       Dnotify("Player Killed an innocent.")
     Endif
   Endif
@@ -139,8 +137,22 @@ Function IntializeStartup()
     SD_FrameworkInit.Show()
   EndIf
   DNotify("Loading...")
+
   LoadSDF()
   PopulateTrackedStats()
+EndFunction
+
+Function LoadAAF()
+  if AAF_API == none
+		AAF_API = Game.GetFormFromFile(0x00000F99, "AAF.esm") as AAF:AAF_API
+    	If !AAF_API
+        	DNotify("AAF Not Found.  Please Exit and Install AAF.")
+        	return
+    	Else
+
+        	RegisterForCustomEvent(AAF_API, "OnAnimationStop")
+    	Endif
+	endif
 EndFunction
 
 Function ResetActorValues()
@@ -193,7 +205,6 @@ Function ModifyDepression(Actor akTarget, float nDepress)
   ElseIf nDepress > 0
     akTarget.RestoreValue(SD_Depression, nDepress)
   EndIf
-  DNotify("Depression Modified. " + nDepress)
   SendCustomEvent("OnDepressionUpdate")
 EndFunction
 
@@ -209,7 +220,6 @@ Function ModifyGrief(Actor akTarget, float nGrief)
     akTarget.RestoreValue(SD_Grief, nGrief)
   EndIf
   SendCustomEvent("OnGriefUpdate")
-  DNotify("Grief Modified. " + nGrief )
 EndFunction
 
 float Function GetTrauma(Actor akTarget)
@@ -254,7 +264,7 @@ Function ModifyAlignment(Actor akTarget, float nAlign)
   SendCustomEvent("OnAlignmentUpdate")
 EndFunction
 
-float function GetStress(Actor akTarget) 
+float function GetStress(Actor akTarget)
  return akTarget.GetValue(SD_Stress)
 EndFunction
 
@@ -320,6 +330,28 @@ EndFunction
 Event FollowersScript.AffinityEvent(FollowersScript akSender, Var[] akArgs)
   ;Keyword  aed = akArgs[0] as Keyword
   ;DNotify("Affinity Event: " + akArgs[0])
+EndEvent
+
+Event AAF:AAF_API.OnAnimationStop(AAF:AAF_API akSender, Var[] akArgs)
+  Actor[] actors = Utility.VarToVarArray(akArgs[1]) as Actor[]
+	Int idx = actors.Find(PlayerRef)
+	Actor partnerActor
+  int status = akArgs[0] as int
+  if idx <= -1 || status != 0
+    return
+  endif
+  
+  String[] Tags = Utility.VarToVarArray(akArgs[3]) as String[] 
+  String position = akArgs[2] as String
+  string meta = akArgs[4] as string
+  DNotify("AAF Position: " + position)
+  DNotify("AAF Meta: " + meta)
+  int index = 0
+  while index < Tags.Length
+    DNotify("AAF Tag: " + Tags[index])
+    index = index + 1
+  endwhile
+
 EndEvent
 
 

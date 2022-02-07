@@ -180,6 +180,7 @@ Event OnPlayerSleepStop(bool abInterrupted, ObjectReference akBed)
   
   If (rng < SF_Main.GetDepression(PlayerRef))
     EffectWeather()
+    SF_Main.ModifyDepression(PlayerRef, SD_Decay.GetValue())
     if (Weather.GetCurrentWeather().GetClassification() == 2) && !alreadySaid
       PlayerRef.SayCustom(SD_RandomDepressionThought, PlayerRef, true, None)   
     EndIF
