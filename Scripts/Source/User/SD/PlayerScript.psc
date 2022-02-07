@@ -122,14 +122,15 @@ Function OnTick()
     
   Else
     If !PlayerRef.IsInCombat()
-    SF_Main.ModifyStress(PlayerRef, 0.5 + tolerance)
+      SF_Main.ModifyStress(PlayerRef, 0.5 + tolerance)
     EndIf
   EndIf
   ;The voices in my head
   if (Utility.RandomInt() < messageFrequency) && !alreadySaid
     PlayerRef.SayCustom(SD_RandomThought, PlayerRef, true, None)    
   Endif
-
+  
+  alreadySaid = false
   RefreshPlayerEffects(Utility.GetCurrentGameTime())
   StartTimerGameTime(tickFrequency, tickTimerID)
 EndFunction
@@ -189,6 +190,7 @@ Event OnPlayerSleepStop(bool abInterrupted, ObjectReference akBed)
     SF_Main.ModifyGrief(PlayerRef, 0.05 + tolerance)
     If !alreadySaid && (rng < SF_Main.GetGrief(PlayerRef))
       PlayerRef.SayCustom(SD_RandomGriefThought, PlayerRef, true, None)  
+      alreadySaid = true
     EndIf
   EndIf
   
