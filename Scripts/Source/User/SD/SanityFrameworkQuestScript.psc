@@ -10,6 +10,7 @@ int baseAlignment = 0
 string thisMod = "SD_MainFramework"
 string logName = "SanityFramework"
 float hour = 0.04200
+float lastEffectCheck = 0.0
 
 
 Group Filter_Properties
@@ -135,7 +136,7 @@ Function IntializeStartup()
     SD_Internal_FirstLoad.SetValue(0.0)
     SD_FrameworkInit.Show()
   EndIf
-  DNotify("Loading...")
+  
   LoadAAF()
   LoadSDF()
   PopulateTrackedStats()
@@ -348,18 +349,18 @@ Event AAF:AAF_API.OnAnimationStop(AAF:AAF_API akSender, Var[] akArgs)
     string[] metaTag = LL_FourPlay.StringSplit(theString = Meta, delimiter = ",")
     If metaTag.Find("AAF_Violate") > -1
       mod = 1.0
-      DNotify("Player was in combat.")
+      
     EndIf
     if actors.length > 2
       mod = -2.0
-      DNotify("Player was Gangbanged.")
+      
     EndIf
     ModifyStress(PlayerRef, -2.0 + mod)
     ModifyTrauma(PlayerRef, -5.0 + mod)
     ModifySanity(PlayerRef, -2.0 + mod)
-    DNotify("Player was Raped.")
+    
   endif
-  DNotify("AAF: meta " + meta + " Position: " + position)
+  
 EndEvent
 
 bool Function IsRape(string[] akTags, string akMeta)
@@ -372,6 +373,8 @@ bool Function IsRape(string[] akTags, string akMeta)
     return false
   EndIf
 EndFunction
+
+
 
 
 

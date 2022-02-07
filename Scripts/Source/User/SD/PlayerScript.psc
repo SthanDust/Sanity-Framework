@@ -3,7 +3,10 @@ Scriptname SD:PlayerScript extends ReferenceAlias
 
 Actor Property PlayerRef auto
 Actor Property Shaun auto
-
+Holotape Property CodsworthHoloTape01 auto
+Armor Property Armor_WeddingRing auto
+Armor Property Armor_SpouseWeddingRing auto
+Potion Property SD_SanityPotion auto
 
 GlobalVariable Property SD_Setting_ThoughtFrequency auto
 GlobalVariable Property SD_Haha auto ;Do you believe in god?  Do you read comments?
@@ -56,7 +59,7 @@ int intoxicationLevel
 float tolerance = 0.0
 float negTolerance = 0.0
 float baseDecay = 0.01
-
+float lastEffectCheck = 0.0
 
 
 float function CalculateModifiers()
@@ -88,6 +91,7 @@ Event OnTimer(int aiTimerID)
     messageFrequency = SD_Setting_ThoughtFrequency.GetValueInt()
     RegisterForPlayerSleep()
     SetSexAttributes()
+    RefreshPlayerEffects(Utility.GetCurrentGameTime())
     ;RegisterForRemoteEvent(PlayerRef, "OnLocationChange")
     StartTimerGameTime(tickFrequency, tickTimerID)
   EndIf
@@ -125,6 +129,8 @@ Function OnTick()
   if (Utility.RandomInt() < messageFrequency) && !alreadySaid
     PlayerRef.SayCustom(SD_RandomThought, PlayerRef, true, None)    
   Endif
+
+  RefreshPlayerEffects(Utility.GetCurrentGameTime())
   StartTimerGameTime(tickFrequency, tickTimerID)
 EndFunction
 
@@ -138,6 +144,15 @@ Function SetSexAttributes()
   negTolerance = tolerance * -1
   SD_Tolerance.SetValue(tolerance)
   SD_Decay.SetValue(negTolerance)
+EndFunction
+
+Function RefreshPlayerEffects(float currentTime)
+  
+  if (currentTime > (lastEffectCheck + 30))
+    
+    lastEffectCheck = currentTime
+    PlayerRef.EquipItem(SD_SanityPotion, false, true)
+  EndIf
 EndFunction
 
 Function EffectWeather()

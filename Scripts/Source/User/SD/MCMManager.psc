@@ -54,7 +54,7 @@ Event Actor.OnPlayerLoadGame(Actor akSender)
     ;use this to repeat things
     Quest Main = Game.GetFormFromFile(0x0001F59A, "SD_MainFramework.esp") as quest
     SDF = Main as SD:SanityFrameworkQuestScript
-    SDF.DNotify("MCM: PlayerLoad")
+    
     if (CheckForMCM())
         RegisterForMenuOpenCloseEvent("PauseMenu")
         CheckVersion()
@@ -72,7 +72,7 @@ EndFunction
 
 Function CheckVersion()
     float current = SD_FVersion.GetValue()
-    DNotify(logName, "MCM: Checking Version: " + current)
+    
     float newVersion = 1.23
     
 
@@ -91,11 +91,11 @@ Function CheckVersion()
             float sanity = PlayerRef.GetValue(SD_Sanity)
             float stress = PlayerRef.GetValue(SD_Stress)
             if sanity < 100.0
-                DNotify(logName, "Mod Sanity")
+                
                 PlayerRef.ModValue(SD_Sanity, 100.0 - sanity)
             EndIf
             if stress > 0.0
-                DNotify(logName, "Mod Stress") 
+                
                 PlayerRef.ModValue(SD_Stress, stress * -1)
             EndIF
         EndIf
