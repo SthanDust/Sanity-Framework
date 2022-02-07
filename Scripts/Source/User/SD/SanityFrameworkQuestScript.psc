@@ -100,7 +100,6 @@ Event Actor.OnKill(Actor akSender, Actor akVictim)
     Else
       ModifySanity(akSender, -0.5)
       ModifyStress(akSender, -0.5)
-      Dnotify("Player Killed an innocent.")
     Endif
   Endif
 EndEvent
@@ -137,7 +136,7 @@ Function IntializeStartup()
     SD_FrameworkInit.Show()
   EndIf
   DNotify("Loading...")
-
+  LoadAAF()
   LoadSDF()
   PopulateTrackedStats()
 EndFunction
@@ -344,15 +343,35 @@ Event AAF:AAF_API.OnAnimationStop(AAF:AAF_API akSender, Var[] akArgs)
   String[] Tags = Utility.VarToVarArray(akArgs[3]) as String[] 
   String position = akArgs[2] as String
   string meta = akArgs[4] as string
-  DNotify("AAF Position: " + position)
-  DNotify("AAF Meta: " + meta)
-  int index = 0
-  while index < Tags.Length
-    DNotify("AAF Tag: " + Tags[index])
-    index = index + 1
-  endwhile
-
+  float mod = 0.0
+  if IsRape(Tags, meta)
+    string[] metaTag = LL_FourPlay.StringSplit(theString = Meta, delimiter = ",")
+    If metaTag.Find("AAF_Violate") > -1
+      mod = 1.0
+      DNotify("Player was in combat.")
+    EndIf
+    if actors.length > 2
+      mod = -2.0
+      DNotify("Player was Gangbanged.")
+    EndIf
+    ModifyStress(PlayerRef, -2.0 + mod)
+    ModifyTrauma(PlayerRef, -5.0 + mod)
+    ModifySanity(PlayerRef, -2.0 + mod)
+    DNotify("Player was Raped.")
+  endif
+  DNotify("AAF: meta " + meta + " Position: " + position)
 EndEvent
+
+bool Function IsRape(string[] akTags, string akMeta)
+  string[] meta = LL_FourPlay.StringSplit(theString = akMeta, delimiter = ",")
+  if meta.Find("PlayerRaped") > -1
+    return true
+  elseif akTags.Find("Aggressive") > -1 && akTags.Find("Rough") > -1
+    return true
+  Else
+    return false
+  EndIf
+EndFunction
 
 
 
