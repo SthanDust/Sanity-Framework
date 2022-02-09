@@ -1,6 +1,5 @@
-# Sanity Framework
+# Sanity Framework 1.24a (Splinter Release)
 
 Greetings fellow Wastelanders!
 
-This is a handy guide to help you navigate the Sanity Framework!  As I develop, I wanted to ensure that you're able to recover your save files as things change.
-
+This is the main release branch for Sanity Framework.  
