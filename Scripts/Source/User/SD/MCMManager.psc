@@ -73,7 +73,7 @@ EndFunction
 Function CheckVersion()
     float current = SD_FVersion.GetValue()
     
-    float newVersion = 1.23
+    float newVersion = 1.24
     
 
     if  current < newVersion
@@ -84,21 +84,6 @@ Function CheckVersion()
         DNotify(logName, "MCM: Update Complete to version " + newVersion)
         SD_FVersion.SetValue(newVersion)
         MCM.SetModSettingFloat(thisMod, "fVersion", newVersion)
-            ;will be removed
-        if (current < 1.22) 
-            PlayerRef.RestoreValue(SD_Sanity, 100.0)
-            PlayerRef.RestoreValue(SD_Stress, 100.0)
-            float sanity = PlayerRef.GetValue(SD_Sanity)
-            float stress = PlayerRef.GetValue(SD_Stress)
-            if sanity < 100.0
-                
-                PlayerRef.ModValue(SD_Sanity, 100.0 - sanity)
-            EndIf
-            if stress > 0.0
-                
-                PlayerRef.ModValue(SD_Stress, stress * -1)
-            EndIF
-        EndIf
         SD_Updated.Show()
     Else
         DNotify(logName, "MCM: Update not Needed for v" + current)

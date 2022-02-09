@@ -106,7 +106,6 @@ EndEvent
 ;I wasted time, now doth time waste me
 Function OnTick()
   string lastMessage;
-
   SetSexAttributes()
   
   bool alreadySaid = false
@@ -222,6 +221,12 @@ Event OnItemEquipped(Form akBaseObject, ObjectReference akReference)
       PlayerRef.SayCustom(SD_RandomDrugThought, PlayerRef, true, None)   
     endif
   EndIf
+
+  ; I'll need to tag all items with a common keyword
+  If akReference == PlayerRef && (akBaseObject == Armor_WeddingRing || akBaseObject == Armor_SpouseWeddingRing)
+    SF_Main.ModifyGrief(PlayerRef, -1.0)
+    PlayerRef.SayCustom(SD_RandomGriefThought, PlayerRef, False, none) ; TODO: Make this a reference to the opposite sex player voice.  "Hi Honey! I'm dead!"
+  EndIF
 EndEvent
 
 
