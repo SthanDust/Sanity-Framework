@@ -73,18 +73,18 @@ EndFunction
 Function CheckVersion()
     float current = SD_FVersion.GetValue()
     
-    float newVersion = 1.24
+    float newVersion = 1.25
     
 
     if  current < newVersion
-        DNotify(logName, "MCM: New Version Detected: " + newVersion)
-        DNotify(logName, "MCM: Updating...")
+
         SDF.Stop()
+        SDF.Reset()
         SDF.Start()
         DNotify(logName, "MCM: Update Complete to version " + newVersion)
         SD_FVersion.SetValue(newVersion)
         MCM.SetModSettingFloat(thisMod, "fVersion", newVersion)
-        SD_Updated.Show()
+
     Else
         DNotify(logName, "MCM: Update not Needed for v" + current)
     EndIf

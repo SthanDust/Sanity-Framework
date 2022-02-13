@@ -7,6 +7,9 @@ Holotape Property CodsworthHoloTape01 auto
 Armor Property Armor_WeddingRing auto
 Armor Property Armor_SpouseWeddingRing auto
 Potion Property SD_SanityPotion auto
+Location[] Property SD_POI auto mandatory
+Spell Property DetectLifeSpell auto
+
 
 GlobalVariable Property SD_Setting_ThoughtFrequency auto
 GlobalVariable Property SD_Haha auto ;Do you believe in god?  Do you read comments?
@@ -35,8 +38,7 @@ GlobalVariable Property SD_ModH auto
 GlobalVariable Property SD_ModM auto
 GlobalVariable Property SD_ModL auto
 
-
- 
+Perk Property SD_Sanity03 auto
 
 ;It can't rain all the time, can it?  When you're sad, can you tell the difference between rain and shine, buttercup?
 Weather RainyWeather
@@ -92,7 +94,6 @@ Event OnTimer(int aiTimerID)
     RegisterForPlayerSleep()
     SetSexAttributes()
     RefreshPlayerEffects(Utility.GetCurrentGameTime())
-    ;RegisterForRemoteEvent(PlayerRef, "OnLocationChange")
     StartTimerGameTime(tickFrequency, tickTimerID)
   EndIf
 EndEvent
@@ -129,6 +130,13 @@ Function OnTick()
     PlayerRef.SayCustom(SD_RandomThought, PlayerRef, true, None)    
   Endif
   
+  If (PlayerRef.HasPerk(SD_Sanity03) && SF_Main.GetSanity(PlayerRef) < 95.00)
+    If Utility.RandomInt() < 10 && !PlayerRef.HasSpell(DetectLifeSpell)
+      PlayerRef.AddSpell(DetectLifeSpell, false)
+
+    EndIf
+  EndIf
+
   alreadySaid = false
   RefreshPlayerEffects(Utility.GetCurrentGameTime())
   StartTimerGameTime(tickFrequency, tickTimerID)
@@ -239,3 +247,10 @@ EndFunction
 Function LoadSmokes()
   ;Smoke-able Cigars.esp
 EndFunction
+
+Event Actor.OnLocationChange(Actor akSender, Location akOldLoc, Location akNewLoc)
+  If (SD_POI.Find(akNewLoc) > -1)
+    SF_Main.ModifyGrief(PlayerRef, 5)
+  EndIf
+EndEvent
+
