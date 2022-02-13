@@ -1,4 +1,4 @@
-# Sanity Framework 1.24a (Splinter Release)
+# Sanity Framework 1.24c (Grief Release)
 
 Greetings fellow Wastelanders!
 
