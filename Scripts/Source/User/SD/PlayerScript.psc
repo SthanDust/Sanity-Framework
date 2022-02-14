@@ -39,6 +39,7 @@ GlobalVariable Property SD_ModM auto
 GlobalVariable Property SD_ModL auto
 
 Perk Property SD_Sanity03 auto
+Perk Property SD_Sanity04 auto
 
 ;It can't rain all the time, can it?  When you're sad, can you tell the difference between rain and shine, buttercup?
 Weather RainyWeather
@@ -62,6 +63,11 @@ float tolerance = 0.0
 float negTolerance = 0.0
 float baseDecay = 0.01
 float lastEffectCheck = 0.0
+
+;splinter counters
+int timesSthan = 0
+int timesOne = 0 
+int timesAlex = 0
 
 
 float function CalculateModifiers()
@@ -94,7 +100,9 @@ Event OnTimer(int aiTimerID)
     RegisterForPlayerSleep()
     SetSexAttributes()
     RefreshPlayerEffects(Utility.GetCurrentGameTime())
-    StartTimerGameTime(tickFrequency, tickTimerID)
+    float chaos = Utility.RandomFloat(-0.5, 0.5)
+    RegisterForRemoteEvent(PlayerRef, "OnLocationChange")
+    StartTimerGameTime(tickFrequency + chaos, tickTimerID)
   EndIf
 EndEvent
 
@@ -130,7 +138,7 @@ Function OnTick()
     PlayerRef.SayCustom(SD_RandomThought, PlayerRef, true, None)    
   Endif
   
-  If (PlayerRef.HasPerk(SD_Sanity03) && SF_Main.GetSanity(PlayerRef) < 95.00)
+  If (PlayerRef.HasPerk(SD_Sanity03) && (SF_Main.GetSanity(PlayerRef) < 95.00))
     If Utility.RandomInt() < 10 && !PlayerRef.HasSpell(DetectLifeSpell)
       PlayerRef.AddSpell(DetectLifeSpell, false)
 
@@ -138,6 +146,7 @@ Function OnTick()
   EndIf
 
   alreadySaid = false
+  
   RefreshPlayerEffects(Utility.GetCurrentGameTime())
   StartTimerGameTime(tickFrequency, tickTimerID)
 EndFunction
@@ -166,7 +175,7 @@ EndFunction
 Function EffectWeather()
     RainyWeather = Weather.FindWeather(2)
     int s = Utility.RandomInt()
-    if s < 50
+    if (s < 50)
       RainyWeather.SetActive()
     endif 
 EndFunction
@@ -180,10 +189,10 @@ Event OnPlayerSleepStop(bool abInterrupted, ObjectReference akBed)
   bool alreadySaid = false
   float rng =  Utility.RandomFloat() * 100
   ;You can't be happy if you want to sleep 8 hours and only get 5.  No stress relief for you otherwise.  That's why it's called desired sleep time, silly.
-  if x >= iSleepDesired && !abInterrupted
+  if (x >= iSleepDesired) && !abInterrupted
     SF_Main.ModifyStress(PlayerRef, -0.5)
   Else
-    if Utility.RandomInt(0,100) < messageFrequency && !alreadySaid
+    if (Utility.RandomInt(0,100) < messageFrequency) && !alreadySaid
       PlayerRef.SayCustom(SD_RandomSleepThought, PlayerRef, true, None)    
       alreadySaid = true
     Endif
@@ -216,22 +225,23 @@ EndEvent
 ; note, this constant will be a diminishing variable to simulate tolerance.
 Event OnItemEquipped(Form akBaseObject, ObjectReference akReference)
 
-  if akReference == PlayerRef && akBaseObject.HasKeyword(ObjectTypeAlcohol)
-    SF_Main.ModifyStress(PlayerRef, 0.05 + tolerance)
-    SF_Main.ModifyDepression(PlayerRef, 0.05 + tolerance)
-    if Utility.RandomInt() < messageFrequency
+  if (akReference == PlayerRef) && akBaseObject.HasKeyword(ObjectTypeAlcohol)
+    SF_Main.ModifyStress(PlayerRef, 0.05 + negTolerance)
+    SF_Main.ModifyDepression(PlayerRef, 0.05 + negTolerance)
+    SF_Main.ModifyGrief(PlayerRef, 0.05 + negTolerance)
+    if (Utility.RandomInt() < messageFrequency)
       PlayerRef.SayCustom(SD_RandomDrinkThought, PlayerRef, true, None)   
     endif
-  elseif akReference == PlayerRef || akBaseObject.HasKeyword(ObjectTypeChem)
+  elseif (akReference == PlayerRef) || akBaseObject.HasKeyword(ObjectTypeChem)
     SF_Main.ModifyStress(PlayerRef, 0.1 + negTolerance)
     SF_Main.ModifyDepression(PlayerRef, 0.1 + negTolerance)
-    if Utility.RandomInt() < messageFrequency
+    if (Utility.RandomInt() < messageFrequency)
       PlayerRef.SayCustom(SD_RandomDrugThought, PlayerRef, true, None)   
     endif
   EndIf
 
   ; I'll need to tag all items with a common keyword
-  If akReference == PlayerRef && (akBaseObject == Armor_WeddingRing || akBaseObject == Armor_SpouseWeddingRing)
+  If (akReference == PlayerRef) && (akBaseObject == Armor_WeddingRing || akBaseObject == Armor_SpouseWeddingRing)
     SF_Main.ModifyGrief(PlayerRef, -1.0)
     PlayerRef.SayCustom(SD_RandomGriefThought, PlayerRef, False, none) ; TODO: Make this a reference to the opposite sex player voice.  "Hi Honey! I'm dead!"
   EndIF
@@ -248,9 +258,11 @@ Function LoadSmokes()
   ;Smoke-able Cigars.esp
 EndFunction
 
-Event Actor.OnLocationChange(Actor akSender, Location akOldLoc, Location akNewLoc)
+Event OnLocationChange(Location akOldLoc, Location akNewLoc)
+  
   If (SD_POI.Find(akNewLoc) > -1)
-    SF_Main.ModifyGrief(PlayerRef, 5)
+    
+    SF_Main.ModifyGrief(PlayerRef, -5)
   EndIf
+  RegisterForRemoteEvent(PlayerRef, "OnLocationChange")
 EndEvent
-
