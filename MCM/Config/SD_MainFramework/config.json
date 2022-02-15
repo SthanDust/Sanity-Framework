@@ -19,7 +19,7 @@
             "html": true
         },
         {
-            "text": "<font size=\"18\"><p align = \"center\">v 1.23a</p></font>",
+            "text": "<font size=\"18\"><p align = \"center\">v 1.25s</p></font>",
             "type": "text",
             "html": true
         },
@@ -76,14 +76,28 @@
                     }
                 },
                 {
-                    "text": "Mod Integrations",
+                    "text": "Mod Integrations and Overrides",
                     "align": "Left",
                     "type": "section"
+                },
+                {
+                    "text": "Integrations allow the my mod to know if you want to use them.  Overrides is to allow Sanity to ignore certain aspects of integrated mods.",
+                    "type": "text",
+                    "align": "center"
                 },
                 {
                     "id": "bEnableAFV:Integrate",
                     "text": "AAF Violate",
                     "help": "Turns off Violate Integration",
+                    "type": "switcher",
+                    "valueOptions": {
+                        "sourceType": "ModSettingBool"
+                    }
+                },
+                {
+                    "id": "bEnableAFV:Override",
+                    "text": "AAF Violate Override",
+                    "help": "Turns off Violate Feature Override",
                     "type": "switcher",
                     "valueOptions": {
                         "sourceType": "ModSettingBool"
@@ -99,6 +113,15 @@
                     }
                 },
                 {
+                    "id": "bEnableFPE:Override",
+                    "text": "Family Planning Enhanced Redux Override",
+                    "help": "Turns off FPER Feature Override.",
+                    "type": "switcher",
+                    "valueOptions": {
+                        "sourceType": "ModSettingBool"
+                    }
+                },
+                {
                     "id": "bEnableWLD:Integrate",
                     "text": "Wasteland Dairy Framework",
                     "help": "Turns off Wasteland Dairy Framework Integration.",
@@ -108,9 +131,28 @@
                     }
                 },
                 {
+                    "id": "bEnableWLD:Override",
+                    "text": "Wasteland Dairy Framework Override",
+                    "help": "Turns off Wasteland Dairy Framework Feature Override.",
+                    "type": "switcher",
+                    "valueOptions": {
+                        "sourceType": "ModSettingBool"
+                    }
+                },
+                {
                     "id": "bEnableHBW:Integrate",
                     "text": "Hardship Beggar Whore",
                     "help": "Turns off Hardship Beggar Whore Integration.",
+                    "type": "switcher",
+                    "valueOptions": {
+                        "sourceType": "ModSettingBool"
+                    }
+                }
+                ,
+                {
+                    "id": "bEnableHBW:Override",
+                    "text": "Hardship Beggar Whore Override",
+                    "help": "Turns off Hardship Beggar Whore Feature Override.",
                     "type": "switcher",
                     "valueOptions": {
                         "sourceType": "ModSettingBool"

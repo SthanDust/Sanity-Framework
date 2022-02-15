@@ -14,6 +14,11 @@ Group General
     GlobalVariable Property SD_Setting_Integrate_WLD Auto 
     GlobalVariable Property SD_Setting_Integrate_JB auto
     GlobalVariable Property SD_Setting_Integrate_HBW auto
+    GlobalVariable Property SD_Setting_Override_Vio auto
+    GlobalVariable Property SD_Setting_Override_FPE auto
+    GlobalVariable Property SD_Setting_Override_WLD Auto 
+    GlobalVariable Property SD_Setting_Override_JB auto
+    GlobalVariable Property SD_Setting_Override_HBW auto
     GlobalVariable Property SD_Internal_MCMLoaded auto 
     GlobalVariable Property SD_Internal_FirstLoad auto
     ActorValue property SD_Sanity auto 
@@ -125,6 +130,11 @@ Function MCMUpdate()
     SD_Framework_Debugging.SetValue(MCM.GetModSettingBool(thisMod, "bMCMDebugOn:Debug") as float)
     SD_Framework_Enabled.SetValue(MCM.GetModSettingBool(thisMod, "bMCMModEnabled:Globals") as float)
     SD_Setting_ThoughtFrequency.SetValue(MCM.GetModSettingFloat(thisMod, "fMessageFrequency:Globals"))
+    SD_Setting_Override_Vio.SetValue(MCM.GetModSettingBool(thisMod, "bEnableAFV:Override") as float)
+    SD_Setting_Override_FPE.SetValue(MCM.GetModSettingBool(thisMod, "bEnableFPE:Override") as float)
+    SD_Setting_Override_WLD.SetValue(MCM.GetModSettingBool(thisMod, "bEnableWLD:Override") as float)
+    SD_Setting_Override_JB.SetValue(MCM.GetModSettingBool(thisMod, "bEnableJB:Override") as float)
+    SD_Setting_Override_HBW.SetValue(MCM.GetModSettingBool(thisMod, "bEnableHBW:Override") as float)
 EndFunction
 
 function Uninstall()
