@@ -22,7 +22,7 @@ Group Calculated_Values
 EndGroup
 
 Group Actor_Values
-  Actor property PlayerRef auto const Mandatory
+  Actor property PlayerRef auto Mandatory
   ActorValue Property SD_Sanity Auto Mandatory
   ActorValue Property SD_Stress Auto Mandatory
   ActorValue Property SD_Alignment auto Mandatory

@@ -70,6 +70,7 @@ int timesOne = 0
 int timesAlex = 0
 
 
+
 float function CalculateModifiers()
   float weightWill = 0.3
   float weightEsteem = 0.1 
@@ -94,6 +95,7 @@ EndEvent
 Event OnTimer(int aiTimerID)
   if(aiTimerID == 1)
     Quest Main = Game.GetFormFromFile(0x0001F59A, "SD_MainFramework.esp") as quest
+    
 	  SF_Main = Main as SD:SanityFrameworkQuestScript
     SF_Main.LoadSDF()
     messageFrequency = SD_Setting_ThoughtFrequency.GetValueInt()
@@ -118,13 +120,14 @@ Function OnTick()
   SetSexAttributes()
   
   bool alreadySaid = false
+
   ;What's the weather like
   Weather w = Weather.GetCurrentWeather()
   if (w.GetClassification() == 2)
     
     SF_Main.ModifyDepression(PlayerRef, -0.005 + negTolerance)
     if !alreadySaid && (Utility.RandomInt(0,100) < SF_Main.GetDepression(PlayerRef))
-      PlayerRef.SayCustom(SD_RandomDepressionThought, PlayerRef, true, None) 
+      Say(SD_RandomDepressionThought, PlayerRef) 
       alreadySaid = true
     EndIf
     
@@ -135,7 +138,7 @@ Function OnTick()
   EndIf
   ;The voices in my head
   if (Utility.RandomInt() < messageFrequency) && !alreadySaid
-    PlayerRef.SayCustom(SD_RandomThought, PlayerRef, true, None)    
+    Say(SD_RandomThought, PlayerRef)    
   Endif
   
   If (PlayerRef.HasPerk(SD_Sanity03) && (SF_Main.GetSanity(PlayerRef) < 95.00))
@@ -193,7 +196,7 @@ Event OnPlayerSleepStop(bool abInterrupted, ObjectReference akBed)
     SF_Main.ModifyStress(PlayerRef, -0.5)
   Else
     if (Utility.RandomInt(0,100) < messageFrequency) && !alreadySaid
-      PlayerRef.SayCustom(SD_RandomSleepThought, PlayerRef, true, None)    
+      Say(SD_RandomSleepThought, PlayerRef)    
       alreadySaid = true
     Endif
   endif
@@ -205,7 +208,7 @@ Event OnPlayerSleepStop(bool abInterrupted, ObjectReference akBed)
     SF_Main.ModifyDepression(PlayerRef, 0.05 + tolerance)
     SF_Main.ModifyGrief(PlayerRef, 0.05 + tolerance)
     If !alreadySaid && (rng < SF_Main.GetGrief(PlayerRef))
-      PlayerRef.SayCustom(SD_RandomGriefThought, PlayerRef, true, None)  
+      Say(SD_RandomGriefThought, PlayerRef)  
       alreadySaid = true
     EndIf
   EndIf
@@ -215,7 +218,7 @@ Event OnPlayerSleepStop(bool abInterrupted, ObjectReference akBed)
     EffectWeather()
     SF_Main.ModifyDepression(PlayerRef, SD_Decay.GetValue())
     if (Weather.GetCurrentWeather().GetClassification() == 2) && !alreadySaid
-      PlayerRef.SayCustom(SD_RandomDepressionThought, PlayerRef, true, None)   
+      Say(SD_RandomDepressionThought, PlayerRef)   
     EndIF
   EndIf
 EndEvent
@@ -230,20 +233,20 @@ Event OnItemEquipped(Form akBaseObject, ObjectReference akReference)
     SF_Main.ModifyDepression(PlayerRef, 0.05 + negTolerance)
     SF_Main.ModifyGrief(PlayerRef, 0.05 + negTolerance)
     if (Utility.RandomInt() < messageFrequency)
-      PlayerRef.SayCustom(SD_RandomDrinkThought, PlayerRef, true, None)   
+      Say(SD_RandomDrinkThought, PlayerRef)   
     endif
   elseif (akReference == PlayerRef) || akBaseObject.HasKeyword(ObjectTypeChem)
     SF_Main.ModifyStress(PlayerRef, 0.1 + negTolerance)
     SF_Main.ModifyDepression(PlayerRef, 0.1 + negTolerance)
     if (Utility.RandomInt() < messageFrequency)
-      PlayerRef.SayCustom(SD_RandomDrugThought, PlayerRef, true, None)   
+      Say(SD_RandomDrugThought, PlayerRef)   
     endif
   EndIf
 
   ; I'll need to tag all items with a common keyword
   If (akReference == PlayerRef) && (akBaseObject == Armor_WeddingRing || akBaseObject == Armor_SpouseWeddingRing)
     SF_Main.ModifyGrief(PlayerRef, -1.0)
-    PlayerRef.SayCustom(SD_RandomGriefThought, PlayerRef, False, none) ; TODO: Make this a reference to the opposite sex player voice.  "Hi Honey! I'm dead!"
+    Say(SD_RandomGriefThought, PlayerRef) ; TODO: Make this a reference to the opposite sex player voice.  "Hi Honey! I'm dead!"
   EndIF
 EndEvent
 
@@ -266,3 +269,8 @@ Event OnLocationChange(Location akOldLoc, Location akNewLoc)
   EndIf
   RegisterForRemoteEvent(PlayerRef, "OnLocationChange")
 EndEvent
+
+Function Say(Keyword akKey, Actor akActor)
+  
+  akActor.SayCustom(akKey, None, true)
+EndFunction

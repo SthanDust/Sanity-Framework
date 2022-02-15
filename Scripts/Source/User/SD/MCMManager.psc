@@ -71,15 +71,15 @@ Function OpenLog()
 EndFunction
 
 Function CheckVersion()
-    float current = SD_FVersion.GetValue()
+    float current = SD_FVersion.GetValue() as float
     
     float newVersion = 1.25
     
-
-    if  current < newVersion
+   
+    if  (current != newVersion)
 
         SDF.Stop()
-        SDF.Reset()
+        Utility.Wait(3)
         SDF.Start()
         DNotify(logName, "MCM: Update Complete to version " + newVersion)
         SD_FVersion.SetValue(newVersion)
@@ -143,6 +143,7 @@ function ResetMod()
     
     SDF.Stop()
     SDF.Start()
+    CheckVersion()
     If CheckForMCM()
         MCMUpdate()
         CheckIntegrations()
@@ -150,6 +151,7 @@ function ResetMod()
     Else
         DNotify(logName,"Error: MCM is not running.")
     EndIF
+    
     
 EndFunction
 
@@ -173,3 +175,4 @@ Function DNotify(string lname, string text)
     Debug.Trace("[SDF] " + text, 0) ; just to get started
     Debug.TraceUser(lname, "[SDF] " + text)
 EndFunction
+
