@@ -239,6 +239,48 @@
                     "type": "text"
                 }
             ]
+        },
+        {
+            "pageDisplayName": "Clues",
+            "content": [
+                {
+                    "text": "All books are generally on the ground to avoid issues",
+                    "align": "left",
+                    "type": "section"
+                },
+                {
+                    "text": "Red Rocket",
+                    "type": "text"
+                },
+                {
+                    "text": "The Speak Easy in Concord",
+                    "type": "text"
+                },
+                {
+                    "text": "Alice's House in Concord (New Location)",
+                    "type": "text"
+                },
+                {
+                    "text": "The Church in Hyde Park",
+                    "type": "text"
+                },
+                {
+                    "text": "Diamond City Marketplace and All Faiths Chapel",
+                    "type": "text"
+                },
+                {
+                    "text": "Pickman's Gallery",
+                    "type": "text"
+                },
+                {
+                    "text": "In the depths of Parson's Asylum",
+                    "type": "text"
+                },
+                {
+                    "text": "Far Harbor Church (Are you seeing a theme yet?)",
+                    "type": "text"
+                }
+            ]
         }
     ]
 }

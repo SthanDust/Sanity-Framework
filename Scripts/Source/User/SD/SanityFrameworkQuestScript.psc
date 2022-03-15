@@ -132,7 +132,7 @@ Function IntializeStartup()
     PlayerRef.SetValue(SD_Depression, 0)
     PlayerRef.SetValue(SD_Grief, 0)
     PlayerRef.SetValue(SD_Trauma, 0)
-    ResetActorValues()
+    ;ResetActorValues()
     SD_Internal_FirstLoad.SetValue(0.0)
     SD_FrameworkInit.Show()
   EndIf

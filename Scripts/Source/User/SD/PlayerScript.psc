@@ -142,9 +142,10 @@ Function OnTick()
   Endif
   
   If (PlayerRef.HasPerk(SD_Sanity03) && (SF_Main.GetSanity(PlayerRef) < 95.00))
-    If Utility.RandomInt() < 10 && !PlayerRef.HasSpell(DetectLifeSpell)
+      SF_Main.DNotify("Checking Sanity")
+    If (Utility.RandomInt(1,100) <= 10) && (!PlayerRef.HasSpell(DetectLifeSpell))
       PlayerRef.AddSpell(DetectLifeSpell, false)
-
+      SF_Main.DNotify("Adding DetectLife")
     EndIf
   EndIf
 
@@ -238,6 +239,7 @@ Event OnItemEquipped(Form akBaseObject, ObjectReference akReference)
   elseif (akReference == PlayerRef) || akBaseObject.HasKeyword(ObjectTypeChem)
     SF_Main.ModifyStress(PlayerRef, 0.1 + negTolerance)
     SF_Main.ModifyDepression(PlayerRef, 0.1 + negTolerance)
+    SF_Main.ModifyGrief(PlayerRef, 0.1 + negTolerance)
     if (Utility.RandomInt() < messageFrequency)
       Say(SD_RandomDrugThought, PlayerRef)   
     endif
@@ -265,7 +267,7 @@ Event OnLocationChange(Location akOldLoc, Location akNewLoc)
   
   If (SD_POI.Find(akNewLoc) > -1)
     
-    SF_Main.ModifyGrief(PlayerRef, -5)
+    SF_Main.ModifyGrief(PlayerRef, -0.5)
   EndIf
   RegisterForRemoteEvent(PlayerRef, "OnLocationChange")
 EndEvent
