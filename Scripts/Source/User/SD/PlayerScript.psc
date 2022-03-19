@@ -7,8 +7,11 @@ Holotape Property CodsworthHoloTape01 auto
 Armor Property Armor_WeddingRing auto
 Armor Property Armor_SpouseWeddingRing auto
 Potion Property SD_SanityPotion auto
+Potion Property SD_SanityOnePotion auto 
+Potion Property SD_ShadowLord auto 
+Potion Property SD_BeastUnleashed auto 
 Location[] Property SD_POI auto mandatory
-Spell Property DetectLifeSpell auto
+
 
 
 GlobalVariable Property SD_Setting_ThoughtFrequency auto
@@ -40,6 +43,7 @@ GlobalVariable Property SD_ModL auto
 
 Perk Property SD_Sanity03 auto
 Perk Property SD_Sanity04 auto
+Perk Property SD_Sanity05 auto
 
 ;It can't rain all the time, can it?  When you're sad, can you tell the difference between rain and shine, buttercup?
 Weather RainyWeather
@@ -94,17 +98,20 @@ EndEvent
 
 Event OnTimer(int aiTimerID)
   if(aiTimerID == 1)
+    SF_Main.DNotify("Loading")
     Quest Main = Game.GetFormFromFile(0x0001F59A, "SD_MainFramework.esp") as quest
-    
 	  SF_Main = Main as SD:SanityFrameworkQuestScript
     SF_Main.LoadSDF()
     messageFrequency = SD_Setting_ThoughtFrequency.GetValueInt()
     RegisterForPlayerSleep()
     SetSexAttributes()
+    lastEffectCheck = Utility.GetCurrentGameTime()
     RefreshPlayerEffects(Utility.GetCurrentGameTime())
     float chaos = Utility.RandomFloat(-0.5, 0.5)
     RegisterForRemoteEvent(PlayerRef, "OnLocationChange")
-    StartTimerGameTime(tickFrequency + chaos, tickTimerID)
+    
+    chaos += tickFrequency
+    StartTimerGameTime(chaos, tickTimerID)
   EndIf
 EndEvent
 
@@ -126,7 +133,7 @@ Function OnTick()
   if (w.GetClassification() == 2)
     
     SF_Main.ModifyDepression(PlayerRef, -0.005 + negTolerance)
-    if !alreadySaid && (Utility.RandomInt(0,100) < SF_Main.GetDepression(PlayerRef))
+    if !alreadySaid && (Utility.RandomInt(0,100) < SF_Main.GetDepression(PlayerRef)) && !PlayerRef.IsTalking()
       Say(SD_RandomDepressionThought, PlayerRef) 
       alreadySaid = true
     EndIf
@@ -137,16 +144,30 @@ Function OnTick()
     EndIf
   EndIf
   ;The voices in my head
-  if (Utility.RandomInt() < messageFrequency) && !alreadySaid
+  if (Utility.RandomInt() < messageFrequency) && !alreadySaid && !PlayerRef.IsTalking()
     Say(SD_RandomThought, PlayerRef)    
   Endif
-  
+
+  int chance
   If (PlayerRef.HasPerk(SD_Sanity03) && (SF_Main.GetSanity(PlayerRef) < 95.00))
-      SF_Main.DNotify("Checking Sanity")
-    If (Utility.RandomInt(1,100) <= 10) && (!PlayerRef.HasSpell(DetectLifeSpell))
-      PlayerRef.AddSpell(DetectLifeSpell, false)
-      SF_Main.DNotify("Adding DetectLife")
+    chance = Utility.RandomInt(1,100)
+    If (chance <= 12)
+      PlayerRef.EquipItem(SD_SanityOnePotion, false, true)
+      SF_Main.DNotify("You are One.")
     EndIf
+  ElseIf (PlayerRef.HasPerk(SD_Sanity04) && (SF_Main.GetSanity(PlayerRef) < 95.00))
+    chance = Utility.RandomInt(1,100)
+    If (chance <= 12)
+      PlayerRef.EquipItem(SD_BeastUnleashed, false, true)
+      SF_Main.DNotify("The Beast.")
+    EndIf
+  ElseIf (PlayerRef.HasPerk(SD_Sanity05) && (SF_Main.GetSanity(PlayerRef) < 95.00))
+    chance = Utility.RandomInt(1,100)
+    If (chance <= 12)
+      SF_Main.DNotify("You are Shadow.")
+      PlayerRef.EquipItem(SD_ShadowLord, false, true)
+    EndIf
+
   EndIf
 
   alreadySaid = false
@@ -168,9 +189,9 @@ Function SetSexAttributes()
 EndFunction
 
 Function RefreshPlayerEffects(float currentTime)
-  
+  SF_Main.DNotify("Last Effect: " + lastEffectCheck)
   if (currentTime > (lastEffectCheck + 30))
-    
+    SF_Main.DNotify("Checking Effects")
     lastEffectCheck = currentTime
     PlayerRef.EquipItem(SD_SanityPotion, false, true)
   EndIf
@@ -208,7 +229,7 @@ Event OnPlayerSleepStop(bool abInterrupted, ObjectReference akBed)
     rng = Utility.RandomFloat() * 100
     SF_Main.ModifyDepression(PlayerRef, 0.05 + tolerance)
     SF_Main.ModifyGrief(PlayerRef, 0.05 + tolerance)
-    If !alreadySaid && (rng < SF_Main.GetGrief(PlayerRef))
+    If !alreadySaid && (rng < SF_Main.GetGrief(PlayerRef)) && !PlayerRef.IsTalking()
       Say(SD_RandomGriefThought, PlayerRef)  
       alreadySaid = true
     EndIf
@@ -218,7 +239,7 @@ Event OnPlayerSleepStop(bool abInterrupted, ObjectReference akBed)
   If (rng < SF_Main.GetDepression(PlayerRef))
     EffectWeather()
     SF_Main.ModifyDepression(PlayerRef, SD_Decay.GetValue())
-    if (Weather.GetCurrentWeather().GetClassification() == 2) && !alreadySaid
+    if (Weather.GetCurrentWeather().GetClassification() == 2) && !alreadySaid && !PlayerRef.IsTalking()
       Say(SD_RandomDepressionThought, PlayerRef)   
     EndIF
   EndIf
