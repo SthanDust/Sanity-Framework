@@ -98,7 +98,7 @@ EndEvent
 
 Event OnTimer(int aiTimerID)
   if(aiTimerID == 1)
-    SF_Main.DNotify("Loading")
+    
     Quest Main = Game.GetFormFromFile(0x0001F59A, "SD_MainFramework.esp") as quest
 	  SF_Main = Main as SD:SanityFrameworkQuestScript
     SF_Main.LoadSDF()
@@ -109,7 +109,10 @@ Event OnTimer(int aiTimerID)
     RefreshPlayerEffects(Utility.GetCurrentGameTime())
     float chaos = Utility.RandomFloat(-0.5, 0.5)
     RegisterForRemoteEvent(PlayerRef, "OnLocationChange")
-    
+    bool temp = RegisterForRemoteEvent(PlayerRef, "OnCombatStateChanged")
+    if (!temp)
+      SF_Main.DNotify("Combat Register Failed")
+    EndIf
     chaos += tickFrequency
     StartTimerGameTime(chaos, tickTimerID)
   EndIf
@@ -127,6 +130,7 @@ Function OnTick()
   SetSexAttributes()
   
   bool alreadySaid = false
+  
 
   ;What's the weather like
   Weather w = Weather.GetCurrentWeather()
@@ -148,32 +152,57 @@ Function OnTick()
     Say(SD_RandomThought, PlayerRef)    
   Endif
 
-  int chance
-  If (PlayerRef.HasPerk(SD_Sanity03) && (SF_Main.GetSanity(PlayerRef) < 95.00))
-    chance = Utility.RandomInt(1,100)
-    If (chance <= 12)
-      PlayerRef.EquipItem(SD_SanityOnePotion, false, true)
-      SF_Main.DNotify("You are One.")
-    EndIf
-  ElseIf (PlayerRef.HasPerk(SD_Sanity04) && (SF_Main.GetSanity(PlayerRef) < 95.00))
-    chance = Utility.RandomInt(1,100)
-    If (chance <= 12)
-      PlayerRef.EquipItem(SD_BeastUnleashed, false, true)
-      SF_Main.DNotify("The Beast.")
-    EndIf
-  ElseIf (PlayerRef.HasPerk(SD_Sanity05) && (SF_Main.GetSanity(PlayerRef) < 95.00))
-    chance = Utility.RandomInt(1,100)
-    If (chance <= 12)
-      SF_Main.DNotify("You are Shadow.")
-      PlayerRef.EquipItem(SD_ShadowLord, false, true)
-    EndIf
-
-  EndIf
-
+  
+  ManageSplinters()
   alreadySaid = false
   
   RefreshPlayerEffects(Utility.GetCurrentGameTime())
   StartTimerGameTime(tickFrequency, tickTimerID)
+EndFunction
+
+Function ManageSplinters()
+  int chance
+  bool applied = false
+  
+  IF (PlayerRef.IsInCombat())
+    If (PlayerRef.HasPerk(SD_Sanity04) && (SF_Main.GetSanity(PlayerRef) < 95.00) && !applied)
+      chance = Utility.RandomInt(1,100)
+      If (chance <= 12)
+        applied = true
+        PlayerRef.EquipItem(SD_BeastUnleashed, false, true)
+        SF_Main.DNotify("The Beast Whispers.")
+      EndIf
+    EndIf
+    If (PlayerRef.HasPerk(SD_Sanity05) && (SF_Main.GetSanity(PlayerRef) < 95.00) && !applied)
+      chance = Utility.RandomInt(1,100)
+      If (chance <= 12)
+        SF_Main.DNotify("You are Shadow.")
+        applied = true
+        PlayerRef.EquipItem(SD_ShadowLord, false, true)
+      EndIf
+    EndIf
+  EndIF
+
+  If (PlayerRef.HasPerk(SD_Sanity03) && (SF_Main.GetSanity(PlayerRef) < 95.00) && !applied)
+    chance = Utility.RandomInt(1,100)
+    If (chance <= 12)
+      applied = true
+      PlayerRef.EquipItem(SD_SanityOnePotion, false, true)
+      SF_Main.DNotify("You are One.")
+    EndIf
+  EndIF
+
+  If ((SF_Main.GetSanity(PlayerRef) < 95.00) && !applied)
+    chance = Utility.RandomInt(1,100)
+    If (chance <= 12)
+      SF_Main.ModifySanity(PlayerRef, 1)
+      SF_Main.DNotify("You.")
+      applied = true
+    EndIf
+  EndIf
+
+  applied = false
+
 EndFunction
 
 Function SetSexAttributes()
@@ -189,7 +218,7 @@ Function SetSexAttributes()
 EndFunction
 
 Function RefreshPlayerEffects(float currentTime)
-  SF_Main.DNotify("Last Effect: " + lastEffectCheck)
+  
   if (currentTime > (lastEffectCheck + 30))
     SF_Main.DNotify("Checking Effects")
     lastEffectCheck = currentTime
@@ -215,7 +244,8 @@ Event OnPlayerSleepStop(bool abInterrupted, ObjectReference akBed)
   float rng =  Utility.RandomFloat() * 100
   ;You can't be happy if you want to sleep 8 hours and only get 5.  No stress relief for you otherwise.  That's why it's called desired sleep time, silly.
   if (x >= iSleepDesired) && !abInterrupted
-    SF_Main.ModifyStress(PlayerRef, -0.5)
+    SF_Main.ModifyStress(PlayerRef, 0.5)
+    SF_Main.ModifySanity(PlayerRef, 0.05)
   Else
     if (Utility.RandomInt(0,100) < messageFrequency) && !alreadySaid
       Say(SD_RandomSleepThought, PlayerRef)    
@@ -261,7 +291,7 @@ Event OnItemEquipped(Form akBaseObject, ObjectReference akReference)
     SF_Main.ModifyStress(PlayerRef, 0.1 + negTolerance)
     SF_Main.ModifyDepression(PlayerRef, 0.1 + negTolerance)
     SF_Main.ModifyGrief(PlayerRef, 0.1 + negTolerance)
-    if (Utility.RandomInt() < messageFrequency)
+    if (Utility.RandomInt(0,100) < messageFrequency)
       Say(SD_RandomDrugThought, PlayerRef)   
     endif
   EndIf
@@ -294,6 +324,17 @@ Event OnLocationChange(Location akOldLoc, Location akNewLoc)
 EndEvent
 
 Function Say(Keyword akKey, Actor akActor)
-  
   akActor.SayCustom(akKey, None, true)
 EndFunction
+
+Event OnCombatStateChanged(Actor akTarget, int aeCombatState)
+  
+  
+    if (aeCombatState == 0)
+      ;SF_Main.DNotify("We have left combat")
+    elseif (aeCombatState == 1)
+      ManageSplinters()
+    endIf
+  
+  RegisterForRemoteEvent(PlayerRef, "OnCombatStateChanged")
+endEvent

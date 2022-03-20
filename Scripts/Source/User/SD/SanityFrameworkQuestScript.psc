@@ -91,8 +91,8 @@ EndEvent
 ; If its a human, it has two outcomes.  If the Victim was aggressive, less sanity and stress are affected, otherwise, higher penalties.
 Event Actor.OnKill(Actor akSender, Actor akVictim)
   if akSender == PlayerRef && akVictim.GetRace() != HumanRace
-    ModifySanity(akSender, -0.01)
-    ModifyStress(akSender, 0.01)
+    ModifySanity(akSender, -0.001)
+    ModifyStress(akSender, -0.001)
   ElseIf akSender == PlayerRef && akVictim.GetRace() == HumanRace
     int Aggro = akVictim.GetValue(Game.GetAggressionAV()) as int
     if Aggro >= 2.0
