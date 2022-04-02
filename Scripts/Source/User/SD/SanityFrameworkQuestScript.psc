@@ -367,7 +367,7 @@ bool Function IsRape(string[] akTags, string akMeta)
   string[] meta = LL_FourPlay.StringSplit(theString = akMeta, delimiter = ",")
   if meta.Find("PlayerRaped") > -1
     return true
-  elseif akTags.Find("Aggressive") > -1 && akTags.Find("Rough") > -1
+  elseif akTags.Find("Aggressive") > -1 || akTags.Find("Rough") > -1
     return true
   Else
     return false

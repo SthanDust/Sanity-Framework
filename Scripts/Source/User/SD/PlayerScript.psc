@@ -12,8 +12,14 @@ Potion Property SD_ShadowLord auto
 Potion Property SD_BeastUnleashed auto 
 Location[] Property SD_POI auto mandatory
 
+Faction Property SD_OneFaction auto 
+Faction Property SD_BeastFaction auto
+Faction Property SD_SthanFaction auto
+Faction Property SD_GabryalFaction auto 
+Faction Property SD_YouFaction auto 
 
 
+GlobalVariable Property SD_Setting_ThoughtsEnabled auto
 GlobalVariable Property SD_Setting_ThoughtFrequency auto
 GlobalVariable Property SD_Haha auto ;Do you believe in god?  Do you read comments?
 GlobalVariable Property SD_HumanFactor auto ; -1 missing a member and +1 you have the member
@@ -162,46 +168,57 @@ EndFunction
 
 Function ManageSplinters()
   int chance
-  bool applied = false
   
-  IF (PlayerRef.IsInCombat())
-    If (PlayerRef.HasPerk(SD_Sanity04) && (SF_Main.GetSanity(PlayerRef) < 95.00) && !applied)
+  IF (SF_Main.GetSanity(PlayerRef) < 95.00)
+    IF (PlayerRef.IsInCombat())
+      If (PlayerRef.HasPerk(SD_Sanity04))
+        chance = Utility.RandomInt(1,100)
+        If (chance <= 12)
+          PlayerRef.EquipItem(SD_BeastUnleashed, false, true)
+          SF_Main.DNotify("The Beast Whispers.")
+          PlayerRef.AddToFaction(SD_BeastFaction)
+          int currentRank = PlayerRef.GetFactionRank(SD_BeastFaction)
+          PlayerRef.ModFactionRank(SD_BeastFaction, currentRank + 1)
+          return
+        EndIf
+      EndIf
+      If (PlayerRef.HasPerk(SD_Sanity05))
+        chance = Utility.RandomInt(1,100)
+        If (chance <= 12)
+          SF_Main.DNotify("You are Shadow.")
+          PlayerRef.EquipItem(SD_ShadowLord, false, true)
+          PlayerRef.AddToFaction(SD_GabryalFaction)
+          int currentRank = PlayerRef.GetFactionRank(SD_GabryalFaction)
+          PlayerRef.ModFactionRank(SD_GabryalFaction, currentRank + 1)
+          return
+        EndIf
+      EndIf
+    EndIF
+
+    If (PlayerRef.HasPerk(SD_Sanity03))
       chance = Utility.RandomInt(1,100)
       If (chance <= 12)
-        applied = true
-        PlayerRef.EquipItem(SD_BeastUnleashed, false, true)
-        SF_Main.DNotify("The Beast Whispers.")
+        SF_Main.DNotify("You are One.")
+        PlayerRef.EquipItem(SD_SanityOnePotion, false, true)
+        PlayerRef.AddToFaction(SD_OneFaction)
+        int currentRank = PlayerRef.GetFactionRank(SD_OneFaction)
+        PlayerRef.ModFactionRank(SD_OneFaction, currentRank + 1)
+        return
       EndIf
-    EndIf
-    If (PlayerRef.HasPerk(SD_Sanity05) && (SF_Main.GetSanity(PlayerRef) < 95.00) && !applied)
-      chance = Utility.RandomInt(1,100)
-      If (chance <= 12)
-        SF_Main.DNotify("You are Shadow.")
-        applied = true
-        PlayerRef.EquipItem(SD_ShadowLord, false, true)
-      EndIf
-    EndIf
-  EndIF
+    EndIF
 
-  If (PlayerRef.HasPerk(SD_Sanity03) && (SF_Main.GetSanity(PlayerRef) < 95.00) && !applied)
-    chance = Utility.RandomInt(1,100)
-    If (chance <= 12)
-      applied = true
-      PlayerRef.EquipItem(SD_SanityOnePotion, false, true)
-      SF_Main.DNotify("You are One.")
-    EndIf
-  EndIF
-
-  If ((SF_Main.GetSanity(PlayerRef) < 95.00) && !applied)
+    
     chance = Utility.RandomInt(1,100)
     If (chance <= 12)
       SF_Main.ModifySanity(PlayerRef, 1)
       SF_Main.DNotify("You.")
-      applied = true
+      PlayerRef.AddToFaction(SD_YouFaction)
+      int currentRank = PlayerRef.GetFactionRank(SD_YouFaction)
+      PlayerRef.ModFactionRank(SD_YouFaction, currentRank + 1)
     EndIf
-  EndIf
 
-  applied = false
+EndIf
+ 
 
 EndFunction
 
@@ -246,6 +263,7 @@ Event OnPlayerSleepStop(bool abInterrupted, ObjectReference akBed)
   if (x >= iSleepDesired) && !abInterrupted
     SF_Main.ModifyStress(PlayerRef, 0.5)
     SF_Main.ModifySanity(PlayerRef, 0.05)
+    SF_Main.ModifyTrauma(PlayerRef, 5)
   Else
     if (Utility.RandomInt(0,100) < messageFrequency) && !alreadySaid
       Say(SD_RandomSleepThought, PlayerRef)    
@@ -324,7 +342,9 @@ Event OnLocationChange(Location akOldLoc, Location akNewLoc)
 EndEvent
 
 Function Say(Keyword akKey, Actor akActor)
-  akActor.SayCustom(akKey, None, true)
+  if (SD_Setting_ThoughtsEnabled.GetValueInt() == 1)
+    akActor.SayCustom(akKey, None, true)
+  EndIf
 EndFunction
 
 Event OnCombatStateChanged(Actor akTarget, int aeCombatState)

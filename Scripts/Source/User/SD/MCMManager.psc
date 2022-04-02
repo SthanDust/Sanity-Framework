@@ -21,6 +21,7 @@ Group General
     GlobalVariable Property SD_Setting_Override_HBW auto
     GlobalVariable Property SD_Internal_MCMLoaded auto 
     GlobalVariable Property SD_Internal_FirstLoad auto
+    GlobalVariable Property SD_Setting_ThoughtsEnabled auto
     ActorValue property SD_Sanity auto 
     ActorValue property SD_Stress auto
     Message Property SD_FrameworkInit Auto
@@ -78,7 +79,7 @@ EndFunction
 Function CheckVersion()
     float current = SD_FVersion.GetValue() as float
     
-    float newVersion = 180
+    float newVersion = 181
     
    
     if  (current != newVersion)
@@ -120,6 +121,7 @@ Function OnMCMSettingChange(string modName, string id)
   if modName == thisMod
       MCMUpdate()
   endif
+  RegisterForExternalEvent("OnMCMSettingChange|"+thisMod, "OnMCMSettingChange")
 EndFunction
 
 Event OnMenuOpenCloseEvent(string asMenuName, bool abOpening)
@@ -130,6 +132,7 @@ Function MCMUpdate()
     SD_Framework_Debugging.SetValue(MCM.GetModSettingBool(thisMod, "bMCMDebugOn:Debug") as float)
     SD_Framework_Enabled.SetValue(MCM.GetModSettingBool(thisMod, "bMCMModEnabled:Globals") as float)
     SD_Setting_ThoughtFrequency.SetValue(MCM.GetModSettingFloat(thisMod, "fMessageFrequency:Globals"))
+    SD_Setting_ThoughtsEnabled.SetValue(MCM.GetModSettingFloat(thisMod, "bMCMThoughtsEnabled:Globals"))
     SD_Setting_Override_Vio.SetValue(MCM.GetModSettingBool(thisMod, "bEnableAFV:Override") as float)
     SD_Setting_Override_FPE.SetValue(MCM.GetModSettingBool(thisMod, "bEnableFPE:Override") as float)
     SD_Setting_Override_WLD.SetValue(MCM.GetModSettingBool(thisMod, "bEnableWLD:Override") as float)
@@ -180,9 +183,19 @@ EndFunction
 
 Function DNotify(string lname, string text)
   If SD_Framework_Debugging.GetValue() == 1
-    Debug.Notification("[SDF] " + text)
+    Debug.Notification("[SF] " + text)
   EndIf
-    Debug.Trace("[SDF] " + text, 0) ; just to get started
-    Debug.TraceUser(lname, "[SDF] " + text)
+    Debug.Trace("[SF] " + text, 0) ; just to get started
+    Debug.TraceUser(lname, "[SF] " + text)
 EndFunction
 
+Function DumpStats()
+    DNotify(logName, "Statistics *************************")
+    DNotify(logName, "Sanity: " + SDF.GetSanity(PlayerRef))
+    DNotify(logName, "Trauma: " + SDF.GetTrauma(PlayerRef))
+    DNotify(logName, "Depression: " + SDF.GetDepression(PlayerRef))
+    DNotify(logName, "Grief: " + SDF.GetGrief(PlayerRef))
+    DNotify(logName, "Alignment: " + SDF.GetAlignment(PlayerRef))
+    DNotify(logName, "Stress: " + SDF.GetStress(PlayerRef))
+    DNotify(logName, "EndStatistics ***********************")
+EndFunction
