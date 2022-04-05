@@ -1,4 +1,4 @@
-# Sanity Framework 1.24c (Grief Release)
+# Sanity Framework 1.90 (Whisper Release)
 
 Greetings fellow Wastelanders!
 
