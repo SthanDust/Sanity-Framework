@@ -122,7 +122,7 @@ Event OnTimer(int aiTimerID)
     
     Quest Main = Game.GetFormFromFile(0x0001F59A, "SD_MainFramework.esp") as quest
     
-    if (Game.IsPluginInstalled("FP_FamilyPlanning.esp"))
+    if (Game.IsPluginInstalled("FP_FamilyPlanningEnhanced.esp"))
       Pregnancy = Game.GetFormFromFile(0x000000FA8, "FP_FamilyPlanningEnhanced.esp") as Faction
       FPE = Game.GetFormFromFile(0x000000F99, "FP_FamilyPlanningEnhanced.esp") as FPFP_Player_Script
       BabyInfo = Game.GetFormFromFile(0x000000F99, "FP_FamilyPlanningEnhanced.esp") as FPFP_PlayerPregData
