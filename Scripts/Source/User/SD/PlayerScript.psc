@@ -19,19 +19,36 @@ Faction Property SD_GabryalFaction auto
 Faction Property SD_YouFaction auto 
 
 
+Faction Pregnancy 
+bool IsPregnant = false
+Actor akFather 
+int NumChildren
+FPFP_Player_Script FPE
+FPFP_PlayerPregData BabyInfo 
+bool akBirth
+
+
+Group Settings
 GlobalVariable Property SD_Setting_ThoughtsEnabled auto
 GlobalVariable Property SD_Setting_ThoughtFrequency auto
 GlobalVariable Property SD_Haha auto ;Do you believe in god?  Do you read comments?
 GlobalVariable Property SD_HumanFactor auto ; -1 missing a member and +1 you have the member
+GlobalVariable Property SD_Setting_Integrate_Vio auto
+GlobalVariable Property SD_Setting_Integrate_FPE auto
+GlobalVariable Property SD_Setting_Integrate_WLD Auto 
+GlobalVariable Property SD_Setting_Integrate_JB auto
+GlobalVariable Property SD_Setting_Integrate_HBW auto
+GlobalVariable Property SD_Tolerance auto 
+GlobalVariable Property SD_Decay auto
+GlobalVariable Property SD_ModH auto
+GlobalVariable Property SD_ModM auto
+GlobalVariable Property SD_ModL auto
+EndGroup
 
+Group Keywords
 ;bad things for bad problems
 Keyword Property ObjectTypeAlcohol auto 
 Keyword Property ObjectTypeChem auto
-Keyword Property AnimFaceArchetypeDepressed auto
-;voices in my head can't stay quiet
-
-int messageFrequency = 20
-
 Keyword Property SD_RandomThought auto 
 Keyword Property SD_RandomDrugThought auto 
 Keyword Property SD_RandomDrinkThought auto 
@@ -40,12 +57,8 @@ Keyword Property SD_RandomWeatherThought auto
 Keyword Property SD_RandomGriefThought auto 
 Keyword Property SD_RandomStressThought auto 
 Keyword Property SD_RandomSleepThought auto 
+EndGroup
 
-GlobalVariable Property SD_Tolerance auto 
-GlobalVariable Property SD_Decay auto
-GlobalVariable Property SD_ModH auto
-GlobalVariable Property SD_ModM auto
-GlobalVariable Property SD_ModL auto
 
 Perk Property SD_Sanity03 auto
 Perk Property SD_Sanity04 auto
@@ -53,8 +66,9 @@ Perk Property SD_Sanity05 auto
 
 ;It can't rain all the time, can it?  When you're sad, can you tell the difference between rain and shine, buttercup?
 Weather RainyWeather
-
+int messageFrequency = 20
 SD:SanityFrameworkQuestScript SF_Main
+
 float tickFrequency = 1.0
 int tickTimerID = 34
 float iSleepDesired = 0.0
@@ -102,10 +116,23 @@ Event OnPlayerLoadGame()
     StartTimer(3, 1)
 EndEvent
 
+
 Event OnTimer(int aiTimerID)
   if(aiTimerID == 1)
     
     Quest Main = Game.GetFormFromFile(0x0001F59A, "SD_MainFramework.esp") as quest
+    
+    if (Game.IsPluginInstalled("FP_FamilyPlanning.esp"))
+      Pregnancy = Game.GetFormFromFile(0x000000FA8, "FP_FamilyPlanningEnhanced.esp") as Faction
+      FPE = Game.GetFormFromFile(0x000000F99, "FP_FamilyPlanningEnhanced.esp") as FPFP_Player_Script
+      BabyInfo = Game.GetFormFromFile(0x000000F99, "FP_FamilyPlanningEnhanced.esp") as FPFP_PlayerPregData
+      SF_Main.DNotify("FPE is loaded.")
+      RegisterForCustomEvent(FPE, "FPFP_GetPregnant")
+      RegisterForCustomEvent(FPE, "FPFP_GiveBirth")
+      if PlayerRef.GetFactionRank(Pregnancy) > 0
+        IsPregnant = true
+      endif
+    endif
 	  SF_Main = Main as SD:SanityFrameworkQuestScript
     SF_Main.LoadSDF()
     messageFrequency = SD_Setting_ThoughtFrequency.GetValueInt()
@@ -115,13 +142,23 @@ Event OnTimer(int aiTimerID)
     RefreshPlayerEffects(Utility.GetCurrentGameTime())
     float chaos = Utility.RandomFloat(-0.5, 0.5)
     RegisterForRemoteEvent(PlayerRef, "OnLocationChange")
-    bool temp = RegisterForRemoteEvent(PlayerRef, "OnCombatStateChanged")
-    if (!temp)
-      SF_Main.DNotify("Combat Register Failed")
-    EndIf
+    RegisterForRemoteEvent(PlayerRef, "OnCombatStateChanged")
     chaos += tickFrequency
     StartTimerGameTime(chaos, tickTimerID)
   EndIf
+EndEvent
+
+Event FPFP_Player_Script.FPFP_GetPregnant(FPFP_Player_Script akSender, Var[] akArgs)  
+	akFather = akArgs[1] as Actor
+	NumChildren = akArgs[2] as int
+  RegisterForCustomEvent(FPE, "FPFP_GetPregnant")
+  SF_Main.DNotify("Got Pregnant by " + akFather.GetName() + " who is a " + akFather.GetRace())
+EndEvent
+
+Event FPFP_Player_Script.FPFP_GiveBirth(FPFP_Player_Script akSender, Var[] akArgs)
+  akBirth = akArgs[2] as bool
+  RegisterForCustomEvent(FPE, "FPFP_GiveBirth")
+  SF_Main.DNotify("Gave Birth.")
 EndEvent
 
 Event OnTimerGameTime(int aiTimerID)
@@ -134,9 +171,13 @@ EndEvent
 Function OnTick()
   string lastMessage;
   SetSexAttributes()
-  
+
+  If (SD_Setting_Integrate_FPE.GetValue() == 1)
+     HandleFamilyPlanning()
+  EndIf
+
+ 
   bool alreadySaid = false
-  
 
   ;What's the weather like
   Weather w = Weather.GetCurrentWeather()
@@ -158,8 +199,6 @@ Function OnTick()
     Say(SD_RandomThought, PlayerRef)    
   Endif
 
-  
-  ManageSplinters()
   alreadySaid = false
   
   RefreshPlayerEffects(Utility.GetCurrentGameTime())
@@ -173,23 +212,23 @@ Function ManageSplinters()
     IF (PlayerRef.IsInCombat())
       If (PlayerRef.HasPerk(SD_Sanity04))
         chance = Utility.RandomInt(1,100)
-        If (chance <= 12)
+        SF_Main.DNotify(" Chance You: " + chance + " Current Rank: " + PlayerRef.GetFactionRank(SD_BeastFaction))
+        If (chance <= 5)
           PlayerRef.EquipItem(SD_BeastUnleashed, false, true)
           SF_Main.DNotify("The Beast Whispers.")
           PlayerRef.AddToFaction(SD_BeastFaction)
-          int currentRank = PlayerRef.GetFactionRank(SD_BeastFaction)
-          PlayerRef.ModFactionRank(SD_BeastFaction, currentRank + 1)
+          PlayerRef.ModFactionRank(SD_BeastFaction,1)
           return
         EndIf
       EndIf
       If (PlayerRef.HasPerk(SD_Sanity05))
         chance = Utility.RandomInt(1,100)
-        If (chance <= 12)
+        SF_Main.DNotify(" Chance You: " + chance + " Current Rank: " + PlayerRef.GetFactionRank(SD_GabryalFaction))
+        If (chance <= 5)
           SF_Main.DNotify("You are Shadow.")
           PlayerRef.EquipItem(SD_ShadowLord, false, true)
           PlayerRef.AddToFaction(SD_GabryalFaction)
-          int currentRank = PlayerRef.GetFactionRank(SD_GabryalFaction)
-          PlayerRef.ModFactionRank(SD_GabryalFaction, currentRank + 1)
+          PlayerRef.ModFactionRank(SD_GabryalFaction, 1)
           return
         EndIf
       EndIf
@@ -197,27 +236,27 @@ Function ManageSplinters()
 
     If (PlayerRef.HasPerk(SD_Sanity03))
       chance = Utility.RandomInt(1,100)
-      If (chance <= 12)
+      SF_Main.DNotify(" Chance You: " + chance + " Current Rank: " + PlayerRef.GetFactionRank(SD_OneFaction))
+      If (chance <= 5)
         SF_Main.DNotify("You are One.")
         PlayerRef.EquipItem(SD_SanityOnePotion, false, true)
         PlayerRef.AddToFaction(SD_OneFaction)
-        int currentRank = PlayerRef.GetFactionRank(SD_OneFaction)
-        PlayerRef.ModFactionRank(SD_OneFaction, currentRank + 1)
+        PlayerRef.ModFactionRank(SD_OneFaction, 1)
         return
       EndIf
     EndIF
 
     
     chance = Utility.RandomInt(1,100)
-    If (chance <= 12)
+    SF_Main.DNotify(" Chance You: " + chance + " Current Rank: " + PlayerRef.GetFactionRank(SD_YouFaction))
+    If (chance <= 5)
       SF_Main.ModifySanity(PlayerRef, 1)
       SF_Main.DNotify("You.")
       PlayerRef.AddToFaction(SD_YouFaction)
-      int currentRank = PlayerRef.GetFactionRank(SD_YouFaction)
-      PlayerRef.ModFactionRank(SD_YouFaction, currentRank + 1)
+      PlayerRef.ModFactionRank(SD_YouFaction, 1)
     EndIf
 
-EndIf
+  EndIf
  
 
 EndFunction
@@ -232,6 +271,15 @@ Function SetSexAttributes()
   negTolerance = tolerance * -1
   SD_Tolerance.SetValue(tolerance)
   SD_Decay.SetValue(negTolerance)
+EndFunction
+
+Function HandleFamilyPlanning()
+  if (IsPregnant)
+    SF_Main.ModifyGrief(PlayerRef, 0.1)
+    SF_Main.ModifySanity(PlayerRef, 0.1)
+    SF_Main.ModifyDepression(PlayerRef, 0.1)
+    SF_Main.ModifyStress(PlayerRef, -0.05)
+  EndIf
 EndFunction
 
 Function RefreshPlayerEffects(float currentTime)
@@ -253,6 +301,7 @@ EndFunction
 
 Event OnPlayerSleepStart(float afSleepStartTime, float afDesiredSleepEndTime, ObjectReference akBed)
   iSleepDesired = afDesiredSleepEndTime
+  
 EndEvent
 
 Event OnPlayerSleepStop(bool abInterrupted, ObjectReference akBed)

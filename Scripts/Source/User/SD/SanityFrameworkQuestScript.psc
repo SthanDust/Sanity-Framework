@@ -101,6 +101,7 @@ Event Actor.OnKill(Actor akSender, Actor akVictim)
     Else
       ModifySanity(akSender, -0.5)
       ModifyStress(akSender, -0.5)
+      ModifyAlignment(akSender, -0.5)
     Endif
   Endif
 EndEvent
@@ -155,17 +156,7 @@ Function LoadAAF()
 	endif
 EndFunction
 
-Function ResetActorValues()
-  ;to be removed
-  DNotify("Resetting Actor Values.")
-  PlayerRef.RestoreValue(SD_Sanity, 100)
-  PlayerRef.RestoreValue(SD_Stress, 100)
-  PlayerRef.RestoreValue(SD_Depression, 100)
-  PlayerRef.RestoreValue(SD_Grief, 100)
-  PlayerRef.DamageValue(SD_Depression, 10)
-  PlayerRef.DamageValue(SD_Grief, 10)
-  PlayerRef.DamageValue(SD_Trauma, 5)
-EndFunction
+
 
 Function DNotify(string text)
   If SD_Framework_Debugging.GetValue() == 1
@@ -345,10 +336,13 @@ Event AAF:AAF_API.OnAnimationStop(AAF:AAF_API akSender, Var[] akArgs)
   String position = akArgs[2] as String
   string meta = akArgs[4] as string
   float mod = 0.0
+
+ 
+
   if IsRape(Tags, meta)
     string[] metaTag = LL_FourPlay.StringSplit(theString = Meta, delimiter = ",")
     If metaTag.Find("AAF_Violate") > -1
-      mod = 1.0
+      mod = -1.0
       
     EndIf
     if actors.length > 2
@@ -358,7 +352,7 @@ Event AAF:AAF_API.OnAnimationStop(AAF:AAF_API akSender, Var[] akArgs)
     ModifyStress(PlayerRef, -2.0 + mod)
     ModifyTrauma(PlayerRef, -5.0 + mod)
     ModifySanity(PlayerRef, -2.0 + mod)
-    
+    DNotify("Player Raped.")
   endif
   
 EndEvent

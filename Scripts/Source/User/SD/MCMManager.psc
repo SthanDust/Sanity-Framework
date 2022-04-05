@@ -22,8 +22,14 @@ Group General
     GlobalVariable Property SD_Internal_MCMLoaded auto 
     GlobalVariable Property SD_Internal_FirstLoad auto
     GlobalVariable Property SD_Setting_ThoughtsEnabled auto
+    GlobalVariable Property SD_Tolerance auto 
+    GlobalVariable Property SD_Decay auto
     ActorValue property SD_Sanity auto 
     ActorValue property SD_Stress auto
+    ActorValue property SD_Grief auto 
+    ActorValue property SD_Depression auto
+    ActorValue property SD_Trauma auto 
+    ActorValue property SD_Alignment auto
     Message Property SD_FrameworkInit Auto
     Message Property SD_StatisticsMessage auto
     message Property SD_Updated auto 
@@ -168,6 +174,21 @@ function ResetMod()
     
 EndFunction
 
+Function ResetActorValues()
+  ;to be removed
+  SDF.DNotify("Resetting Actor Values.")
+  PlayerRef.RestoreValue(SD_Sanity,     10000)
+  PlayerRef.RestoreValue(SD_Stress,     10000)
+  PlayerRef.RestoreValue(SD_Depression, 10000)
+  PlayerRef.RestoreValue(SD_Trauma,     10000)
+  PlayerRef.RestoreValue(SD_Grief,      10000)
+  PlayerRef.RestoreValue(SD_Alignment,  10000)
+  PlayerRef.DamageValue(SD_Depression,     10)
+  PlayerRef.DamageValue(SD_Grief,          10)
+  PlayerRef.DamageValue(SD_Trauma,          5)
+  PlayerRef.DamageValue(SD_Sanity,          5)
+EndFunction
+
 Function CheckIntegrations()
   SD_Setting_Integrate_FPE.SetValue(Game.IsPluginInstalled("FP_FamilyPlanningEnhanced.esp") as float)
   MCM.SetModSettingBool(thisMod, "bEnableFPE", SD_Setting_Integrate_FPE.GetValue() as bool)
@@ -197,5 +218,8 @@ Function DumpStats()
     DNotify(logName, "Grief: " + SDF.GetGrief(PlayerRef))
     DNotify(logName, "Alignment: " + SDF.GetAlignment(PlayerRef))
     DNotify(logName, "Stress: " + SDF.GetStress(PlayerRef))
+    DNotify(logName, "Decay: " + SD_Decay.GetValue())
+    DNotify(logName, "Tolerance: " + SD_Tolerance.GetValue())
     DNotify(logName, "EndStatistics ***********************")
+    
 EndFunction
