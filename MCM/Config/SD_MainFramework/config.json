@@ -225,6 +225,16 @@
                         "form": "SD_MainFramework.esp|5B92",
                         "function": "ResetMod"
                     }
+                },
+                {
+                    "text": "Reset Actor Values",
+                    "type": "button",
+                    "help": "Resets all your Sanity based actorvalues.",
+                    "action": {
+                        "type": "CallFunction",
+                        "form": "SD_MainFramework.esp|5B92",
+                        "function": "ResetActorValues"
+                    }
                 }
             ]
         },
