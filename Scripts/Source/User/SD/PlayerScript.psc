@@ -126,11 +126,13 @@ Event OnTimer(int aiTimerID)
       Pregnancy = Game.GetFormFromFile(0x000000FA8, "FP_FamilyPlanningEnhanced.esp") as Faction
       FPE = Game.GetFormFromFile(0x000000F99, "FP_FamilyPlanningEnhanced.esp") as FPFP_Player_Script
       BabyInfo = Game.GetFormFromFile(0x000000F99, "FP_FamilyPlanningEnhanced.esp") as FPFP_PlayerPregData
-      SF_Main.DNotify("FPE is loaded.")
+      ;SF_Main.DNotify("FPE is loaded.")
       RegisterForCustomEvent(FPE, "FPFP_GetPregnant")
       RegisterForCustomEvent(FPE, "FPFP_GiveBirth")
       if PlayerRef.GetFactionRank(Pregnancy) > 0
         IsPregnant = true
+      Else
+        IsPregnant = false
       endif
     endif
 	  SF_Main = Main as SD:SanityFrameworkQuestScript
@@ -152,13 +154,13 @@ Event FPFP_Player_Script.FPFP_GetPregnant(FPFP_Player_Script akSender, Var[] akA
 	akFather = akArgs[1] as Actor
 	NumChildren = akArgs[2] as int
   RegisterForCustomEvent(FPE, "FPFP_GetPregnant")
-  SF_Main.DNotify("Got Pregnant by " + akFather.GetName() + " who is a " + akFather.GetRace())
+  ;SF_Main.DNotify("Got Pregnant by " + akFather.GetName() + " who is a " + akFather.GetRace())
 EndEvent
 
 Event FPFP_Player_Script.FPFP_GiveBirth(FPFP_Player_Script akSender, Var[] akArgs)
   akBirth = akArgs[2] as bool
   RegisterForCustomEvent(FPE, "FPFP_GiveBirth")
-  SF_Main.DNotify("Gave Birth.")
+  ;SF_Main.DNotify("Gave Birth.")
 EndEvent
 
 Event OnTimerGameTime(int aiTimerID)
