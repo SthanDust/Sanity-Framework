@@ -22,6 +22,7 @@ Faction Property SD_YouFaction auto
 Faction Pregnancy 
 bool IsPregnant = false
 Actor akFather 
+Actor akMother
 int NumChildren
 FPFP_Player_Script FPE
 FPFP_PlayerPregData BabyInfo 
@@ -151,13 +152,15 @@ Event OnTimer(int aiTimerID)
 EndEvent
 
 Event FPFP_Player_Script.FPFP_GetPregnant(FPFP_Player_Script akSender, Var[] akArgs)  
-	akFather = akArgs[1] as Actor
+	akMother = akArgs[0] as Actor
+  akFather = akArgs[1] as Actor
 	NumChildren = akArgs[2] as int
   RegisterForCustomEvent(FPE, "FPFP_GetPregnant")
   ;SF_Main.DNotify("Got Pregnant by " + akFather.GetName() + " who is a " + akFather.GetRace())
 EndEvent
 
 Event FPFP_Player_Script.FPFP_GiveBirth(FPFP_Player_Script akSender, Var[] akArgs)
+  akMother = akArgs[0] as Actor
   akBirth = akArgs[2] as bool
   RegisterForCustomEvent(FPE, "FPFP_GiveBirth")
   ;SF_Main.DNotify("Gave Birth.")
