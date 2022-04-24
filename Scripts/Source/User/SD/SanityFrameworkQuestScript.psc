@@ -15,6 +15,14 @@ float lastEffectCheck = 0.0
 
 Group Filter_Properties
   Race[] Property SD_SanityRaces auto
+  Race[] Property SD_CanineRaces auto 
+  Race[] Property SD_ReptileRaces auto 
+  Race[] Property SD_HumanRaces auto 
+  Race[] Property SD_NecroRaces auto 
+  Race[] Property SD_InsectRaces auto 
+  Race[] Property SD_MolluskRaces auto
+  Race[] Property SD_MutantRaces auto
+  Race[] Property SD_AlienRaces auto 
 EndGroup
 
 Group Calculated_Values
@@ -52,6 +60,15 @@ Group MCM_Settings
   GlobalVariable Property SD_Setting_Integrate_HBW auto
   GlobalVariable Property SD_Internal_MCMLoaded auto 
   GlobalVariable Property SD_Internal_FirstLoad auto
+  GlobalVariable Property SD_Beastess_Canine auto
+  GlobalVariable Property SD_Beastess_Reptile auto
+  GlobalVariable Property SD_Beastess_Human auto
+  GlobalVariable Property SD_Beastess_Necro auto
+  GlobalVariable Property SD_Beastess_Insect auto
+  GlobalVariable Property SD_Beastess_Mollusk auto 
+  GlobalVariable Property SD_Beastess_Mutant auto
+  GlobalVariable Property SD_Beastess_Alien auto
+
   Message Property SD_FrameworkInit Auto
   Message Property SD_StatisticsMessage auto
   GlobalVariable Property SD_Setting_ThoughtFrequency auto
@@ -220,9 +237,9 @@ EndFunction
 Function ModifyTrauma(Actor akTarget, float nTrauma)
   
   If (nTrauma < 0)
-    akTarget.DamageValue(SD_Trauma, Ntrauma)
+    akTarget.DamageValue(SD_Trauma, nTrauma)
   ElseIf (nTrauma > 0)
-    akTarget.RestoreValue(SD_Trauma, ntrauma)
+    akTarget.RestoreValue(SD_Trauma, nTrauma)
   EndIf
   SendCustomEvent("OnTraumaUpdate")
 EndFunction
@@ -337,18 +354,23 @@ Event AAF:AAF_API.OnAnimationStop(AAF:AAF_API akSender, Var[] akArgs)
   string meta = akArgs[4] as string
   float mod = 0.0
 
- 
+  int i = 0
 
   if IsRape(Tags, meta)
     string[] metaTag = LL_FourPlay.StringSplit(theString = Meta, delimiter = ",")
     If metaTag.Find("AAF_Violate") > -1
       mod = -1.0
-      
     EndIf
     if actors.length > 2
       mod = -2.0
-      
     EndIf
+
+    while i < actors.length
+      if i != idx
+
+      endif
+    EndWhile
+
     ModifyStress(PlayerRef, -2.0 + mod)
     ModifyTrauma(PlayerRef, -5.0 + mod)
     ModifySanity(PlayerRef, -2.0 + mod)
@@ -365,6 +387,47 @@ bool Function IsRape(string[] akTags, string akMeta)
     return true
   Else
     return false
+  EndIf
+EndFunction
+
+Function CheckRace(Actor akActor)
+  Race akRace = akActor.GetLeveledActorBase().GetRace()  
+  DNotify("Sex Race: " + akRace.GetName())
+  if SD_CanineRaces.Find(akRace) > -1
+    SD_Beastess_Canine.Value += 1
+    return
+  endif
+  If SD_ReptileRaces.Find(akRace) > -1
+    SD_Beastess_Reptile.Value += 1
+    return
+  EndIf
+  If SD_HumanRaces.Find(akRace) > -1
+    SD_Beastess_Human.Value += 1
+    return
+  EndIf
+
+  If SD_NecroRaces.Find(akRace) > -1
+    SD_Beastess_Necro.Value += 1
+    return
+  EndIf
+
+  If SD_InsectRaces.Find(akRace) > -1
+    SD_Beastess_Insect.Value += 1
+    return
+  EndIf
+
+  If SD_MolluskRaces.Find(akRace) > -1
+    SD_Beastess_Mollusk.Value += 1
+  EndIf
+
+  If SD_MutantRaces.Find(akRace) > -1
+    SD_Beastess_Mutant.Value += 1
+    return
+  EndIf
+
+  If SD_AlienRaces.Find(akRace) > -1
+    SD_Beastess_Alien.Value += 1
+    return
   EndIf
 EndFunction
 

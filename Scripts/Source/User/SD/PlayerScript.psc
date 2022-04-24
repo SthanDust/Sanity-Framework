@@ -117,7 +117,6 @@ Event OnPlayerLoadGame()
     StartTimer(3, 1)
 EndEvent
 
-
 Event OnTimer(int aiTimerID)
   if(aiTimerID == 1)
     
@@ -130,7 +129,7 @@ Event OnTimer(int aiTimerID)
       ;SF_Main.DNotify("FPE is loaded.")
       RegisterForCustomEvent(FPE, "FPFP_GetPregnant")
       RegisterForCustomEvent(FPE, "FPFP_GiveBirth")
-      if PlayerRef.GetFactionRank(Pregnancy) > 0
+      if PlayerRef.GetFactionRank(Pregnancy) > -1
         IsPregnant = true
       Else
         IsPregnant = false
@@ -156,7 +155,7 @@ Event FPFP_Player_Script.FPFP_GetPregnant(FPFP_Player_Script akSender, Var[] akA
   akFather = akArgs[1] as Actor
 	NumChildren = akArgs[2] as int
   RegisterForCustomEvent(FPE, "FPFP_GetPregnant")
-  ;SF_Main.DNotify("Got Pregnant by " + akFather.GetName() + " who is a " + akFather.GetRace())
+  SF_Main.DNotify("Got Pregnant by " + akFather.GetLeveledActorBase().GetName() + " who is a " + akFather.GetLeveledActorBase().GetRace())
 EndEvent
 
 Event FPFP_Player_Script.FPFP_GiveBirth(FPFP_Player_Script akSender, Var[] akArgs)
@@ -347,8 +346,6 @@ Event OnPlayerSleepStop(bool abInterrupted, ObjectReference akBed)
   EndIf
 EndEvent
 
-
-
 ; note, this constant will be a diminishing variable to simulate tolerance.
 Event OnItemEquipped(Form akBaseObject, ObjectReference akReference)
 
@@ -375,12 +372,10 @@ Event OnItemEquipped(Form akBaseObject, ObjectReference akReference)
   EndIF
 EndEvent
 
-
 ; These are crucial messages to keep the player engaged in the mod.  A constant reminder that you have other issues to deal with.
 Function DMessage(string text)
    Debug.Notification(text)
 EndFunction
-
 
 Function LoadSmokes()
   ;Smoke-able Cigars.esp
