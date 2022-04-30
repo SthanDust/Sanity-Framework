@@ -12,6 +12,7 @@ Potion Property SD_ShadowLord auto
 Potion Property SD_BeastUnleashed auto 
 Location[] Property SD_POI auto mandatory
 
+
 Faction Property SD_OneFaction auto 
 Faction Property SD_BeastFaction auto
 Faction Property SD_SthanFaction auto
@@ -93,7 +94,7 @@ float lastEffectCheck = 0.0
 int timesSthan = 0
 int timesOne = 0 
 int timesAlex = 0
-
+string[] Property ImpregnatedRaces auto
 
 
 float function CalculateModifiers()
@@ -122,11 +123,11 @@ Event OnTimer(int aiTimerID)
     
     Quest Main = Game.GetFormFromFile(0x0001F59A, "SD_MainFramework.esp") as quest
     
-    if (Game.IsPluginInstalled("FP_FamilyPlanningEnhanced.esp"))
-      Pregnancy = Game.GetFormFromFile(0x000000FA8, "FP_FamilyPlanningEnhanced.esp") as Faction
-      FPE = Game.GetFormFromFile(0x000000F99, "FP_FamilyPlanningEnhanced.esp") as FPFP_Player_Script
-      BabyInfo = Game.GetFormFromFile(0x000000F99, "FP_FamilyPlanningEnhanced.esp") as FPFP_PlayerPregData
-      ;SF_Main.DNotify("FPE is loaded.")
+    if (Game.IsPluginInstalled("FP_FamilyPlanningEnhanced.esp") && SD_Setting_Integrate_FPE.Value == 1)
+      Pregnancy = Game.GetFormFromFile(0x00000FA8, "FP_FamilyPlanningEnhanced.esp") as Faction
+      FPE = Game.GetFormFromFile(0x00000F99, "FP_FamilyPlanningEnhanced.esp") as FPFP_Player_Script
+      BabyInfo = Game.GetFormFromFile(0x00000F99, "FP_FamilyPlanningEnhanced.esp") as FPFP_PlayerPregData
+      SF_Main.DNotify("FPE is loaded.")
       RegisterForCustomEvent(FPE, "FPFP_GetPregnant")
       RegisterForCustomEvent(FPE, "FPFP_GiveBirth")
       if PlayerRef.GetFactionRank(Pregnancy) > -1
@@ -154,15 +155,22 @@ Event FPFP_Player_Script.FPFP_GetPregnant(FPFP_Player_Script akSender, Var[] akA
 	akMother = akArgs[0] as Actor
   akFather = akArgs[1] as Actor
 	NumChildren = akArgs[2] as int
-  RegisterForCustomEvent(FPE, "FPFP_GetPregnant")
-  SF_Main.DNotify("Got Pregnant by " + akFather.GetLeveledActorBase().GetName() + " who is a " + akFather.GetLeveledActorBase().GetRace())
+  ;RegisterForCustomEvent(FPE, "FPFP_GetPregnant")
+  if akMother == PlayerRef
+    IsPregnant = true;
+    if (ImpregnatedRaces.Find(akFather.GetRace() as string) == -1)
+      ImpregnatedRaces.Add(akFather.GetRace() as string)
+      SF_Main.DNotify("Player Impregnated by a " + akFather.GetRace())
+    EndIf
+  EndIF
+  SF_Main.DNotify(akMother.GetName() + " got Pregnant by a " + akFather.GetRace() + " with " + NumChildren)
 EndEvent
 
 Event FPFP_Player_Script.FPFP_GiveBirth(FPFP_Player_Script akSender, Var[] akArgs)
   akMother = akArgs[0] as Actor
   akBirth = akArgs[2] as bool
-  RegisterForCustomEvent(FPE, "FPFP_GiveBirth")
-  ;SF_Main.DNotify("Gave Birth.")
+  ;RegisterForCustomEvent(FPE, "FPFP_GiveBirth")
+  SF_Main.DNotify("Gave Birth.")
 EndEvent
 
 Event OnTimerGameTime(int aiTimerID)
@@ -219,7 +227,7 @@ Function ManageSplinters()
         ;SF_Main.DNotify(" Chance You: " + chance + " Current Rank: " + PlayerRef.GetFactionRank(SD_BeastFaction))
         If (chance <= 5)
           PlayerRef.EquipItem(SD_BeastUnleashed, false, true)
-          SF_Main.DNotify("The Beast Whispers.")
+          ;SF_Main.DNotify("The Beast Whispers.")
           PlayerRef.AddToFaction(SD_BeastFaction)
           PlayerRef.ModFactionRank(SD_BeastFaction,1)
           return
@@ -229,7 +237,7 @@ Function ManageSplinters()
         chance = Utility.RandomInt(1,100)
         ;SF_Main.DNotify(" Chance You: " + chance + " Current Rank: " + PlayerRef.GetFactionRank(SD_GabryalFaction))
         If (chance <= 5)
-          SF_Main.DNotify("You are Shadow.")
+          ;SF_Main.DNotify("You are Shadow.")
           PlayerRef.EquipItem(SD_ShadowLord, false, true)
           PlayerRef.AddToFaction(SD_GabryalFaction)
           PlayerRef.ModFactionRank(SD_GabryalFaction, 1)
@@ -242,7 +250,7 @@ Function ManageSplinters()
       chance = Utility.RandomInt(1,100)
       ;SF_Main.DNotify(" Chance You: " + chance + " Current Rank: " + PlayerRef.GetFactionRank(SD_OneFaction))
       If (chance <= 5)
-        SF_Main.DNotify("You are One.")
+        ;SF_Main.DNotify("You are One.")
         PlayerRef.EquipItem(SD_SanityOnePotion, false, true)
         PlayerRef.AddToFaction(SD_OneFaction)
         PlayerRef.ModFactionRank(SD_OneFaction, 1)
@@ -255,7 +263,7 @@ Function ManageSplinters()
     ;SF_Main.DNotify(" Chance You: " + chance + " Current Rank: " + PlayerRef.GetFactionRank(SD_YouFaction))
     If (chance <= 5)
       SF_Main.ModifySanity(PlayerRef, 1)
-      SF_Main.DNotify("You.")
+      ;SF_Main.DNotify("You.")
       PlayerRef.AddToFaction(SD_YouFaction)
       PlayerRef.ModFactionRank(SD_YouFaction, 1)
     EndIf
@@ -266,11 +274,11 @@ Function ManageSplinters()
 EndFunction
 
 Function SetSexAttributes()
-  willpower = (Game.GetFormFromFile(0x01000FAB, "FPAttributes.esp") as GlobalVariable).getValueInt()
-  selfesteem = (Game.GetFormFromFile(0x01000FAC, "FPAttributes.esp") as GlobalVariable).getValueInt()
-  spirit = (Game.GetFormFromFile(0x01007A67, "FPAttributes.esp") as GlobalVariable).getValueInt()
-  trauma = (Game.GetFormFromFile(0x101E80B, "FPAttributes.esp") as GlobalVariable).getValueInt()
-  intoxicationLevel = (Game.GetFormFromFile(0x101E80C, "FPAttributes.esp") as GlobalVariable).getValueInt()
+  willpower = (Game.GetFormFromFile(0x00000FAB, "FPAttributes.esp") as GlobalVariable).getValueInt()
+  selfesteem = (Game.GetFormFromFile(0x00000FAC, "FPAttributes.esp") as GlobalVariable).getValueInt()
+  spirit = (Game.GetFormFromFile(0x00007A67, "FPAttributes.esp") as GlobalVariable).getValueInt()
+  trauma = (Game.GetFormFromFile(0x0001E80B, "FPAttributes.esp") as GlobalVariable).getValueInt()
+  intoxicationLevel = (Game.GetFormFromFile(0x0001E80C, "FPAttributes.esp") as GlobalVariable).getValueInt()
   tolerance = CalculateModifiers()
   negTolerance = tolerance * -1
   SD_Tolerance.SetValue(tolerance)
@@ -279,6 +287,7 @@ EndFunction
 
 Function HandleFamilyPlanning()
   if (IsPregnant)
+    ;SF_Main.DNotify("Pregnancy Benefits.")
     SF_Main.ModifyGrief(PlayerRef, 0.1)
     SF_Main.ModifySanity(PlayerRef, 0.1)
     SF_Main.ModifyDepression(PlayerRef, 0.1)
@@ -289,7 +298,7 @@ EndFunction
 Function RefreshPlayerEffects(float currentTime)
   
   if (currentTime > (lastEffectCheck + 30))
-    SF_Main.DNotify("Checking Effects")
+    ;SF_Main.DNotify("Checking Effects")
     lastEffectCheck = currentTime
     PlayerRef.EquipItem(SD_SanityPotion, false, true)
   EndIf
@@ -387,7 +396,8 @@ Event OnLocationChange(Location akOldLoc, Location akNewLoc)
     
     SF_Main.ModifyGrief(PlayerRef, -0.5)
   EndIf
-  RegisterForRemoteEvent(PlayerRef, "OnLocationChange")
+  SF_Main.DNotify("Location has changed.")
+  ;RegisterForRemoteEvent(PlayerRef, "OnLocationChange")
 EndEvent
 
 Function Say(Keyword akKey, Actor akActor)
@@ -404,6 +414,6 @@ Event OnCombatStateChanged(Actor akTarget, int aeCombatState)
     elseif (aeCombatState == 1)
       ManageSplinters()
     endIf
-  
-  RegisterForRemoteEvent(PlayerRef, "OnCombatStateChanged")
+  SF_Main.DNotify("Combat State has changed.")
+  ;RegisterForRemoteEvent(PlayerRef, "OnCombatStateChanged")
 endEvent

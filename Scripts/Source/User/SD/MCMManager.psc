@@ -48,7 +48,7 @@ Event OnInit()
     Quest Main = Game.GetFormFromFile(0x0001F59A, "SD_MainFramework.esp") as quest
     SDF = Main as SD:SanityFrameworkQuestScript
     SD_Internal_MCMLoaded.SetValue(0)
-    DNotify(logName, "MCM: OnInit")
+    ;DNotify(logName, "MCM: OnInit")
     if (CheckForMCM(True))
         RegisterForMenuOpenCloseEvent("PauseMenu")
         CheckVersion()
@@ -85,7 +85,7 @@ EndFunction
 Function CheckVersion()
     float current = SD_FVersion.GetValue() as float
     
-    float newVersion = 196
+    float newVersion = 1961
     
    
     if  (current != newVersion)

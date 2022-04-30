@@ -68,6 +68,7 @@ Group MCM_Settings
   GlobalVariable Property SD_Beastess_Mollusk auto 
   GlobalVariable Property SD_Beastess_Mutant auto
   GlobalVariable Property SD_Beastess_Alien auto
+  
 
   Message Property SD_FrameworkInit Auto
   Message Property SD_StatisticsMessage auto
@@ -87,6 +88,7 @@ CustomEvent OnAlignmentUpdate
 CustomEvent OnDepressionUpdate
 CustomEvent OnGriefUpdate
 CustomEvent OnTraumaUpdate
+CustomEvent OnBeastess
 
 Event OnQuestInit()
   OpenLog()
@@ -115,10 +117,11 @@ Event Actor.OnKill(Actor akSender, Actor akVictim)
     if Aggro >= 2.0
       ModifySanity(akSender, -0.02)
       ModifyStress(akSender, -0.02)
+      ModifyAlignment(akSender, 0.05)
     Else
       ModifySanity(akSender, -0.5)
       ModifyStress(akSender, -0.5)
-      ModifyAlignment(akSender, -0.5)
+      ModifyAlignment(akSender, -0.05)
     Endif
   Endif
 EndEvent
@@ -167,7 +170,6 @@ Function LoadAAF()
         	DNotify("AAF Not Found.  Please Exit and Install AAF.")
         	return
     	Else
-
         	RegisterForCustomEvent(AAF_API, "OnAnimationStop")
     	Endif
 	endif
@@ -186,7 +188,7 @@ EndFunction
 Function LoadSDF()
   RegisterForRemoteEvent(PlayerRef, "OnKill")
   RegisterForHitEvent(PlayerRef)
-  CheckCompanion()
+  ;CheckCompanion()
 EndFunction
 
 Function CheckCompanion()
@@ -346,6 +348,7 @@ Event AAF:AAF_API.OnAnimationStop(AAF:AAF_API akSender, Var[] akArgs)
 	Actor partnerActor
   int status = akArgs[0] as int
   if idx <= -1 || status != 0
+    ;DNotify("Exiting... Player not involved")
     return
   endif
   
@@ -354,7 +357,7 @@ Event AAF:AAF_API.OnAnimationStop(AAF:AAF_API akSender, Var[] akArgs)
   string meta = akArgs[4] as string
   float mod = 0.0
 
-  int i = 0
+  
 
   if IsRape(Tags, meta)
     string[] metaTag = LL_FourPlay.StringSplit(theString = Meta, delimiter = ",")
@@ -364,18 +367,22 @@ Event AAF:AAF_API.OnAnimationStop(AAF:AAF_API akSender, Var[] akArgs)
     if actors.length > 2
       mod = -2.0
     EndIf
-
-    while i < actors.length
-      if i != idx
-
-      endif
-    EndWhile
+    
 
     ModifyStress(PlayerRef, -2.0 + mod)
     ModifyTrauma(PlayerRef, -5.0 + mod)
     ModifySanity(PlayerRef, -2.0 + mod)
     
   endif
+
+  int i = 0
+  
+  while i < actors.length
+    if i != idx
+      CheckRace(actors[i])
+    endif
+    i += 1
+  EndWhile
   
 EndEvent
 
@@ -383,7 +390,7 @@ bool Function IsRape(string[] akTags, string akMeta)
   string[] meta = LL_FourPlay.StringSplit(theString = akMeta, delimiter = ",")
   if meta.Find("PlayerRaped") > -1
     return true
-  elseif akTags.Find("Aggressive") > -1 || akTags.Find("Rough") > -1
+  elseif akTags.Find("Aggressive") > -1 && akTags.Find("Rough") > -1
     return true
   Else
     return false
@@ -391,42 +398,50 @@ bool Function IsRape(string[] akTags, string akMeta)
 EndFunction
 
 Function CheckRace(Actor akActor)
-  Race akRace = akActor.GetLeveledActorBase().GetRace()  
-  DNotify("Sex Race: " + akRace.GetName())
+  Race akRace = akActor.GetRace()  
+  DNotify("Beastess Increase: " + akRace.GetName())
   if SD_CanineRaces.Find(akRace) > -1
     SD_Beastess_Canine.Value += 1
+    SendCustomEvent("OnBeastess")
     return
   endif
   If SD_ReptileRaces.Find(akRace) > -1
     SD_Beastess_Reptile.Value += 1
+    SendCustomEvent("OnBeastess")
     return
   EndIf
   If SD_HumanRaces.Find(akRace) > -1
     SD_Beastess_Human.Value += 1
+    SendCustomEvent("OnBeastess")
     return
   EndIf
 
   If SD_NecroRaces.Find(akRace) > -1
     SD_Beastess_Necro.Value += 1
+    SendCustomEvent("OnBeastess")
     return
   EndIf
 
   If SD_InsectRaces.Find(akRace) > -1
     SD_Beastess_Insect.Value += 1
+    SendCustomEvent("OnBeastess")
     return
   EndIf
 
   If SD_MolluskRaces.Find(akRace) > -1
     SD_Beastess_Mollusk.Value += 1
+    SendCustomEvent("OnBeastess")
   EndIf
 
   If SD_MutantRaces.Find(akRace) > -1
     SD_Beastess_Mutant.Value += 1
+    SendCustomEvent("OnBeastess")
     return
   EndIf
 
   If SD_AlienRaces.Find(akRace) > -1
     SD_Beastess_Alien.Value += 1
+    SendCustomEvent("OnBeastess")
     return
   EndIf
 EndFunction
