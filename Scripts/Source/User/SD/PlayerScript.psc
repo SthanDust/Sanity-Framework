@@ -11,6 +11,7 @@ Potion Property SD_SanityOnePotion auto
 Potion Property SD_ShadowLord auto 
 Potion Property SD_BeastUnleashed auto 
 Location[] Property SD_POI auto mandatory
+Race Property HumanRace auto 
 
 
 Faction Property SD_OneFaction auto 
@@ -22,6 +23,7 @@ Faction Property SD_YouFaction auto
 
 Faction Pregnancy 
 bool IsPregnant = false
+Race CurrentFatherRace
 Actor akFather 
 Actor akMother
 int NumChildren
@@ -73,6 +75,7 @@ SD:SanityFrameworkQuestScript SF_Main
 
 float tickFrequency = 1.0
 int tickTimerID = 34
+int dayTimerID = 24
 float iSleepDesired = 0.0
 ;0 none, <20 Weak, <50 Low, <60 Average, <80 High, <100 Strong, 100 Soaring
 int willpower
@@ -130,7 +133,7 @@ Event OnTimer(int aiTimerID)
       SF_Main.DNotify("FPE is loaded.")
       RegisterForCustomEvent(FPE, "FPFP_GetPregnant")
       RegisterForCustomEvent(FPE, "FPFP_GiveBirth")
-      if PlayerRef.GetFactionRank(Pregnancy) > -1
+      if PlayerRef.IsInFaction(Pregnancy)
         IsPregnant = true
       Else
         IsPregnant = false
@@ -148,8 +151,17 @@ Event OnTimer(int aiTimerID)
     RegisterForRemoteEvent(PlayerRef, "OnCombatStateChanged")
     chaos += tickFrequency
     StartTimerGameTime(chaos, tickTimerID)
+    StartTimerGameTime(24, dayTimerID)
+    LoadMessages()
   EndIf
 EndEvent
+
+function LoadMessages()
+  SF_Main.DNotify("Player Pregnancy: " + IsPregnant)
+  if (IsPregnant)
+    SF_Main.DNotify("Player is pregnant with " + NumChildren + " of the " + akFather.GetRace() + " race.")
+  EndIF
+EndFunction
 
 Event FPFP_Player_Script.FPFP_GetPregnant(FPFP_Player_Script akSender, Var[] akArgs)  
 	akMother = akArgs[0] as Actor
@@ -160,24 +172,41 @@ Event FPFP_Player_Script.FPFP_GetPregnant(FPFP_Player_Script akSender, Var[] akA
     IsPregnant = true;
     if (ImpregnatedRaces.Find(akFather.GetRace() as string) == -1)
       ImpregnatedRaces.Add(akFather.GetRace() as string)
-      SF_Main.DNotify("Player Impregnated by a " + akFather.GetRace())
+      CurrentFatherRace = akFather.GetRace()
+      Utility.Wait(2.0)
+      SF_Main.DNotify("Player Impregnated by a " + CurrentFatherRace.GetName())
     EndIf
   EndIF
-  SF_Main.DNotify(akMother.GetName() + " got Pregnant by a " + akFather.GetRace() + " with " + NumChildren)
+  ;SF_Main.DNotify(akMother.GetActorBase().GetName() + " got Pregnant by a " + akFather.GetRace().GetName() + " with " + NumChildren)
 EndEvent
 
 Event FPFP_Player_Script.FPFP_GiveBirth(FPFP_Player_Script akSender, Var[] akArgs)
   akMother = akArgs[0] as Actor
   akBirth = akArgs[2] as bool
+  if (akMother == PlayerRef)
+    IsPregnant = false 
+    If CurrentFatherRace != HumanRace
+      SF_Main.ModifySanity(PlayerRef, -0.5)
+    EndIf
+    CurrentFatherRace = None
+    
+  EndIF
   ;RegisterForCustomEvent(FPE, "FPFP_GiveBirth")
-  SF_Main.DNotify("Gave Birth.")
+  ;SF_Main.DNotify("Gave Birth.")
 EndEvent
 
 Event OnTimerGameTime(int aiTimerID)
   if (aiTimerID == tickTimerID)
     OnTick()
   EndIf
+  if (aiTimerID == dayTimerID)
+    OnDay()
+  EndIF
 EndEvent
+
+function OnDay()
+  SF_Main.DNotify("A day has passed.")
+EndFunction
 
 ;I wasted time, now doth time waste me
 Function OnTick()
@@ -292,6 +321,7 @@ Function HandleFamilyPlanning()
     SF_Main.ModifySanity(PlayerRef, 0.1)
     SF_Main.ModifyDepression(PlayerRef, 0.1)
     SF_Main.ModifyStress(PlayerRef, -0.05)
+    SF_Main.ModifyTrauma(PlayerRef, 0.1)
   EndIf
 EndFunction
 
@@ -396,7 +426,7 @@ Event OnLocationChange(Location akOldLoc, Location akNewLoc)
     
     SF_Main.ModifyGrief(PlayerRef, -0.5)
   EndIf
-  SF_Main.DNotify("Location has changed.")
+  ;SF_Main.DNotify("Location has changed.")
   ;RegisterForRemoteEvent(PlayerRef, "OnLocationChange")
 EndEvent
 
@@ -414,6 +444,6 @@ Event OnCombatStateChanged(Actor akTarget, int aeCombatState)
     elseif (aeCombatState == 1)
       ManageSplinters()
     endIf
-  SF_Main.DNotify("Combat State has changed.")
+  ;SF_Main.DNotify("Combat State has changed.")
   ;RegisterForRemoteEvent(PlayerRef, "OnCombatStateChanged")
 endEvent

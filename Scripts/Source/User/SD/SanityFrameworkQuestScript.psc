@@ -399,7 +399,7 @@ EndFunction
 
 Function CheckRace(Actor akActor)
   Race akRace = akActor.GetRace()  
-  DNotify("Beastess Increase: " + akRace.GetName())
+  
   if SD_CanineRaces.Find(akRace) > -1
     SD_Beastess_Canine.Value += 1
     SendCustomEvent("OnBeastess")
@@ -444,6 +444,19 @@ Function CheckRace(Actor akActor)
     SendCustomEvent("OnBeastess")
     return
   EndIf
+  Utility.Wait(2.0)
+  DNotify("Beastess Increase: " + akRace.GetName())
+EndFunction
+
+Function ResetBeastess()
+  SD_Beastess_Alien.Value = 0
+  SD_Beastess_Canine.Value = 0
+  SD_Beastess_Human.Value = 0
+  SD_Beastess_Insect.Value = 0
+  SD_Beastess_Mollusk.Value = 0
+  SD_Beastess_Mutant.Value = 0
+  SD_Beastess_Necro.Value = 0
+  SD_Beastess_Reptile.Value = 0
 EndFunction
 
 

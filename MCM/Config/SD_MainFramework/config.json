@@ -19,7 +19,7 @@
             "html": true
         },
         {
-            "text": "<font size=\"18\"><p align = \"center\">v 1.96 (Whisper Release)</p></font>",
+            "text": "<font size=\"18\"><p align = \"center\">v 2.0 (Insanity Release)</p></font>",
             "type": "text",
             "html": true
         },
@@ -90,7 +90,7 @@
                     "type": "section"
                 },
                 {
-                    "text": "Integrations allow the my mod to know if you want to use them.  Overrides is to allow Sanity to ignore certain aspects of integrated mods.",
+                    "text": "Integrations allow the my mod to know if you want to use them. If the mod is detected, it will be automatically enabled, so you should check the settings to make sure it isn't conflicting with another mod's functions. Overrides is to allow Sanity to ignore certain aspects of integrated mods.",
                     "type": "text",
                     "align": "center"
                 },
@@ -167,6 +167,25 @@
                         "sourceType": "ModSettingBool"
                     }
                 }
+                ,
+                {
+                    "id": "bEnableTSex:Integrate",
+                    "text": "TSex Integration",
+                    "help": "Turns off TSex Integration.",
+                    "type": "switcher",
+                    "valueOptions": {
+                        "sourceType": "ModSettingBool"
+                    }
+                },
+                {
+                    "id": "bEnableTSex:Override",
+                    "text": "TSex Override",
+                    "help": "Turns off TSex Feature Override.",
+                    "type": "switcher",
+                    "valueOptions": {
+                        "sourceType": "ModSettingBool"
+                    }
+                }
             ]
         },
         {
@@ -234,6 +253,15 @@
                         "type": "CallFunction",
                         "form": "SD_MainFramework.esp|5B92",
                         "function": "ResetActorValues"
+                    }
+                },
+                {
+                    "text": "Spawn Version 1 Books",
+                    "type": "button",
+                    "help": "If you have already played up to Version 2, this will spawn all the books for Version 1 so you don't have to look for them again.  However, in version 2, some things have changed slightly at the book locations, so you may want to look anyway.",
+                    "action": {
+                        "type": "CallFunction",
+                        "form"
                     }
                 }
             ]
