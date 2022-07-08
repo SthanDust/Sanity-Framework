@@ -378,7 +378,7 @@ Event AAF:AAF_API.OnAnimationStop(AAF:AAF_API akSender, Var[] akArgs)
     
 
     ModifyStress(PlayerRef, -2.0 + mod)
-    ModifyTrauma(PlayerRef, -5.0 + mod)
+    ModifyTrauma(PlayerRef, -2.0 + mod)
     ModifySanity(PlayerRef, -2.0 + mod)
     
   endif
