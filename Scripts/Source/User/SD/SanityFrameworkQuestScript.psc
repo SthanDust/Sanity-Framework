@@ -29,6 +29,14 @@ Group Calculated_Values
   GlobalVariable Property SD_AverageSleep auto
 EndGroup
 
+Group Sound
+Sound Property DLC03OBJDriveInTrailerSlimeScream auto mandatory
+Sound Property DLC03NPCFogCrawlerDistantScreamB auto mandatory 
+Sound Property UIPerkMenuWastelandWhisperer auto Mandatory
+sound Property AMBDeathclawSleepingLP auto Mandatory  
+EndGroup
+
+
 Group Actor_Values
   Actor property PlayerRef auto Mandatory
   ActorValue Property SD_Sanity Auto Mandatory

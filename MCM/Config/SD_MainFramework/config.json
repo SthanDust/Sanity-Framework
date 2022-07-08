@@ -258,11 +258,7 @@
                 {
                     "text": "Spawn Version 1 Books",
                     "type": "button",
-                    "help": "If you have already played up to Version 2, this will spawn all the books for Version 1 so you don't have to look for them again.  However, in version 2, some things have changed slightly at the book locations, so you may want to look anyway.",
-                    "action": {
-                        "type": "CallFunction",
-                        "form"
-                    }
+                    "help": "If you have already played up to Version 2, this will spawn all the books for Version 1 so you don't have to look for them again.  However, in version 2, some things have changed slightly at the book locations, so you may want to look anyway."
                 }
             ]
         },
