@@ -99,6 +99,7 @@ CustomEvent OnTraumaUpdate
 CustomEvent OnBeastess
 
 Event OnQuestInit()
+
   OpenLog()
   StartTimer(1,0)
 EndEvent
@@ -239,6 +240,7 @@ Function ModifyGrief(Actor akTarget, float nGrief)
   EndIf
   SendCustomEvent("OnGriefUpdate")
 EndFunction
+
 
 float Function GetTrauma(Actor akTarget)
   return akTarget.GetValue(SD_Trauma)

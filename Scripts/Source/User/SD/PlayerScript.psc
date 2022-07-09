@@ -7,9 +7,9 @@ Holotape Property CodsworthHoloTape01 auto
 Armor Property Armor_WeddingRing auto
 Armor Property Armor_SpouseWeddingRing auto
 Potion Property SD_SanityPotion auto
-Potion Property SD_SanityOnePotion auto 
-Potion Property SD_ShadowLord auto 
-Potion Property SD_BeastUnleashed auto 
+Potion Property SD_SplinterPotionOne auto 
+Potion Property SD_SplinterPotionGabryal auto 
+Potion Property SD_SplinterPotionBeast auto 
 Location[] Property SD_POI auto mandatory
 Race Property HumanRace auto 
 
@@ -19,6 +19,9 @@ Faction Property SD_BeastFaction auto
 Faction Property SD_SthanFaction auto
 Faction Property SD_GabryalFaction auto 
 Faction Property SD_YouFaction auto 
+Faction Property SD_OliviaFaction auto 
+Faction Property SD_AlexFaction auto
+Faction Property SD_JackFaction auto 
 
 
 Faction Pregnancy 
@@ -52,7 +55,7 @@ EndGroup
 Group Keywords
 ;bad things for bad problems
 Keyword Property ObjectTypeAlcohol auto 
-Keyword Property ObjectTypeChem auto
+Keyword Property CA_ObjType_ChemBad auto
 Keyword Property SD_RandomThought auto 
 Keyword Property SD_RandomDrugThought auto 
 Keyword Property SD_RandomDrinkThought auto 
@@ -61,12 +64,18 @@ Keyword Property SD_RandomWeatherThought auto
 Keyword Property SD_RandomGriefThought auto 
 Keyword Property SD_RandomStressThought auto 
 Keyword Property SD_RandomSleepThought auto 
+KeyWord Property SD_SplinterEffect auto 
 EndGroup
 
 
-Perk Property SD_Sanity03 auto
-Perk Property SD_Sanity04 auto
-Perk Property SD_Sanity05 auto
+Perk Property SD_SplinterOne auto
+Perk Property SD_SplinterGabryal auto
+Perk Property SD_SplinterBeast auto
+Perk Property SD_SplinterYou auto
+Perk Property SD_SplinterOlivia auto
+Perk Property SD_SplinterSthan auto
+Perk Property SD_SplinterJack auto
+Perk Property SD_SplinterAlex auto
 
 ;It can't rain all the time, can it?  When you're sad, can you tell the difference between rain and shine, buttercup?
 Weather RainyWeather
@@ -109,22 +118,26 @@ float function CalculateModifiers()
  
   float DecayModifier = (weightWill * willpower) + (weightEsteem * selfesteem) + (weightSpirit * spirit) + (weightTrauma * (trauma * 20))
   float finalVal = (DecayModifier / baseNormal) + baseDecay
-  ;
+  SF_Main.DNotify("New Trauma: " + finalVal);
   return finalVal
 EndFunction
 
 Event OnInit()
     StartTimer(1,1)
+    
 EndEvent
 
 Event OnPlayerLoadGame()
     StartTimer(3, 1)
+    PlayerRef.EquipItem(SD_SanityPotion, false, true)
 EndEvent
 
 Event OnTimer(int aiTimerID)
   if(aiTimerID == 1)
     
     Quest Main = Game.GetFormFromFile(0x0001F59A, "SD_MainFramework.esp") as quest
+    SF_Main = Main as SD:SanityFrameworkQuestScript
+    SF_Main.LoadSDF()
     
     if (Game.IsPluginInstalled("FP_FamilyPlanningEnhanced.esp") && SD_Setting_Integrate_FPE.Value == 1)
       Pregnancy = Game.GetFormFromFile(0x00000FA8, "FP_FamilyPlanningEnhanced.esp") as Faction
@@ -139,8 +152,8 @@ Event OnTimer(int aiTimerID)
         IsPregnant = false
       endif
     endif
-	  SF_Main = Main as SD:SanityFrameworkQuestScript
-    SF_Main.LoadSDF()
+	  
+    
     messageFrequency = SD_Setting_ThoughtFrequency.GetValueInt()
     RegisterForPlayerSleep()
     SetSexAttributes()
@@ -158,9 +171,6 @@ EndEvent
 
 function LoadMessages()
   SF_Main.DNotify("Player Pregnancy: " + IsPregnant)
-  if (IsPregnant)
-    SF_Main.DNotify("Player is pregnant with " + NumChildren + " of the " + akFather.GetRace() + " race.")
-  EndIF
 EndFunction
 
 Event FPFP_Player_Script.FPFP_GetPregnant(FPFP_Player_Script akSender, Var[] akArgs)  
@@ -248,26 +258,31 @@ EndFunction
 
 Function ManageSplinters()
   int chance
+
+  If (PlayerRef.HasEffectKeyword(SD_SplinterEffect))
+    SF_Main.DNotify("Player already has an effect.")
+    return
+  EndIf
   
   IF (SF_Main.GetSanity(PlayerRef) < 95.00)
     IF (PlayerRef.IsInCombat())
-      If (PlayerRef.HasPerk(SD_Sanity04))
+      If (PlayerRef.HasPerk(SD_SplinterBeast))
         chance = Utility.RandomInt(1,100)
         ;SF_Main.DNotify(" Chance You: " + chance + " Current Rank: " + PlayerRef.GetFactionRank(SD_BeastFaction))
         If (chance <= 5)
-          PlayerRef.EquipItem(SD_BeastUnleashed, false, true)
+          PlayerRef.EquipItem(SD_SplinterPotionBeast, false, true)
           ;SF_Main.DNotify("The Beast Whispers.")
           PlayerRef.AddToFaction(SD_BeastFaction)
           PlayerRef.ModFactionRank(SD_BeastFaction,1)
           return
         EndIf
       EndIf
-      If (PlayerRef.HasPerk(SD_Sanity05))
+      If (PlayerRef.HasPerk(SD_SplinterGabryal))
         chance = Utility.RandomInt(1,100)
         ;SF_Main.DNotify(" Chance You: " + chance + " Current Rank: " + PlayerRef.GetFactionRank(SD_GabryalFaction))
         If (chance <= 5)
           ;SF_Main.DNotify("You are Shadow.")
-          PlayerRef.EquipItem(SD_ShadowLord, false, true)
+          PlayerRef.EquipItem(SD_SplinterPotionGabryal, false, true)
           PlayerRef.AddToFaction(SD_GabryalFaction)
           PlayerRef.ModFactionRank(SD_GabryalFaction, 1)
           return
@@ -275,12 +290,12 @@ Function ManageSplinters()
       EndIf
     EndIF
 
-    If (PlayerRef.HasPerk(SD_Sanity03))
+    If (PlayerRef.HasPerk(SD_SplinterOne))
       chance = Utility.RandomInt(1,100)
       ;SF_Main.DNotify(" Chance You: " + chance + " Current Rank: " + PlayerRef.GetFactionRank(SD_OneFaction))
       If (chance <= 5)
         ;SF_Main.DNotify("You are One.")
-        PlayerRef.EquipItem(SD_SanityOnePotion, false, true)
+        PlayerRef.EquipItem(SD_SplinterPotionOne, false, true)
         PlayerRef.AddToFaction(SD_OneFaction)
         PlayerRef.ModFactionRank(SD_OneFaction, 1)
         return
@@ -395,7 +410,7 @@ Event OnItemEquipped(Form akBaseObject, ObjectReference akReference)
     if (Utility.RandomInt() < messageFrequency)
       Say(SD_RandomDrinkThought, PlayerRef)   
     endif
-  elseif (akReference == PlayerRef) || akBaseObject.HasKeyword(ObjectTypeChem)
+  elseif (akReference == PlayerRef) || akBaseObject.HasKeyword(CA_ObjType_ChemBad)
     SF_Main.ModifyStress(PlayerRef, 0.1 + negTolerance)
     SF_Main.ModifyDepression(PlayerRef, 0.1 + negTolerance)
     SF_Main.ModifyGrief(PlayerRef, 0.1 + negTolerance)

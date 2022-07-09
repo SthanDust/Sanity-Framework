@@ -2,6 +2,7 @@ Scriptname SD:MCMManager extends Quest
 
 
 SD:SanityFrameworkQuestScript SDF
+
 string thisMod = "SD_MainFramework"
 string logName = "SanityFramework"
 Group General 
@@ -34,6 +35,7 @@ Group General
     Message Property SD_StatisticsMessage auto
     message Property SD_Updated auto 
     GlobalVariable Property SD_Setting_ThoughtFrequency auto
+    Quest Property SD_PlayerQuest auto
 EndGroup
 
 import MCM
@@ -48,7 +50,7 @@ Event OnInit()
     Quest Main = Game.GetFormFromFile(0x0001F59A, "SD_MainFramework.esp") as quest
     SDF = Main as SD:SanityFrameworkQuestScript
     SD_Internal_MCMLoaded.SetValue(0)
-    ;DNotify(logName, "MCM: OnInit")
+    DNotify(logName, "MCM: OnInit")
     if (CheckForMCM(True))
         RegisterForMenuOpenCloseEvent("PauseMenu")
         CheckVersion()
@@ -83,7 +85,7 @@ Function OpenLog()
 EndFunction
 
 Function CheckVersion()
-    float current = SD_FVersion.GetValue() as float
+    float current = SD_FVersion.GetValue()
     
     float newVersion = 1961
     
@@ -109,7 +111,7 @@ EndFunction
 
 
 bool Function CheckForMCM(bool FirstLoad = false)
-    ;SDF.DNotify("Checking MCM...")
+    SDF.DNotify("Checking MCM...")
     If !MCM.IsInstalled()
         If (FirstLoad)
             Utility.Wait(1.0)
@@ -152,6 +154,7 @@ function Uninstall()
     SD_Internal_MCMLoaded.SetValue(0.0)
     SD_FVersion.SetValue(0.0)
     DNotify(logName,"You may now safely remove this mod from your load order.")
+    SD_PlayerQuest.Stop()
     SDF.Stop()
 EndFunction
 
@@ -161,7 +164,11 @@ function ResetMod()
     SD_FVersion.SetValue(0.0)
     
     SDF.Stop()
+    SDF.Reset()
     SDF.Start()
+    SD_PlayerQuest.Stop()
+    SD_PlayerQuest.Start()
+    
     CheckVersion()
     If CheckForMCM()
         MCMUpdate()
