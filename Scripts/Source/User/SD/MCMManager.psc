@@ -5,6 +5,7 @@ SD:SanityFrameworkQuestScript SDF
 
 string thisMod = "SD_MainFramework"
 string logName = "SanityFramework"
+
 Group General 
     Actor Property PlayerRef auto const 
     GlobalVariable Property SD_FVersion auto 
@@ -23,6 +24,7 @@ Group General
     GlobalVariable Property SD_Internal_MCMLoaded auto 
     GlobalVariable Property SD_Internal_FirstLoad auto
     GlobalVariable Property SD_Setting_ThoughtsEnabled auto
+    GlobalVariable Property SD_Setting_ThoughtFrequency auto
     GlobalVariable Property SD_Tolerance auto 
     GlobalVariable Property SD_Decay auto
     ActorValue property SD_Sanity auto 
@@ -34,8 +36,6 @@ Group General
     Message Property SD_FrameworkInit Auto
     Message Property SD_StatisticsMessage auto
     message Property SD_Updated auto 
-    GlobalVariable Property SD_Setting_ThoughtFrequency auto
-    Quest Property SD_PlayerQuest auto
 EndGroup
 
 import MCM
@@ -52,7 +52,6 @@ Event OnInit()
     SD_Internal_MCMLoaded.SetValue(0)
     DNotify(logName, "MCM: OnInit")
     if (CheckForMCM(True))
-        RegisterForMenuOpenCloseEvent("PauseMenu")
         CheckVersion()
         CheckIntegrations()
         SD_Internal_MCMLoaded.SetValue(1)
@@ -85,11 +84,9 @@ Function OpenLog()
 EndFunction
 
 Function CheckVersion()
-    float current = SD_FVersion.GetValue()
-    
-    float newVersion = 1961
-    
-   
+    float current = SD_FVersion.GetValue()    
+    float newVersion = 2000.0
+
     if  (current != newVersion)
 
         SDF.Stop()
@@ -102,8 +99,6 @@ Function CheckVersion()
     Else
         DNotify(logName, "MCM: Update not Needed for v" + current)
     EndIf
-
-
 
 EndFunction
 
@@ -121,7 +116,7 @@ bool Function CheckForMCM(bool FirstLoad = false)
         EndIf
         Return false
     EndIf
-    SD_Internal_MCMLoaded.SetValue(1)
+        SD_Internal_MCMLoaded.SetValue(1.0)
     Return True
 EndFunction
 
@@ -132,20 +127,27 @@ Function OnMCMSettingChange(string modName, string id)
   RegisterForExternalEvent("OnMCMSettingChange|"+thisMod, "OnMCMSettingChange")
 EndFunction
 
-Event OnMenuOpenCloseEvent(string asMenuName, bool abOpening)
-    ; for later use
-EndEvent
 
 Function MCMUpdate()
-    SD_Framework_Debugging.SetValue(MCM.GetModSettingBool(thisMod, "bMCMDebugOn:Debug") as float)
-    SD_Framework_Enabled.SetValue(MCM.GetModSettingBool(thisMod, "bMCMModEnabled:Globals") as float)
-    SD_Setting_ThoughtFrequency.SetValue(MCM.GetModSettingFloat(thisMod, "fMessageFrequency:Globals"))
-    SD_Setting_ThoughtsEnabled.SetValue(MCM.GetModSettingFloat(thisMod, "bMCMThoughtsEnabled:Globals"))
-    SD_Setting_Override_Vio.SetValue(MCM.GetModSettingBool(thisMod, "bEnableAFV:Override") as float)
-    SD_Setting_Override_FPE.SetValue(MCM.GetModSettingBool(thisMod, "bEnableFPE:Override") as float)
-    SD_Setting_Override_WLD.SetValue(MCM.GetModSettingBool(thisMod, "bEnableWLD:Override") as float)
-    SD_Setting_Override_JB.SetValue(MCM.GetModSettingBool(thisMod, "bEnableJB:Override") as float)
-    SD_Setting_Override_HBW.SetValue(MCM.GetModSettingBool(thisMod, "bEnableHBW:Override") as float)
+    If (MCM.GetModSettingBool(thisMod, "bMCMDebugOn:Debug"))
+        SD_Framework_Debugging.SetValue(1.0)
+    Else
+        SD_Framework_Debugging.SetValue(0.0)
+    EndIf
+    If (MCM.GetModSettingBool(thisMod, "bMCMModEnabled:Globals"))
+         SD_Framework_Enabled.SetValue(1.0)
+    Else
+         SD_Framework_Enabled.SetValue(0.0)
+    EndIf
+   
+    If (MCM.GetModSettingBool(thisMod, "bMCMThoughtsEnabled:Globals"))
+        SD_Setting_ThoughtsEnabled.SetValue(1.0)
+    Else
+        SD_Setting_ThoughtsEnabled.SetValue(0.0)
+    EndIf
+    
+    SD_Setting_ThoughtFrequency.SetValue(MCM.GetModSettingFloat(thisMod, "fMessageFrequency:Globals")  as float)
+
 EndFunction
 
 function Uninstall()
@@ -154,7 +156,6 @@ function Uninstall()
     SD_Internal_MCMLoaded.SetValue(0.0)
     SD_FVersion.SetValue(0.0)
     DNotify(logName,"You may now safely remove this mod from your load order.")
-    SD_PlayerQuest.Stop()
     SDF.Stop()
 EndFunction
 
@@ -166,8 +167,6 @@ function ResetMod()
     SDF.Stop()
     SDF.Reset()
     SDF.Start()
-    SD_PlayerQuest.Stop()
-    SD_PlayerQuest.Start()
     
     CheckVersion()
     If CheckForMCM()
@@ -197,16 +196,43 @@ Function ResetActorValues()
 EndFunction
 
 Function CheckIntegrations()
-  SD_Setting_Integrate_FPE.SetValue(Game.IsPluginInstalled("FP_FamilyPlanningEnhanced.esp") as float)
-  MCM.SetModSettingBool(thisMod, "bEnableFPE", SD_Setting_Integrate_FPE.GetValue() as bool)
-  SD_Setting_Integrate_HBW.SetValue(Game.IsPluginInstalled("Beggar_Whore.esp") as float)
-  MCM.SetModSettingBool(thisMod, "bEnableHBW", SD_Setting_Integrate_HBW.GetValue() as bool)
-  SD_Setting_Integrate_Vio.SetValue(Game.IsPluginInstalled("AAF_Violate.esp") as float)
-  MCM.SetModSettingBool(thisMod, "bEnableAFV", SD_Setting_Integrate_Vio.GetValue() as bool)
-  SD_Setting_Integrate_WLD.SetValue(Game.IsPluginInstalled("INVB_WastelandDairy.esp") as float)
-  MCM.SetModSettingBool(thisMod, "bEnableWLD", SD_Setting_Integrate_WLD.GetValue() as bool)
-  SD_Setting_Integrate_JB.SetValue(Game.IsPluginInstalled("Just Business.esp") as float)
-  MCM.SetModSettingBool(thisMod, "bEnableJB", SD_Setting_Integrate_FPE as bool)
+    If (Game.IsPluginInstalled("FP_FamilyPlanningEnhanced.esp"))
+        SD_Setting_Integrate_FPE.SetValue(1.0)
+        MCM.SetModSettingBool(thisMod, "bEnableFPE", true)
+    Else
+        SD_Setting_Integrate_FPE.SetValue(0.0)
+        MCM.SetModSettingBool(thisMod, "bEnableFPE", false)
+    EndIf
+    If (Game.IsPluginInstalled("Beggar_Whore.esp"))
+        SD_Setting_Integrate_HBW.SetValue(1.0)
+        MCM.SetModSettingBool(thisMod, "bEnableHBW", true)
+    Else
+        SD_Setting_Integrate_HBW.SetValue(0.0)
+        MCM.SetModSettingBool(thisMod, "bEnableHBW", false)
+    EndIf
+    If (Game.IsPluginInstalled("AAF_Violate.esp"))
+        SD_Setting_Integrate_Vio.SetValue(1.0)
+        MCM.SetModSettingBool(thisMod, "bEnableAFV", true)
+    Else
+        SD_Setting_Integrate_Vio.SetValue(0.0)
+        MCM.SetModSettingBool(thisMod, "bEnableAFV", false)
+    EndIf
+
+    If (Game.IsPluginInstalled("INVB_WastelandDairy.esp"))
+        SD_Setting_Integrate_WLD.SetValue(1.0)
+        MCM.SetModSettingBool(thisMod, "bEnableWLD", true)
+    Else
+        SD_Setting_Integrate_WLD.SetValue(0.0)
+        MCM.SetModSettingBool(thisMod, "bEnableWLD", false)
+    EndIf
+
+    If (Game.IsPluginInstalled("Just Business.esp"))
+        SD_Setting_Integrate_JB.SetValue(1.0)
+        MCM.SetModSettingBool(thisMod, "bEnableJB", true)
+    Else
+        SD_Setting_Integrate_JB.SetValue(0.0)
+        MCM.SetModSettingBool(thisMod, "bEnableJB", false)
+    EndIf  
 EndFunction
 
 Function DNotify(string lname, string text)
@@ -227,6 +253,5 @@ Function DumpStats()
     DNotify(logName, "Stress: " + SDF.GetStress(PlayerRef))
     DNotify(logName, "Decay: " + SD_Decay.GetValue())
     DNotify(logName, "Tolerance: " + SD_Tolerance.GetValue())
-    DNotify(logName, "EndStatistics ***********************")
-    
+    DNotify(logName, "EndStatistics ***********************")   
 EndFunction

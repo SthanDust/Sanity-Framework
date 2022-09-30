@@ -254,6 +254,16 @@
                         "form": "SD_MainFramework.esp|5B92",
                         "function": "ResetActorValues"
                     }
+                },
+                {
+                    "text": "Reset Beast(ess) Values",
+                    "type": "button",
+                    "help": "Resets your beast(ess) stats.",
+                    "action": {
+                        "type": "CallFunction",
+                        "form": "SD_MainFramework.esp|1F59A",
+                        "function": "ResetBeastess"
+                    }
                 }
             ]
         },

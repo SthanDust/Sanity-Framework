@@ -11,6 +11,7 @@ Potion Property SD_SplinterPotionOne auto
 Potion Property SD_SplinterPotionGabryal auto 
 Potion Property SD_SplinterPotionBeast auto 
 Location[] Property SD_POI auto mandatory
+Location[] Property SD_POIInsanity auto 
 Race Property HumanRace auto 
 
 
@@ -108,6 +109,7 @@ int timesOne = 0
 int timesAlex = 0
 string[] Property ImpregnatedRaces auto
 
+;Add Mutation perks based on radiation intake and sanity.
 
 float function CalculateModifiers()
   float weightWill = 0.3
@@ -143,7 +145,7 @@ Event OnTimer(int aiTimerID)
       Pregnancy = Game.GetFormFromFile(0x00000FA8, "FP_FamilyPlanningEnhanced.esp") as Faction
       FPE = Game.GetFormFromFile(0x00000F99, "FP_FamilyPlanningEnhanced.esp") as FPFP_Player_Script
       BabyInfo = Game.GetFormFromFile(0x00000F99, "FP_FamilyPlanningEnhanced.esp") as FPFP_PlayerPregData
-      SF_Main.DNotify("FPE is loaded.")
+     
       RegisterForCustomEvent(FPE, "FPFP_GetPregnant")
       RegisterForCustomEvent(FPE, "FPFP_GiveBirth")
       if PlayerRef.IsInFaction(Pregnancy)
@@ -234,7 +236,7 @@ Function OnTick()
   Weather w = Weather.GetCurrentWeather()
   if (w.GetClassification() == 2)
     
-    SF_Main.ModifyDepression(PlayerRef, -0.005 + negTolerance)
+    SF_Main.ModifyDepression(PlayerRef, -0.05 + negTolerance)
     if !alreadySaid && (Utility.RandomInt(0,100) < SF_Main.GetDepression(PlayerRef)) && !PlayerRef.IsTalking()
       Say(SD_RandomDepressionThought, PlayerRef) 
       alreadySaid = true
@@ -331,7 +333,7 @@ EndFunction
 
 Function HandleFamilyPlanning()
   if (IsPregnant)
-    ;SF_Main.DNotify("Pregnancy Benefits.")
+   
     SF_Main.ModifyGrief(PlayerRef, 0.1)
     SF_Main.ModifySanity(PlayerRef, 0.1)
     SF_Main.ModifyDepression(PlayerRef, 0.1)
@@ -343,7 +345,6 @@ EndFunction
 Function RefreshPlayerEffects(float currentTime)
   
   if (currentTime > (lastEffectCheck + 30))
-    ;SF_Main.DNotify("Checking Effects")
     lastEffectCheck = currentTime
     PlayerRef.EquipItem(SD_SanityPotion, false, true)
   EndIf
@@ -392,6 +393,7 @@ Event OnPlayerSleepStop(bool abInterrupted, ObjectReference akBed)
   
   
   If (rng < SF_Main.GetDepression(PlayerRef))
+    SF_Main.DNotify("Weather Effect.")
     EffectWeather()
     SF_Main.ModifyDepression(PlayerRef, SD_Decay.GetValue())
     if (Weather.GetCurrentWeather().GetClassification() == 2) && !alreadySaid && !PlayerRef.IsTalking()
@@ -438,11 +440,10 @@ EndFunction
 Event OnLocationChange(Location akOldLoc, Location akNewLoc)
   
   If (SD_POI.Find(akNewLoc) > -1)
-    
+    SF_Main.DNotify("Grief Location.")
     SF_Main.ModifyGrief(PlayerRef, -0.5)
   EndIf
-  ;SF_Main.DNotify("Location has changed.")
-  ;RegisterForRemoteEvent(PlayerRef, "OnLocationChange")
+
 EndEvent
 
 Function Say(Keyword akKey, Actor akActor)

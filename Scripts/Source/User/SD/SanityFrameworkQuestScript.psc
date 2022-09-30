@@ -2,8 +2,7 @@ Scriptname SD:SanityFrameworkQuestScript extends Quest
 {Main Script for the Sanity Framework}
 
 
-string[] TrackedStatsName
-int[] TrackedStatsValue
+
 int baseSanity = 100
 int baseStress = 0
 int baseAlignment = 0
@@ -25,9 +24,6 @@ Group Filter_Properties
   Race[] Property SD_AlienRaces auto 
 EndGroup
 
-Group Calculated_Values
-  GlobalVariable Property SD_AverageSleep auto
-EndGroup
 
 Group Sound
 Sound Property DLC03OBJDriveInTrailerSlimeScream auto mandatory
@@ -46,7 +42,6 @@ Group Actor_Values
   ActorValue Property SD_Grief auto Mandatory
   ActorValue Property SD_Trauma auto Mandatory
   Race Property HumanRace auto const
-  Quest Property SD_PlayerQuest auto 
 EndGroup
 
 Group Follower_Data
@@ -76,8 +71,6 @@ Group MCM_Settings
   GlobalVariable Property SD_Beastess_Mollusk auto 
   GlobalVariable Property SD_Beastess_Mutant auto
   GlobalVariable Property SD_Beastess_Alien auto
-  
-
   Message Property SD_FrameworkInit Auto
   Message Property SD_StatisticsMessage auto
   GlobalVariable Property SD_Setting_ThoughtFrequency auto
@@ -109,11 +102,7 @@ Event Actor.OnPlayerLoadGame(Actor akSender)
   StartTimer(2, 0)
 EndEvent
 
-Event OnTrackedStatsEvent(string arStatName, int aiStatValue)
-  TrackedStatsValue[TrackedStatsName.Find(arStatName)] = aiStatValue
-  RegisterForTrackedStatsEvent(arStatName, aiStatValue + 1)
-  CalculateTrackedStats()
-EndEvent
+
 
 ; This function looks to see what the player has killed in combat.  If its a creature, it has a set amount.Function AddInventoryEventFilter(Form akFilter)
 ; If its a human, it has two outcomes.  If the Victim was aggressive, less sanity and stress are affected, otherwise, higher penalties.
@@ -169,7 +158,6 @@ Function IntializeStartup()
   
   LoadAAF()
   LoadSDF()
-  PopulateTrackedStats()
 EndFunction
 
 Function LoadAAF()
@@ -220,11 +208,12 @@ endfunction
 Function ModifyDepression(Actor akTarget, float nDepress)
   
   If nDepress < 0
-    akTarget.DamageValue(SD_Depression, nDepress)
+    akTarget.DamageValue(SD_Depression, nDepress * -1)
   ElseIf nDepress > 0
     akTarget.RestoreValue(SD_Depression, nDepress)
   EndIf
   SendCustomEvent("OnDepressionUpdate")
+  ;DNotify("Depression: " + self.GetDepression(PlayerRef))
 EndFunction
 
 float Function GetGrief(Actor akTarget)
@@ -234,11 +223,12 @@ EndFunction
 Function ModifyGrief(Actor akTarget, float nGrief)
   
   If nGrief < 0
-    akTarget.DamageValue(SD_Grief, nGrief)
+    akTarget.DamageValue(SD_Grief, nGrief * -1)
   ElseIf nGrief > 0
     akTarget.RestoreValue(SD_Grief, nGrief)
   EndIf
   SendCustomEvent("OnGriefUpdate")
+  ;DNotify("Grief: " + self.GetGrief(PlayerRef))
 EndFunction
 
 
@@ -249,10 +239,11 @@ EndFunction
 Function ModifyTrauma(Actor akTarget, float nTrauma)
   
   If (nTrauma < 0)
-    akTarget.DamageValue(SD_Trauma, nTrauma)
+    akTarget.DamageValue(SD_Trauma, nTrauma * -1)
   ElseIf (nTrauma > 0)
     akTarget.RestoreValue(SD_Trauma, nTrauma)
   EndIf
+  ;DNotify("Trauma: " + self.GetTrauma(PlayerRef))
   SendCustomEvent("OnTraumaUpdate")
 EndFunction
 
@@ -263,10 +254,11 @@ EndFunction
 Function ModifySanity(Actor akTarget, float nSanity)
    
     if nSanity < 0
-      akTarget.DamageValue(SD_Sanity, nSanity)
+      akTarget.DamageValue(SD_Sanity, nSanity * -1)
     ElseIf nSanity > 0
       akTarget.RestoreValue(SD_Sanity, nSanity)
     EndIf
+    ;DNotify("Sanity: " + self.GetSanity(PlayerRef))
     SendCustomEvent("OnSanityUpdate")
 EndFunction
 
@@ -277,11 +269,12 @@ EndFunction
 Function ModifyAlignment(Actor akTarget, float nAlign)
   
   If nAlign < 0
-    akTarget.DamageValue(SD_Alignment, nalign)
+    akTarget.DamageValue(SD_Alignment, nalign * -1)
   elseif nAlign > 0
     akTarget.RestoreValue(SD_Alignment, nalign)
   EndIf
   SendCustomEvent("OnAlignmentUpdate")
+  ;DNotify("Alignment: " + self.GetAlignment(PlayerRef) )
 EndFunction
 
 float function GetStress(Actor akTarget)
@@ -290,61 +283,17 @@ EndFunction
 
 Function ModifyStress(Actor akTarget, float nStress) 
   if nStress < 0
-    akTarget.DamageValue(SD_Stress, nstress)
+    akTarget.DamageValue(SD_Stress, nstress * -1)
   ElseIf nStress > 0
     akTarget.RestoreValue(SD_Stress, nstress)
   EndIf
+  ;DNotify("Stress: " + self.GetStress(PlayerRef))
   SendCustomEvent("OnStressUpdate")
 EndFunction
 
-Function PopulateTrackedStats()
-    TrackedStatsName = new string[13]
-    TrackedStatsValue = new int[13] 
-    TrackedStatsName[0] = "Animals Killed"
-    TrackedStatsValue[0] = Game.QueryStat(TrackedStatsName[0])
-    TrackedStatsName[1] = "Assaults" 
-    TrackedStatsValue[1] = Game.QueryStat(TrackedStatsName[1])
-    TrackedStatsName[2] = "Chems Taken"
-    TrackedStatsValue[2] = Game.QueryStat(TrackedStatsName[2])
-    TrackedStatsName[3] = "Corpses Eaten"
-    TrackedStatsValue[3] = Game.QueryStat(TrackedStatsName[3])
-    TrackedStatsName[4] = "Creatures Killed"
-    TrackedStatsValue[4] = Game.QueryStat(TrackedStatsName[4])
-    TrackedStatsName[5] = "Days Passed"
-    TrackedStatsValue[5] = Game.QueryStat(TrackedStatsName[5])
-    TrackedStatsName[6] = "Days Survived"
-    TrackedStatsValue[6] = Game.QueryStat(TrackedStatsName[6])
-    TrackedStatsName[7] = "Happiness"
-    TrackedStatsValue[7] = Game.QueryStat(TrackedStatsName[7])
-    TrackedStatsName[8] = "Hours Slept"
-    TrackedStatsValue[8] = Game.QueryStat(TrackedStatsName[8])
-    TrackedStatsName[9] = "Items Stolen"
-    TrackedStatsValue[9] = Game.QueryStat(TrackedStatsName[9])
-    TrackedStatsName[10] = "Murders"
-    TrackedStatsValue[10] = Game.QueryStat(TrackedStatsName[10])
-    TrackedStatsName[11] = "Times Addicted"
-    TrackedStatsValue[11] = Game.QueryStat(TrackedStatsName[11])
-    TrackedStatsName[12] = "Trespasses"
-    TrackedStatsValue[12] = Game.QueryStat(TrackedStatsName[12])
-    
-    
-    int index = 0
-    While (index < TrackedStatsName.Length)
-      RegisterForTrackedStatsEvent(TrackedStatsName[index], TrackedStatsValue[index]+ 1)
-      ; code
-      index += 1
-    EndWhile
-    CalculateTrackedStats()
-EndFunction
-
-Function CalculateTrackedStats()
-  ;Calculates the average amount of sleep
-  float aSleep = TrackedStatsValue[8] / TrackedStatsValue[5] 
-  SD_AverageSleep.SetValue(aSleep)
-EndFunction
 
 Function ShowStatistics()
-  SD_StatisticsMessage.Show(PlayerRef.GetValue(SD_Sanity), PlayerRef.GetValue(SD_Stress), PlayerRef.GetValue(SD_Alignment), SD_AverageSleep.GetValue(), self.GetDepression(PlayerRef), self.GetGrief(PlayerRef))
+  SD_StatisticsMessage.Show(self.GetSanity(PlayerRef), self.GetStress(PlayerRef), self.GetAlignment(PlayerRef), self.GetDepression(PlayerRef), self.GetGrief(PlayerRef))
 EndFunction
 
 Event FollowersScript.AffinityEvent(FollowersScript akSender, Var[] akArgs)
@@ -358,7 +307,6 @@ Event AAF:AAF_API.OnAnimationStop(AAF:AAF_API akSender, Var[] akArgs)
 	Actor partnerActor
   int status = akArgs[0] as int
   if idx <= -1 || status != 0
-    ;DNotify("Exiting... Player not involved")
     return
   endif
   
@@ -378,7 +326,6 @@ Event AAF:AAF_API.OnAnimationStop(AAF:AAF_API akSender, Var[] akArgs)
       mod = -2.0
     EndIf
     
-
     ModifyStress(PlayerRef, -2.0 + mod)
     ModifyTrauma(PlayerRef, -2.0 + mod)
     ModifySanity(PlayerRef, -2.0 + mod)
@@ -399,10 +346,13 @@ EndEvent
 bool Function IsRape(string[] akTags, string akMeta)
   string[] meta = LL_FourPlay.StringSplit(theString = akMeta, delimiter = ",")
   if meta.Find("PlayerRaped") > -1
+    DNotify("PlayerRaped")
     return true
   elseif akTags.Find("Aggressive") > -1 && akTags.Find("Rough") > -1
-    return true
+    DNotify("Player Rough/Agg Sex")
+    return false
   Else
+    DNotify("Consensual")
     return false
   EndIf
 EndFunction
@@ -454,7 +404,6 @@ Function CheckRace(Actor akActor)
     SendCustomEvent("OnBeastess")
     return
   EndIf
-  Utility.Wait(2.0)
   DNotify("Beastess Increase: " + akRace.GetName())
 EndFunction
 
@@ -469,7 +418,9 @@ Function ResetBeastess()
   SD_Beastess_Reptile.Value = 0
 EndFunction
 
-
+Function PlaySexAnimation(Actor[] akList)
+  AAF_API.StartScene(akList) 
+EndFunction
 
 
 
