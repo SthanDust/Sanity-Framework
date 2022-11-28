@@ -132,6 +132,9 @@ EndEvent
 Event OnPlayerLoadGame()
     StartTimer(3, 1)
     PlayerRef.EquipItem(SD_SanityPotion, false, true)
+    if (ImpregnatedRaces.Length == 0)
+      ImpregnatedRaces = new string[25]
+    EndIf
 EndEvent
 
 Event OnTimer(int aiTimerID)
@@ -140,7 +143,7 @@ Event OnTimer(int aiTimerID)
     Quest Main = Game.GetFormFromFile(0x0001F59A, "SD_MainFramework.esp") as quest
     SF_Main = Main as SD:SanityFrameworkQuestScript
     SF_Main.LoadSDF()
-    
+    ImpregnatedRaces = new string[25]
     if (Game.IsPluginInstalled("FP_FamilyPlanningEnhanced.esp") && SD_Setting_Integrate_FPE.Value == 1)
       Pregnancy = Game.GetFormFromFile(0x00000FA8, "FP_FamilyPlanningEnhanced.esp") as Faction
       FPE = Game.GetFormFromFile(0x00000F99, "FP_FamilyPlanningEnhanced.esp") as FPFP_Player_Script
