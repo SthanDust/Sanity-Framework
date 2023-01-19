@@ -104,27 +104,9 @@
                     }
                 },
                 {
-                    "id": "bEnableAFV:Override",
-                    "text": "AAF Violate Override",
-                    "help": "Turns off Violate Feature Override",
-                    "type": "switcher",
-                    "valueOptions": {
-                        "sourceType": "ModSettingBool"
-                    }
-                },
-                {
                     "id": "bEnableFPE:Integrate",
                     "text": "Family Planning Enhanced Redux",
                     "help": "Turns off FPER Integration.",
-                    "type": "switcher",
-                    "valueOptions": {
-                        "sourceType": "ModSettingBool"
-                    }
-                },
-                {
-                    "id": "bEnableFPE:Override",
-                    "text": "Family Planning Enhanced Redux Override",
-                    "help": "Turns off FPER Feature Override.",
                     "type": "switcher",
                     "valueOptions": {
                         "sourceType": "ModSettingBool"
@@ -140,15 +122,6 @@
                     }
                 },
                 {
-                    "id": "bEnableWLD:Override",
-                    "text": "Wasteland Dairy Framework Override",
-                    "help": "Turns off Wasteland Dairy Framework Feature Override.",
-                    "type": "switcher",
-                    "valueOptions": {
-                        "sourceType": "ModSettingBool"
-                    }
-                },
-                {
                     "id": "bEnableHBW:Integrate",
                     "text": "Hardship Beggar Whore",
                     "help": "Turns off Hardship Beggar Whore Integration.",
@@ -156,31 +129,11 @@
                     "valueOptions": {
                         "sourceType": "ModSettingBool"
                     }
-                }
-                ,
-                {
-                    "id": "bEnableHBW:Override",
-                    "text": "Hardship Beggar Whore Override",
-                    "help": "Turns off Hardship Beggar Whore Feature Override.",
-                    "type": "switcher",
-                    "valueOptions": {
-                        "sourceType": "ModSettingBool"
-                    }
-                }
-                ,
+                },
                 {
                     "id": "bEnableTSex:Integrate",
                     "text": "TSex Integration",
                     "help": "Turns off TSex Integration.",
-                    "type": "switcher",
-                    "valueOptions": {
-                        "sourceType": "ModSettingBool"
-                    }
-                },
-                {
-                    "id": "bEnableTSex:Override",
-                    "text": "TSex Override",
-                    "help": "Turns off TSex Feature Override.",
                     "type": "switcher",
                     "valueOptions": {
                         "sourceType": "ModSettingBool"

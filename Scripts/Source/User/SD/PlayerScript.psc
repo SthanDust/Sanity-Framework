@@ -120,7 +120,7 @@ float function CalculateModifiers()
  
   float DecayModifier = (weightWill * willpower) + (weightEsteem * selfesteem) + (weightSpirit * spirit) + (weightTrauma * (trauma * 20))
   float finalVal = (DecayModifier / baseNormal) + baseDecay
-  SF_Main.DNotify("New Trauma: " + finalVal);
+  ;SF_Main.DNotify("New Trauma: " + finalVal);
   return finalVal
 EndFunction
 
@@ -148,11 +148,12 @@ Event OnTimer(int aiTimerID)
       Pregnancy = Game.GetFormFromFile(0x00000FA8, "FP_FamilyPlanningEnhanced.esp") as Faction
       FPE = Game.GetFormFromFile(0x00000F99, "FP_FamilyPlanningEnhanced.esp") as FPFP_Player_Script
       BabyInfo = Game.GetFormFromFile(0x00000F99, "FP_FamilyPlanningEnhanced.esp") as FPFP_PlayerPregData
-     
+      FPFP_BasePregData BPD = FPE.GetPregnancyInfo(PlayerRef)
       RegisterForCustomEvent(FPE, "FPFP_GetPregnant")
       RegisterForCustomEvent(FPE, "FPFP_GiveBirth")
       if PlayerRef.IsInFaction(Pregnancy)
         IsPregnant = true
+        ;SF_Main.DNotify("Player Pregnant: " + BPD.IsPregnant + " Num Children: " + BPD.NumChildren + " Current Month: " + BPD.GetCurrentMonth())
       Else
         IsPregnant = false
       endif
@@ -175,7 +176,7 @@ Event OnTimer(int aiTimerID)
 EndEvent
 
 function LoadMessages()
-  SF_Main.DNotify("Player Pregnancy: " + IsPregnant)
+  ;SF_Main.DNotify("Player Pregnancy: " + IsPregnant)
 EndFunction
 
 Event FPFP_Player_Script.FPFP_GetPregnant(FPFP_Player_Script akSender, Var[] akArgs)  
@@ -189,7 +190,7 @@ Event FPFP_Player_Script.FPFP_GetPregnant(FPFP_Player_Script akSender, Var[] akA
       ImpregnatedRaces.Add(akFather.GetRace() as string)
       CurrentFatherRace = akFather.GetRace()
       Utility.Wait(2.0)
-      SF_Main.DNotify("Player Impregnated by a " + CurrentFatherRace.GetName())
+      ;SF_Main.DNotify("Player Impregnated by a " + CurrentFatherRace.GetName())
     EndIf
   EndIF
   ;SF_Main.DNotify(akMother.GetActorBase().GetName() + " got Pregnant by a " + akFather.GetRace().GetName() + " with " + NumChildren)
@@ -436,9 +437,7 @@ Function DMessage(string text)
    Debug.Notification(text)
 EndFunction
 
-Function LoadSmokes()
-  ;Smoke-able Cigars.esp
-EndFunction
+
 
 Event OnLocationChange(Location akOldLoc, Location akNewLoc)
   
@@ -456,7 +455,7 @@ Function Say(Keyword akKey, Actor akActor)
 EndFunction
 
 Event OnCombatStateChanged(Actor akTarget, int aeCombatState)
-  
+
   
     if (aeCombatState == 0)
       ;SF_Main.DNotify("We have left combat")

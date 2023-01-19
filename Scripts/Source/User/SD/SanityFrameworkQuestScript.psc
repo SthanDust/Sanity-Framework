@@ -227,7 +227,7 @@ Function ModifyGrief(Actor akTarget, float nGrief)
   ElseIf nGrief > 0
     akTarget.RestoreValue(SD_Grief, nGrief)
   EndIf
-  SendCustomEvent("OnGriefUpdate")
+  ;SendCustomEvent("OnGriefUpdate")
   ;DNotify("Grief: " + self.GetGrief(PlayerRef))
 EndFunction
 
@@ -346,13 +346,13 @@ EndEvent
 bool Function IsRape(string[] akTags, string akMeta)
   string[] meta = LL_FourPlay.StringSplit(theString = akMeta, delimiter = ",")
   if meta.Find("PlayerRaped") > -1
-    DNotify("PlayerRaped")
+    ;DNotify("PlayerRaped")
     return true
   elseif akTags.Find("Aggressive") > -1 && akTags.Find("Rough") > -1
-    DNotify("Player Rough/Agg Sex")
+    ;DNotify("Player Rough/Agg Sex")
     return false
   Else
-    DNotify("Consensual")
+    ;DNotify("Consensual")
     return false
   EndIf
 EndFunction
