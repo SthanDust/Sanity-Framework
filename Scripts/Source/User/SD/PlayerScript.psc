@@ -7,6 +7,7 @@ Holotape Property CodsworthHoloTape01 auto
 Armor Property Armor_WeddingRing auto
 Armor Property Armor_SpouseWeddingRing auto
 Potion Property SD_SanityPotion auto
+Spell Property SD_SanitySpell auto
 Potion Property SD_SplinterPotionOne auto 
 Potion Property SD_SplinterPotionGabryal auto 
 Potion Property SD_SplinterPotionBeast auto 
@@ -14,7 +15,7 @@ Location[] Property SD_POI auto mandatory
 Location[] Property SD_POIInsanity auto 
 Race Property HumanRace auto 
 
-
+import SD:UtilityQuest
 Faction Property SD_OneFaction auto 
 Faction Property SD_BeastFaction auto
 Faction Property SD_SthanFaction auto
@@ -34,6 +35,9 @@ int NumChildren
 FPFP_Player_Script FPE
 FPFP_PlayerPregData BabyInfo 
 bool akBirth
+SexAttributes sexAttr 
+
+
 
 
 Group Settings
@@ -77,11 +81,13 @@ Perk Property SD_SplinterOlivia auto
 Perk Property SD_SplinterSthan auto
 Perk Property SD_SplinterJack auto
 Perk Property SD_SplinterAlex auto
+Perk[] Property SD_Mutations auto
 
 ;It can't rain all the time, can it?  When you're sad, can you tell the difference between rain and shine, buttercup?
 Weather RainyWeather
 int messageFrequency = 20
 SD:SanityFrameworkQuestScript SF_Main
+SD:UtilityQuest Util
 
 float tickFrequency = 1.0
 int tickTimerID = 34
@@ -141,6 +147,11 @@ Event OnTimer(int aiTimerID)
   if(aiTimerID == 1)
     
     Quest Main = Game.GetFormFromFile(0x0001F59A, "SD_MainFramework.esp") as quest
+    Util = Game.GetFormFromFile(0x0000E580, "SD_MainFramework.esp") as SD:UtilityQuest
+    sexAttr = Util.LoadSA()
+    SF_Main.DNotify("SA: Willpower " + sexAttr.willpower)
+ 
+  
     SF_Main = Main as SD:SanityFrameworkQuestScript
     SF_Main.LoadSDF()
     ImpregnatedRaces = new string[25]
@@ -153,7 +164,7 @@ Event OnTimer(int aiTimerID)
       RegisterForCustomEvent(FPE, "FPFP_GiveBirth")
       if PlayerRef.IsInFaction(Pregnancy)
         IsPregnant = true
-        ;SF_Main.DNotify("Player Pregnant: " + BPD.IsPregnant + " Num Children: " + BPD.NumChildren + " Current Month: " + BPD.GetCurrentMonth())
+        
       Else
         IsPregnant = false
       endif
@@ -168,6 +179,7 @@ Event OnTimer(int aiTimerID)
     float chaos = Utility.RandomFloat(-0.5, 0.5)
     RegisterForRemoteEvent(PlayerRef, "OnLocationChange")
     RegisterForRemoteEvent(PlayerRef, "OnCombatStateChanged")
+    RegisterForRadiationDamageEvent(PlayerRef)
     chaos += tickFrequency
     StartTimerGameTime(chaos, tickTimerID)
     StartTimerGameTime(24, dayTimerID)
@@ -430,6 +442,14 @@ Event OnItemEquipped(Form akBaseObject, ObjectReference akReference)
     SF_Main.ModifyGrief(PlayerRef, -1.0)
     Say(SD_RandomGriefThought, PlayerRef) ; TODO: Make this a reference to the opposite sex player voice.  "Hi Honey! I'm dead!"
   EndIF
+  ; Add bit to remove mutations
+EndEvent
+
+Event OnRadiationDamage(ObjectReference akTarget, bool abIngested)
+  IF akTarget == PlayerRef
+    SF_Main.DNotify("Player took radiation")
+    RegisterForRadiationDamageEvent(PlayerRef)
+  EndIF
 EndEvent
 
 ; These are crucial messages to keep the player engaged in the mod.  A constant reminder that you have other issues to deal with.
@@ -455,13 +475,8 @@ Function Say(Keyword akKey, Actor akActor)
 EndFunction
 
 Event OnCombatStateChanged(Actor akTarget, int aeCombatState)
-
-  
     if (aeCombatState == 0)
-      ;SF_Main.DNotify("We have left combat")
     elseif (aeCombatState == 1)
       ManageSplinters()
     endIf
-  ;SF_Main.DNotify("Combat State has changed.")
-  ;RegisterForRemoteEvent(PlayerRef, "OnCombatStateChanged")
 endEvent
