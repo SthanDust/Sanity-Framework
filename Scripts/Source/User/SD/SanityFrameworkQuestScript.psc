@@ -2,17 +2,6 @@ Scriptname SD:SanityFrameworkQuestScript extends Quest
 {Main Script for the Sanity Framework}
 
 
-
-int baseSanity = 100
-int baseStress = 0
-int baseAlignment = 0
-string thisMod = "SD_MainFramework"
-string logName = "SanityFramework"
-float hour = 0.04200
-float lastEffectCheck = 0.0
-
-
-Group Filter_Properties
   Race[] Property SD_SanityRaces auto
   Race[] Property SD_CanineRaces auto 
   Race[] Property SD_ReptileRaces auto 
@@ -22,18 +11,15 @@ Group Filter_Properties
   Race[] Property SD_MolluskRaces auto
   Race[] Property SD_MutantRaces auto
   Race[] Property SD_AlienRaces auto 
-EndGroup
 
 
-Group Sound
 Sound Property DLC03OBJDriveInTrailerSlimeScream auto mandatory
 Sound Property DLC03NPCFogCrawlerDistantScreamB auto mandatory 
 Sound Property UIPerkMenuWastelandWhisperer auto Mandatory
 sound Property AMBDeathclawSleepingLP auto Mandatory  
-EndGroup
 
 
-Group Actor_Values
+
   Actor property PlayerRef auto Mandatory
   ActorValue Property SD_Sanity Auto Mandatory
   ActorValue Property SD_Stress Auto Mandatory
@@ -42,17 +28,16 @@ Group Actor_Values
   ActorValue Property SD_Grief auto Mandatory
   ActorValue Property SD_Trauma auto Mandatory
   Race Property HumanRace auto const
-EndGroup
 
-Group Follower_Data
+
+
   Keyword Property MeanKeyword auto const 
   Keyword Property NiceKeyword auto Const
   Keyword Property SelfishKeyword auto const 
   Keyword Property ViolentKeyword auto const
-EndGroup
 
-; Can be accessed by other mods
-Group MCM_Settings 
+
+
   GlobalVariable Property SD_FVersion auto 
   GlobalVariable Property SD_Framework_Enabled auto
   GlobalVariable Property SD_Framework_Debugging auto
@@ -74,7 +59,7 @@ Group MCM_Settings
   Message Property SD_FrameworkInit Auto
   Message Property SD_StatisticsMessage auto
   GlobalVariable Property SD_Setting_ThoughtFrequency auto
-EndGroup
+
 
 import MCM
 import Actor
@@ -82,6 +67,11 @@ import Debug
 import Game
 import FollowersScript
 AAF:AAF_API AAF_API
+
+string thisMod = "SD_MainFramework"
+string logName = "SanityFramework"
+float hour = 0.04200
+float lastEffectCheck = 0.0
 
 CustomEvent OnSanityUpdate
 CustomEvent OnStressUpdate
@@ -145,9 +135,9 @@ Function IntializeStartup()
   ; Do initial Startup for the quest
   if (SD_Internal_FirstLoad.GetValue() == 1.0)
     DNotify("Sanity Framework Initializing...")
-    PlayerRef.SetValue(SD_Alignment, baseAlignment)
-    PlayerRef.SetValue(SD_Sanity, baseSanity)
-    PlayerRef.SetValue(SD_Stress, baseStress)
+    PlayerRef.SetValue(SD_Alignment, 0)
+    PlayerRef.SetValue(SD_Sanity, 100)
+    PlayerRef.SetValue(SD_Stress, 0)
     PlayerRef.SetValue(SD_Depression, 0)
     PlayerRef.SetValue(SD_Grief, 0)
     PlayerRef.SetValue(SD_Trauma, 0)

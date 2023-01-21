@@ -1,6 +1,6 @@
 Scriptname SD:PlayerScript extends ReferenceAlias
 
-Group Misc
+
 Actor Property PlayerRef auto
 Actor Property Shaun auto
 Holotape Property CodsworthHoloTape01 auto
@@ -14,9 +14,9 @@ Potion Property SD_SplinterPotionBeast auto
 Location[] Property SD_POI auto mandatory
 Location[] Property SD_POIInsanity auto 
 Race Property HumanRace auto 
-EndGroup
 
-Group Factions
+
+
 Faction Property SD_OneFaction auto 
 Faction Property SD_BeastFaction auto
 Faction Property SD_SthanFaction auto
@@ -25,7 +25,7 @@ Faction Property SD_YouFaction auto
 Faction Property SD_OliviaFaction auto 
 Faction Property SD_AlexFaction auto
 Faction Property SD_JackFaction auto 
-EndGroup
+
 
 Faction Pregnancy 
 bool IsPregnant = false
@@ -33,12 +33,11 @@ Race CurrentFatherRace
 Actor akFather 
 Actor akMother
 int NumChildren
-FPFP_Player_Script FPE
-FPFP_PlayerPregData BabyInfo 
+
 bool akBirth
 
 
-Group Settings
+
 GlobalVariable Property SD_Setting_ThoughtsEnabled auto
 GlobalVariable Property SD_Setting_ThoughtFrequency auto
 GlobalVariable Property SD_Haha auto ;Do you believe in god?  Do you read comments?
@@ -53,9 +52,7 @@ GlobalVariable Property SD_Decay auto
 GlobalVariable Property SD_ModH auto
 GlobalVariable Property SD_ModM auto
 GlobalVariable Property SD_ModL auto
-EndGroup
 
-Group Keywords
 ;bad things for bad problems
 Keyword Property ObjectTypeAlcohol auto 
 Keyword Property CA_ObjType_ChemBad auto
@@ -68,9 +65,7 @@ Keyword Property SD_RandomGriefThought auto
 Keyword Property SD_RandomStressThought auto 
 Keyword Property SD_RandomSleepThought auto 
 KeyWord Property SD_SplinterEffect auto 
-EndGroup
 
-Group Perks
 Perk Property SD_SplinterOne auto
 Perk Property SD_SplinterGabryal auto
 Perk Property SD_SplinterBeast auto
@@ -80,11 +75,12 @@ Perk Property SD_SplinterSthan auto
 Perk Property SD_SplinterJack auto
 Perk Property SD_SplinterAlex auto
 Perk[] Property SD_Mutations auto
-EndGroup
+
 ;It can't rain all the time, can it?  When you're sad, can you tell the difference between rain and shine, buttercup?
 Weather RainyWeather
 int messageFrequency = 20
-SD:SanityFrameworkQuestScript SF_Main
+
+
 
 
 float tickFrequency = 1.0
@@ -112,6 +108,11 @@ int timesSthan = 0
 int timesOne = 0 
 int timesAlex = 0
 string[] Property ImpregnatedRaces auto
+
+FPFP_Player_Script property FPE auto
+FPFP_PlayerPregData property BabyInfo auto
+SD:SanityFrameworkQuestScript property SF_Main auto
+
 
 ;Add Mutation perks based on radiation intake and sanity.
 
@@ -442,7 +443,6 @@ EndEvent
 
 Event OnRadiationDamage(ObjectReference akTarget, bool abIngested)
   IF akTarget == PlayerRef
-    SF_Main.DNotify("Player took radiation")
     RegisterForRadiationDamageEvent(PlayerRef)
   EndIF
 EndEvent

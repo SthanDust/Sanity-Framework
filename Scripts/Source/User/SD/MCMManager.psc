@@ -1,8 +1,5 @@
 Scriptname SD:MCMManager extends Quest
 
-
-SD:SanityFrameworkQuestScript SDF
-
 string thisMod = "SD_MainFramework"
 string logName = "SanityFramework"
 
@@ -43,7 +40,7 @@ import Actor
 import Debug
 import Game
 
-
+SD:SanityFrameworkQuestScript property SDF auto
 
 Event OnInit()
     OpenLog()
