@@ -1,6 +1,6 @@
 Scriptname SD:PlayerScript extends ReferenceAlias
-{This will attach to the player.}
 
+Group Misc
 Actor Property PlayerRef auto
 Actor Property Shaun auto
 Holotape Property CodsworthHoloTape01 auto
@@ -14,8 +14,9 @@ Potion Property SD_SplinterPotionBeast auto
 Location[] Property SD_POI auto mandatory
 Location[] Property SD_POIInsanity auto 
 Race Property HumanRace auto 
+EndGroup
 
-import SD:UtilityQuest
+Group Factions
 Faction Property SD_OneFaction auto 
 Faction Property SD_BeastFaction auto
 Faction Property SD_SthanFaction auto
@@ -24,7 +25,7 @@ Faction Property SD_YouFaction auto
 Faction Property SD_OliviaFaction auto 
 Faction Property SD_AlexFaction auto
 Faction Property SD_JackFaction auto 
-
+EndGroup
 
 Faction Pregnancy 
 bool IsPregnant = false
@@ -35,9 +36,6 @@ int NumChildren
 FPFP_Player_Script FPE
 FPFP_PlayerPregData BabyInfo 
 bool akBirth
-SexAttributes sexAttr 
-
-
 
 
 Group Settings
@@ -72,7 +70,7 @@ Keyword Property SD_RandomSleepThought auto
 KeyWord Property SD_SplinterEffect auto 
 EndGroup
 
-
+Group Perks
 Perk Property SD_SplinterOne auto
 Perk Property SD_SplinterGabryal auto
 Perk Property SD_SplinterBeast auto
@@ -82,12 +80,12 @@ Perk Property SD_SplinterSthan auto
 Perk Property SD_SplinterJack auto
 Perk Property SD_SplinterAlex auto
 Perk[] Property SD_Mutations auto
-
+EndGroup
 ;It can't rain all the time, can it?  When you're sad, can you tell the difference between rain and shine, buttercup?
 Weather RainyWeather
 int messageFrequency = 20
 SD:SanityFrameworkQuestScript SF_Main
-SD:UtilityQuest Util
+
 
 float tickFrequency = 1.0
 int tickTimerID = 34
@@ -147,10 +145,7 @@ Event OnTimer(int aiTimerID)
   if(aiTimerID == 1)
     
     Quest Main = Game.GetFormFromFile(0x0001F59A, "SD_MainFramework.esp") as quest
-    Util = Game.GetFormFromFile(0x0000E580, "SD_MainFramework.esp") as SD:UtilityQuest
-    sexAttr = Util.LoadSA()
-    SF_Main.DNotify("SA: Willpower " + sexAttr.willpower)
- 
+    
   
     SF_Main = Main as SD:SanityFrameworkQuestScript
     SF_Main.LoadSDF()
