@@ -102,9 +102,12 @@ int timesOne = 0
 int timesAlex = 0
 string[] Property ImpregnatedRaces auto
 
-FPFP_Player_Script property FPE auto hidden
-FPFP_PlayerPregData property BabyInfo auto hidden
-SD:SanityFrameworkQuestScript property SF_Main auto hidden
+import FPFP_Player_Script
+import FPFP_PlayerPregData
+import SD:SanityFrameworkQuestScript
+FPFP_Player_Script FPE
+FPFP_PlayerPregData BabyInfo 
+SD:SanityFrameworkQuestScript SF_Main
 
 
 float function CalculateModifiers()

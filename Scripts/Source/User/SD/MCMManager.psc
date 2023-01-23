@@ -39,8 +39,9 @@ import MCM
 import Actor
 import Debug
 import Game
+import SD:SanityFrameworkQuestScript
 
-SD:SanityFrameworkQuestScript property SDF auto
+SD:SanityFrameworkQuestScript SDF
 
 Event OnInit()
     OpenLog()
