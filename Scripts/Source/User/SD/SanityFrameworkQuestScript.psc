@@ -1,16 +1,14 @@
 Scriptname SD:SanityFrameworkQuestScript extends Quest
-{Main Script for the Sanity Framework}
 
-
-  Race[] Property SD_SanityRaces auto
-  Race[] Property SD_CanineRaces auto 
-  Race[] Property SD_ReptileRaces auto 
-  Race[] Property SD_HumanRaces auto 
-  Race[] Property SD_NecroRaces auto 
-  Race[] Property SD_InsectRaces auto 
-  Race[] Property SD_MolluskRaces auto
-  Race[] Property SD_MutantRaces auto
-  Race[] Property SD_AlienRaces auto 
+Race[] Property SD_SanityRaces auto
+Race[] Property SD_CanineRaces auto 
+Race[] Property SD_ReptileRaces auto 
+Race[] Property SD_HumanRaces auto 
+Race[] Property SD_NecroRaces auto 
+Race[] Property SD_InsectRaces auto 
+Race[] Property SD_MolluskRaces auto
+Race[] Property SD_MutantRaces auto
+Race[] Property SD_AlienRaces auto 
 
 
 Sound Property DLC03OBJDriveInTrailerSlimeScream auto mandatory
@@ -19,54 +17,50 @@ Sound Property UIPerkMenuWastelandWhisperer auto Mandatory
 sound Property AMBDeathclawSleepingLP auto Mandatory  
 
 
-
-  Actor property PlayerRef auto Mandatory
-  ActorValue Property SD_Sanity Auto Mandatory
-  ActorValue Property SD_Stress Auto Mandatory
-  ActorValue Property SD_Alignment auto Mandatory
-  ActorValue Property SD_Depression auto Mandatory
-  ActorValue Property SD_Grief auto Mandatory
-  ActorValue Property SD_Trauma auto Mandatory
-  Race Property HumanRace auto const
-
+Actor property PlayerRef auto Mandatory
+ActorValue Property SD_Sanity Auto Mandatory
+ActorValue Property SD_Stress Auto Mandatory
+ActorValue Property SD_Alignment auto Mandatory
+ActorValue Property SD_Depression auto Mandatory
+ActorValue Property SD_Grief auto Mandatory
+ActorValue Property SD_Trauma auto Mandatory
+Race Property HumanRace auto const
 
 
-  Keyword Property MeanKeyword auto const 
-  Keyword Property NiceKeyword auto Const
-  Keyword Property SelfishKeyword auto const 
-  Keyword Property ViolentKeyword auto const
+Keyword Property MeanKeyword auto const 
+Keyword Property NiceKeyword auto Const
+Keyword Property SelfishKeyword auto const 
+Keyword Property ViolentKeyword auto const
 
-
-
-  GlobalVariable Property SD_FVersion auto 
-  GlobalVariable Property SD_Framework_Enabled auto
-  GlobalVariable Property SD_Framework_Debugging auto
-  GlobalVariable Property SD_Setting_Integrate_Vio auto
-  GlobalVariable Property SD_Setting_Integrate_FPE auto
-  GlobalVariable Property SD_Setting_Integrate_WLD Auto 
-  GlobalVariable Property SD_Setting_Integrate_JB auto
-  GlobalVariable Property SD_Setting_Integrate_HBW auto
-  GlobalVariable Property SD_Internal_MCMLoaded auto 
-  GlobalVariable Property SD_Internal_FirstLoad auto
-  GlobalVariable Property SD_Beastess_Canine auto
-  GlobalVariable Property SD_Beastess_Reptile auto
-  GlobalVariable Property SD_Beastess_Human auto
-  GlobalVariable Property SD_Beastess_Necro auto
-  GlobalVariable Property SD_Beastess_Insect auto
-  GlobalVariable Property SD_Beastess_Mollusk auto 
-  GlobalVariable Property SD_Beastess_Mutant auto
-  GlobalVariable Property SD_Beastess_Alien auto
-  Message Property SD_FrameworkInit Auto
-  Message Property SD_StatisticsMessage auto
-  GlobalVariable Property SD_Setting_ThoughtFrequency auto
+GlobalVariable Property SD_FVersion auto 
+GlobalVariable Property SD_Framework_Enabled auto
+GlobalVariable Property SD_Framework_Debugging auto
+GlobalVariable Property SD_Setting_Integrate_Vio auto
+GlobalVariable Property SD_Setting_Integrate_FPE auto
+GlobalVariable Property SD_Setting_Integrate_WLD Auto 
+GlobalVariable Property SD_Setting_Integrate_JB auto
+GlobalVariable Property SD_Setting_Integrate_HBW auto
+GlobalVariable Property SD_Internal_MCMLoaded auto 
+GlobalVariable Property SD_Internal_FirstLoad auto
+GlobalVariable Property SD_Beastess_Canine auto
+GlobalVariable Property SD_Beastess_Reptile auto
+GlobalVariable Property SD_Beastess_Human auto
+GlobalVariable Property SD_Beastess_Necro auto
+GlobalVariable Property SD_Beastess_Insect auto
+GlobalVariable Property SD_Beastess_Mollusk auto 
+GlobalVariable Property SD_Beastess_Mutant auto
+GlobalVariable Property SD_Beastess_Alien auto
+Message Property SD_FrameworkInit Auto
+Message Property SD_StatisticsMessage auto
+GlobalVariable Property SD_Setting_ThoughtFrequency auto
 
 
 import MCM
 import Actor
 import Debug
 import Game
-import FollowersScript
-AAF:AAF_API AAF_API
+
+AAF:AAF_API Property AAF_API auto hidden
 
 string thisMod = "SD_MainFramework"
 string logName = "SanityFramework"
@@ -286,10 +280,6 @@ Function ShowStatistics()
   SD_StatisticsMessage.Show(self.GetSanity(PlayerRef), self.GetStress(PlayerRef), self.GetAlignment(PlayerRef), self.GetDepression(PlayerRef), self.GetGrief(PlayerRef))
 EndFunction
 
-Event FollowersScript.AffinityEvent(FollowersScript akSender, Var[] akArgs)
-  ;Keyword  aed = akArgs[0] as Keyword
-  ;DNotify("Affinity Event: " + akArgs[0])
-EndEvent
 
 Event AAF:AAF_API.OnAnimationStop(AAF:AAF_API akSender, Var[] akArgs)
   Actor[] actors = Utility.VarToVarArray(akArgs[1]) as Actor[]

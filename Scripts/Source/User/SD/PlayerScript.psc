@@ -1,6 +1,5 @@
 Scriptname SD:PlayerScript extends ReferenceAlias
 
-
 Actor Property PlayerRef auto
 Actor Property Shaun auto
 Holotape Property CodsworthHoloTape01 auto
@@ -11,11 +10,9 @@ Spell Property SD_SanitySpell auto
 Potion Property SD_SplinterPotionOne auto 
 Potion Property SD_SplinterPotionGabryal auto 
 Potion Property SD_SplinterPotionBeast auto 
-Location[] Property SD_POI auto mandatory
+Location[] Property SD_POI auto 
 Location[] Property SD_POIInsanity auto 
 Race Property HumanRace auto 
-
-
 
 Faction Property SD_OneFaction auto 
 Faction Property SD_BeastFaction auto
@@ -26,17 +23,13 @@ Faction Property SD_OliviaFaction auto
 Faction Property SD_AlexFaction auto
 Faction Property SD_JackFaction auto 
 
-
-Faction Pregnancy 
-bool IsPregnant = false
-Race CurrentFatherRace
-Actor akFather 
-Actor akMother
-int NumChildren
-
-bool akBirth
-
-
+Faction Property Pregnancy auto
+bool Property IsPregnant auto
+Race Property CurrentFatherRace auto
+Actor Property akFather auto
+Actor property akMother auto
+Int property NumChildren auto
+Bool property akBirth auto
 
 GlobalVariable Property SD_Setting_ThoughtsEnabled auto
 GlobalVariable Property SD_Setting_ThoughtFrequency auto
@@ -77,7 +70,7 @@ Perk Property SD_SplinterAlex auto
 Perk[] Property SD_Mutations auto
 
 ;It can't rain all the time, can it?  When you're sad, can you tell the difference between rain and shine, buttercup?
-Weather RainyWeather
+Weather Property RainyWeather Auto
 int messageFrequency = 20
 
 
@@ -104,17 +97,15 @@ float baseDecay = 0.01
 float lastEffectCheck = 0.0
 
 ;splinter counters
-int timesSthan = 0
+int timesSthan = 0 
 int timesOne = 0 
 int timesAlex = 0
 string[] Property ImpregnatedRaces auto
 
-FPFP_Player_Script property FPE auto
-FPFP_PlayerPregData property BabyInfo auto
-SD:SanityFrameworkQuestScript property SF_Main auto
+FPFP_Player_Script property FPE auto hidden
+FPFP_PlayerPregData property BabyInfo auto hidden
+SD:SanityFrameworkQuestScript property SF_Main auto hidden
 
-
-;Add Mutation perks based on radiation intake and sanity.
 
 float function CalculateModifiers()
   float weightWill = 0.3
