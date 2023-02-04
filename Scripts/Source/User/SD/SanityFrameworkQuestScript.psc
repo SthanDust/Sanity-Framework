@@ -122,7 +122,7 @@ Function IntializeStartup()
     SD_Internal_FirstLoad.SetValue(0.0)
     SD_FrameworkInit.Show()
   EndIf
-  
+  ShowDebugInfo()
   LoadAAF()
   LoadSDF()
 EndFunction
@@ -139,7 +139,9 @@ Function LoadAAF()
 	endif
 EndFunction
 
-
+function ShowDebugInfo()
+  Debug.Notification("Debugging:" + SD_Framework_Debugging.GetValue())
+EndFunction
 
 Function DNotify(string text)
   If SD_Framework_Debugging.GetValue() == 1
@@ -150,9 +152,13 @@ Function DNotify(string text)
 EndFunction
 
 Function LoadSDF()
+
   RegisterForRemoteEvent(PlayerRef, "OnKill")
   RegisterForHitEvent(PlayerRef)
-  Beast = Game.GetFormFromFile(0x00027F62, "SD_Framework.esp") as SD:BeastessQuest
+  If Beast == None
+    Quest temp = Game.GetFormFromFile(0x00027F62, "SD_Framework.esp") as Quest
+    Beast = temp as SD:BeastessQuest
+  EndIf
   ;CheckCompanion()
 EndFunction
 

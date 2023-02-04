@@ -83,7 +83,7 @@ EndFunction
 
 Function CheckVersion()
     float current = SD_FVersion.GetValue()    
-    float newVersion = 2000.0
+    float newVersion = 2001.0
 
     if  (current != newVersion)
 
@@ -235,10 +235,10 @@ EndFunction
 
 Function DNotify(string lname, string text)
   If SD_Framework_Debugging.GetValue() == 1
-    Debug.Notification("[SF] " + text)
+    Debug.Notification("[SDF] " + text)
   EndIf
-    Debug.Trace("[SF] " + text, 0) ; just to get started
-    Debug.TraceUser(lname, "[SF] " + text)
+    Debug.Trace("[SDF] " + text, 0) ; just to get started
+    Debug.TraceUser(lname, "[SDF] " + text)
 EndFunction
 
 Function DumpStats()
