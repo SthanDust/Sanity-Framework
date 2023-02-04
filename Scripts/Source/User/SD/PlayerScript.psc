@@ -100,13 +100,7 @@ float lastEffectCheck = 0.0
 int timesSthan = 0 
 int timesOne = 0 
 int timesAlex = 0
-string[] Property ImpregnatedRaces auto
 
-import FPFP_Player_Script
-import FPFP_PlayerPregData
-import SD:SanityFrameworkQuestScript
-FPFP_Player_Script FPE
-FPFP_PlayerPregData BabyInfo 
 SD:SanityFrameworkQuestScript SF_Main
 
 
@@ -131,9 +125,7 @@ EndEvent
 Event OnPlayerLoadGame()
     StartTimer(3, 1)
     PlayerRef.EquipItem(SD_SanityPotion, false, true)
-    if (ImpregnatedRaces.Length == 0)
-      ImpregnatedRaces = new string[25]
-    EndIf
+
 EndEvent
 
 Event OnTimer(int aiTimerID)
@@ -144,17 +136,10 @@ Event OnTimer(int aiTimerID)
   
     SF_Main = Main as SD:SanityFrameworkQuestScript
     SF_Main.LoadSDF()
-    ImpregnatedRaces = new string[25]
     if (Game.IsPluginInstalled("FP_FamilyPlanningEnhanced.esp") && SD_Setting_Integrate_FPE.Value == 1)
       Pregnancy = Game.GetFormFromFile(0x00000FA8, "FP_FamilyPlanningEnhanced.esp") as Faction
-      FPE = Game.GetFormFromFile(0x00000F99, "FP_FamilyPlanningEnhanced.esp") as FPFP_Player_Script
-      BabyInfo = Game.GetFormFromFile(0x00000F99, "FP_FamilyPlanningEnhanced.esp") as FPFP_PlayerPregData
-      FPFP_BasePregData BPD = FPE.GetPregnancyInfo(PlayerRef)
-      RegisterForCustomEvent(FPE, "FPFP_GetPregnant")
-      RegisterForCustomEvent(FPE, "FPFP_GiveBirth")
-      if PlayerRef.IsInFaction(Pregnancy)
+      if PlayerRef.IsInFaction(Pregnancy) && PlayerRef.GetFactionRank(Pregnancy) > -1
         IsPregnant = true
-        
       Else
         IsPregnant = false
       endif
@@ -180,38 +165,6 @@ EndEvent
 function LoadMessages()
   ;SF_Main.DNotify("Player Pregnancy: " + IsPregnant)
 EndFunction
-
-Event FPFP_Player_Script.FPFP_GetPregnant(FPFP_Player_Script akSender, Var[] akArgs)  
-	akMother = akArgs[0] as Actor
-  akFather = akArgs[1] as Actor
-	NumChildren = akArgs[2] as int
-  ;RegisterForCustomEvent(FPE, "FPFP_GetPregnant")
-  if akMother == PlayerRef
-    IsPregnant = true;
-    if (ImpregnatedRaces.Find(akFather.GetRace() as string) == -1)
-      ImpregnatedRaces.Add(akFather.GetRace() as string)
-      CurrentFatherRace = akFather.GetRace()
-      Utility.Wait(2.0)
-      ;SF_Main.DNotify("Player Impregnated by a " + CurrentFatherRace.GetName())
-    EndIf
-  EndIF
-  ;SF_Main.DNotify(akMother.GetActorBase().GetName() + " got Pregnant by a " + akFather.GetRace().GetName() + " with " + NumChildren)
-EndEvent
-
-Event FPFP_Player_Script.FPFP_GiveBirth(FPFP_Player_Script akSender, Var[] akArgs)
-  akMother = akArgs[0] as Actor
-  akBirth = akArgs[2] as bool
-  if (akMother == PlayerRef)
-    IsPregnant = false 
-    If CurrentFatherRace != HumanRace
-      SF_Main.ModifySanity(PlayerRef, -0.5)
-    EndIf
-    CurrentFatherRace = None
-    
-  EndIF
-  ;RegisterForCustomEvent(FPE, "FPFP_GiveBirth")
-  ;SF_Main.DNotify("Gave Birth.")
-EndEvent
 
 Event OnTimerGameTime(int aiTimerID)
   if (aiTimerID == tickTimerID)

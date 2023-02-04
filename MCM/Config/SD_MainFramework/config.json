@@ -209,6 +209,16 @@
                     }
                 },
                 {
+                    "text": "Beast(ess) Settings",
+                    "align": "Left",
+                    "type": "section"
+                },
+                {
+                    "text": "Beastess Quest is a side quest that works best for the female player.  It gives abilities based on sexual encounters with non-humans.",
+                    "type": "text",
+                    "align": "left"
+                },
+                {
                     "text": "Reset Beast(ess) Values",
                     "type": "button",
                     "help": "Resets your beast(ess) stats.",
@@ -216,6 +226,16 @@
                         "type": "CallFunction",
                         "form": "SD_MainFramework.esp|1F59A",
                         "function": "ResetBeastess"
+                    }
+                },
+                {
+                    "text": "Check Beast(ess) Values",
+                    "type": "button",
+                    "help": "Check your beast(ess) stats.",
+                    "action": {
+                        "type": "CallFunction",
+                        "form": "SD_MainFramework.esp|27F62",
+                        "function": "GetStats"
                     }
                 }
             ]

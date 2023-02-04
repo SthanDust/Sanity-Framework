@@ -1,15 +1,6 @@
 Scriptname SD:SanityFrameworkQuestScript extends Quest
 
 Race[] Property SD_SanityRaces auto
-Race[] Property SD_CanineRaces auto 
-Race[] Property SD_ReptileRaces auto 
-Race[] Property SD_HumanRaces auto 
-Race[] Property SD_NecroRaces auto 
-Race[] Property SD_InsectRaces auto 
-Race[] Property SD_MolluskRaces auto
-Race[] Property SD_MutantRaces auto
-Race[] Property SD_AlienRaces auto 
-
 
 Sound Property DLC03OBJDriveInTrailerSlimeScream auto mandatory
 Sound Property DLC03NPCFogCrawlerDistantScreamB auto mandatory 
@@ -42,14 +33,6 @@ GlobalVariable Property SD_Setting_Integrate_JB auto
 GlobalVariable Property SD_Setting_Integrate_HBW auto
 GlobalVariable Property SD_Internal_MCMLoaded auto 
 GlobalVariable Property SD_Internal_FirstLoad auto
-GlobalVariable Property SD_Beastess_Canine auto
-GlobalVariable Property SD_Beastess_Reptile auto
-GlobalVariable Property SD_Beastess_Human auto
-GlobalVariable Property SD_Beastess_Necro auto
-GlobalVariable Property SD_Beastess_Insect auto
-GlobalVariable Property SD_Beastess_Mollusk auto 
-GlobalVariable Property SD_Beastess_Mutant auto
-GlobalVariable Property SD_Beastess_Alien auto
 Message Property SD_FrameworkInit Auto
 Message Property SD_StatisticsMessage auto
 GlobalVariable Property SD_Setting_ThoughtFrequency auto
@@ -60,7 +43,8 @@ import Actor
 import Debug
 import Game
 
-AAF:AAF_API Property AAF_API auto hidden
+AAF:AAF_API AAF_API
+SD:BeastessQuest Beast
 
 string thisMod = "SD_MainFramework"
 string logName = "SanityFramework"
@@ -121,7 +105,6 @@ Event OnTimer(int aiTimerID)
   if(aiTimerID == 0)
       IntializeStartup()
       RegisterForRemoteEvent(PlayerRef, "OnPlayerLoadGame")
-      RegisterForCustomEvent(FollowersScript.GetScript(), "AffinityEvent")
   EndIf
 EndEvent
 
@@ -169,6 +152,7 @@ EndFunction
 Function LoadSDF()
   RegisterForRemoteEvent(PlayerRef, "OnKill")
   RegisterForHitEvent(PlayerRef)
+  Beast = Game.GetFormFromFile(0x00027F62, "SD_Framework.esp") as SD:BeastessQuest
   ;CheckCompanion()
 EndFunction
 
@@ -282,6 +266,7 @@ EndFunction
 
 
 Event AAF:AAF_API.OnAnimationStop(AAF:AAF_API akSender, Var[] akArgs)
+  DNotify("Animation has stopped")
   Actor[] actors = Utility.VarToVarArray(akArgs[1]) as Actor[]
 	Int idx = actors.Find(PlayerRef)
 	Actor partnerActor
@@ -313,10 +298,11 @@ Event AAF:AAF_API.OnAnimationStop(AAF:AAF_API akSender, Var[] akArgs)
   endif
 
   int i = 0
-  
+  DNotify("Begin Beast Check")
   while i < actors.length
     if i != idx
-      CheckRace(actors[i])
+      Beast.CheckRace(actors[i])
+      DNotify("Race Check")
     endif
     i += 1
   EndWhile
@@ -337,66 +323,6 @@ bool Function IsRape(string[] akTags, string akMeta)
   EndIf
 EndFunction
 
-Function CheckRace(Actor akActor)
-  Race akRace = akActor.GetRace()  
-  
-  if SD_CanineRaces.Find(akRace) > -1
-    SD_Beastess_Canine.Value += 1
-    SendCustomEvent("OnBeastess")
-    return
-  endif
-  If SD_ReptileRaces.Find(akRace) > -1
-    SD_Beastess_Reptile.Value += 1
-    SendCustomEvent("OnBeastess")
-    return
-  EndIf
-  If SD_HumanRaces.Find(akRace) > -1
-    SD_Beastess_Human.Value += 1
-    SendCustomEvent("OnBeastess")
-    return
-  EndIf
-
-  If SD_NecroRaces.Find(akRace) > -1
-    SD_Beastess_Necro.Value += 1
-    SendCustomEvent("OnBeastess")
-    return
-  EndIf
-
-  If SD_InsectRaces.Find(akRace) > -1
-    SD_Beastess_Insect.Value += 1
-    SendCustomEvent("OnBeastess")
-    return
-  EndIf
-
-  If SD_MolluskRaces.Find(akRace) > -1
-    SD_Beastess_Mollusk.Value += 1
-    SendCustomEvent("OnBeastess")
-  EndIf
-
-  If SD_MutantRaces.Find(akRace) > -1
-    SD_Beastess_Mutant.Value += 1
-    SendCustomEvent("OnBeastess")
-    return
-  EndIf
-
-  If SD_AlienRaces.Find(akRace) > -1
-    SD_Beastess_Alien.Value += 1
-    SendCustomEvent("OnBeastess")
-    return
-  EndIf
-  DNotify("Beastess Increase: " + akRace.GetName())
-EndFunction
-
-Function ResetBeastess()
-  SD_Beastess_Alien.Value = 0
-  SD_Beastess_Canine.Value = 0
-  SD_Beastess_Human.Value = 0
-  SD_Beastess_Insect.Value = 0
-  SD_Beastess_Mollusk.Value = 0
-  SD_Beastess_Mutant.Value = 0
-  SD_Beastess_Necro.Value = 0
-  SD_Beastess_Reptile.Value = 0
-EndFunction
 
 Function PlaySexAnimation(Actor[] akList)
   AAF_API.StartScene(akList) 
