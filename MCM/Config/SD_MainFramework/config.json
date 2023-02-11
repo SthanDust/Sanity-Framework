@@ -237,6 +237,16 @@
                         "form": "SD_MainFramework.esp|27F62",
                         "function": "GetStats"
                     }
+                },
+                {
+                    "text": "Check Morph Values",
+                    "type": "button",
+                    "help": "Check your Morphs",
+                    "action": {
+                        "type": "CallFunction",
+                        "form": "SD_MainFramework.esp|27F62",
+                        "function": "ShowBodyGen"
+                    }
                 }
             ]
         },

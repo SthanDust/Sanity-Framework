@@ -13,11 +13,7 @@ Group General
     GlobalVariable Property SD_Setting_Integrate_WLD Auto 
     GlobalVariable Property SD_Setting_Integrate_JB auto
     GlobalVariable Property SD_Setting_Integrate_HBW auto
-    GlobalVariable Property SD_Setting_Override_Vio auto
-    GlobalVariable Property SD_Setting_Override_FPE auto
-    GlobalVariable Property SD_Setting_Override_WLD Auto 
-    GlobalVariable Property SD_Setting_Override_JB auto
-    GlobalVariable Property SD_Setting_Override_HBW auto
+    GlobalVariable Property SD_Setting_Integrate_Tent auto
     GlobalVariable Property SD_Internal_MCMLoaded auto 
     GlobalVariable Property SD_Internal_FirstLoad auto
     GlobalVariable Property SD_Setting_ThoughtsEnabled auto
@@ -44,11 +40,10 @@ import SD:SanityFrameworkQuestScript
 SD:SanityFrameworkQuestScript SDF
 
 Event OnInit()
-    OpenLog()
     Quest Main = Game.GetFormFromFile(0x0001F59A, "SD_MainFramework.esp") as quest
     SDF = Main as SD:SanityFrameworkQuestScript
     SD_Internal_MCMLoaded.SetValue(0)
-    DNotify(logName, "MCM: OnInit")
+    SDF.DNotify("MCM: OnInit")
     if (CheckForMCM(True))
         CheckVersion()
         CheckIntegrations()
@@ -61,7 +56,6 @@ Event OnInit()
 EndEvent
 
 Event Actor.OnPlayerLoadGame(Actor akSender)
-    OpenLog()
     ;use this to repeat things
     Quest Main = Game.GetFormFromFile(0x0001F59A, "SD_MainFramework.esp") as quest
     SDF = Main as SD:SanityFrameworkQuestScript
@@ -76,10 +70,6 @@ Event Actor.OnPlayerLoadGame(Actor akSender)
     endif
 EndEvent
 
-Function OpenLog()
-  ;Debug.Notification("Opening Debug Log...")
-  Debug.OpenUserLog(logName)
-EndFunction
 
 Function CheckVersion()
     float current = SD_FVersion.GetValue()    
@@ -90,12 +80,12 @@ Function CheckVersion()
         SDF.Stop()
         Utility.Wait(3)
         SDF.Start()
-        DNotify(logName, "MCM: Update Complete to version " + newVersion)
+        SDF.DNotify("MCM: Update Complete to version " + newVersion)
         SD_FVersion.SetValue(newVersion)
         MCM.SetModSettingFloat(thisMod, "fVersion", newVersion)
 
     Else
-        DNotify(logName, "MCM: Update not Needed for v" + current)
+        SDF.DNotify("MCM: Update not Needed for v" + current)
     EndIf
 
 EndFunction
@@ -108,9 +98,9 @@ bool Function CheckForMCM(bool FirstLoad = false)
     If !MCM.IsInstalled()
         If (FirstLoad)
             Utility.Wait(1.0)
-            DNotify(logName, "Waiting for MCM to be found")
+            SDF.DNotify("Waiting for MCM to be found")
         else 
-            DNotify(logName, "Reinstall the MCM then reset Sanity Framework.")
+            SDF.DNotify("Reinstall the MCM then reset Sanity Framework.")
         EndIf
         Return false
     EndIf
@@ -149,16 +139,16 @@ Function MCMUpdate()
 EndFunction
 
 function Uninstall()
-    DNotify(logName,"Uninstalling Framework.")
+    SDF.DNotify("Uninstalling Framework.")
     SD_Internal_FirstLoad.SetValue(1.0)
     SD_Internal_MCMLoaded.SetValue(0.0)
     SD_FVersion.SetValue(0.0)
-    DNotify(logName,"You may now safely remove this mod from your load order.")
+    SDF.DNotify("You may now safely remove this mod from your load order.")
     SDF.Stop()
 EndFunction
 
 function ResetMod()
-    DNotify(logName,"Resetting the framework... Please wait")
+    SDF.DNotify("Resetting the framework... Please wait")
     SD_Internal_FirstLoad.SetValue(1.0)
     SD_FVersion.SetValue(0.0)
     
@@ -170,9 +160,9 @@ function ResetMod()
     If CheckForMCM()
         MCMUpdate()
         CheckIntegrations()
-        DNotify(logName,"Framework has now reset.  Check your MCM for setting changes")
+        SDF.DNotify("Framework has now reset.  Check your MCM for setting changes")
     Else
-        DNotify(logName,"Error: MCM is not running.")
+        SDF.DNotify("Error: MCM is not running.")
     EndIF
     
     
@@ -231,25 +221,24 @@ Function CheckIntegrations()
         SD_Setting_Integrate_JB.SetValue(0.0)
         MCM.SetModSettingBool(thisMod, "bEnableJB", false)
     EndIf  
+
+    If (Game.IsPluginInstalled("AnimatedTentacles.esp"))
+        SD_Setting_Integrate_Tent.SetValue(1.0)
+    Else
+        SD_Setting_Integrate_Tent.SetValue(0.0)
+    EndIf
 EndFunction
 
-Function DNotify(string lname, string text)
-  If SD_Framework_Debugging.GetValue() == 1
-    Debug.Notification("[SDF] " + text)
-  EndIf
-    Debug.Trace("[SDF] " + text, 0) ; just to get started
-    Debug.TraceUser(lname, "[SDF] " + text)
-EndFunction
 
 Function DumpStats()
-    DNotify(logName, "Statistics *************************")
-    DNotify(logName, "Sanity: " + SDF.GetSanity(PlayerRef))
-    DNotify(logName, "Trauma: " + SDF.GetTrauma(PlayerRef))
-    DNotify(logName, "Depression: " + SDF.GetDepression(PlayerRef))
-    DNotify(logName, "Grief: " + SDF.GetGrief(PlayerRef))
-    DNotify(logName, "Alignment: " + SDF.GetAlignment(PlayerRef))
-    DNotify(logName, "Stress: " + SDF.GetStress(PlayerRef))
-    DNotify(logName, "Decay: " + SD_Decay.GetValue())
-    DNotify(logName, "Tolerance: " + SD_Tolerance.GetValue())
-    DNotify(logName, "EndStatistics ***********************")   
+    SDF.DNotify("Statistics *************************")
+    SDF.DNotify("Sanity: " + SDF.GetSanity(PlayerRef))
+    SDF.DNotify("Trauma: " + SDF.GetTrauma(PlayerRef))
+    SDF.DNotify("Depression: " + SDF.GetDepression(PlayerRef))
+    SDF.DNotify("Grief: " + SDF.GetGrief(PlayerRef))
+    SDF.DNotify("Alignment: " + SDF.GetAlignment(PlayerRef))
+    SDF.DNotify("Stress: " + SDF.GetStress(PlayerRef))
+    SDF.DNotify("Decay: " + SD_Decay.GetValue())
+    SDF.DNotify("Tolerance: " + SD_Tolerance.GetValue())
+    SDF.DNotify("EndStatistics ***********************")   
 EndFunction

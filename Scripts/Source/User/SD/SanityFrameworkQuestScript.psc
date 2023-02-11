@@ -140,7 +140,7 @@ Function LoadAAF()
 EndFunction
 
 function ShowDebugInfo()
-  Debug.Notification("Debugging:" + SD_Framework_Debugging.GetValue())
+  
 EndFunction
 
 Function DNotify(string text)
@@ -155,10 +155,12 @@ Function LoadSDF()
 
   RegisterForRemoteEvent(PlayerRef, "OnKill")
   RegisterForHitEvent(PlayerRef)
-  If Beast == None
-    Quest temp = Game.GetFormFromFile(0x00027F62, "SD_Framework.esp") as Quest
-    Beast = temp as SD:BeastessQuest
-  EndIf
+
+  
+  Quest temp = Game.GetFormFromFile(0x00027F62, "SD_MainFramework.esp") as Quest
+  Beast = temp as SD:BeastessQuest
+  
+
   ;CheckCompanion()
 EndFunction
 
@@ -226,7 +228,10 @@ float function GetSanity(Actor akTarget)
 EndFunction
 
 Function ModifySanity(Actor akTarget, float nSanity)
-   
+    float currentSanity = GetSanity(akTarget)
+    float newSanity = currentSanity + nSanity
+    
+    SanityCheck(currentSanity as int, newSanity as int)
     if nSanity < 0
       akTarget.DamageValue(SD_Sanity, nSanity * -1)
     ElseIf nSanity > 0
@@ -272,7 +277,7 @@ EndFunction
 
 
 Event AAF:AAF_API.OnAnimationStop(AAF:AAF_API akSender, Var[] akArgs)
-  DNotify("Animation has stopped")
+  
   Actor[] actors = Utility.VarToVarArray(akArgs[1]) as Actor[]
 	Int idx = actors.Find(PlayerRef)
 	Actor partnerActor
@@ -304,11 +309,9 @@ Event AAF:AAF_API.OnAnimationStop(AAF:AAF_API akSender, Var[] akArgs)
   endif
 
   int i = 0
-  DNotify("Begin Beast Check")
-  while i < actors.length
+   while i < actors.length
     if i != idx
       Beast.CheckRace(actors[i])
-      DNotify("Race Check")
     endif
     i += 1
   EndWhile
@@ -329,9 +332,41 @@ bool Function IsRape(string[] akTags, string akMeta)
   EndIf
 EndFunction
 
-
 Function PlaySexAnimation(Actor[] akList)
   AAF_API.StartScene(akList) 
+EndFunction
+
+Function SanityCheck(int prevSanity, int newSanity)
+  bool isFalling = false 
+  If (newSanity < prevSanity)
+    isFalling = true
+  EndIf
+  If newSanity != prevSanity
+    If isFalling && (newSanity % 5 == 0)
+        If newSanity <= 95 && newSanity >= 85
+          DNotify("You are losing a grip on reality.")
+        ElseIf newSanity <= 84 && newSanity >= 75
+          DNotify("The world is starting to weigh on your mind")
+        ElseIf newSanity <= 74 && newSanity >= 65
+          DNotify("You wonder how far the rabbit hole goes")
+        ElseIf newSanity <= 64 && newSanity >= 55
+          DNotify("What was that?")
+        ElseIf newSanity <= 54 && newSanity >= 45
+          DNotify("Not much sanity left to lose")
+        ElseIf newSanity <= 44 && newSanity >= 35
+          DNotify("You wonder what is happening")
+        ElseIf newSanity <= 34 && newSanity >= 25
+          DNotify("Kill them all")
+        ElseIf newSanity < 25
+          DNotify("You are almost at the point of no return")
+        EndIf
+      ElseIf !isFalling && (newSanity % 5 == 0)
+          int rando = Utility.RandomInt(0, 100)
+          If rando < 10
+            Dnotify("You feel a little more stable.")
+          EndIf
+      EndIf
+  EndIf
 EndFunction
 
 
