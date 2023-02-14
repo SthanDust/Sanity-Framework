@@ -332,8 +332,19 @@ bool Function IsRape(string[] akTags, string akMeta)
   EndIf
 EndFunction
 
-Function PlaySexAnimation(Actor[] akList)
-  AAF_API.StartScene(akList) 
+Function PlaySexAnimation(Actor[] akList, AAF:AAF_API:SceneSettings SceneSet = None)
+  AAF:AAF_API:SceneSettings sexScene
+  If SceneSet == None
+    sexScene = AAF_API.GetSceneSettings()
+    sexScene.duration = 30.0
+    sexScene.skipWalk = true
+  Else 
+    sexScene = SceneSet
+  EndIF
+
+  akList.Add(PlayerRef)
+  AAF_API.StartScene(akList, sexScene) 
+  DNotify("Playing Sex Scene")
 EndFunction
 
 Function SanityCheck(int prevSanity, int newSanity)
