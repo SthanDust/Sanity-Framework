@@ -55,7 +55,6 @@ Group Beast_Races
 EndGroup
 
 SD:SanityFrameworkQuestScript SDF
-SD:UtilityQuest UT
 FPFP_Player_Script FPE
 FPFP_BasePregData BPD
 
@@ -96,7 +95,7 @@ Event OnTimer(int aiTimerID)
     if(aiTimerID == 0)
       LoadFPE()
       LoadTentacles()
-      UT = Game.GetFormFromFile(0x0000E580, "SD_MainFramework.esp") as UtilityQuest
+      
       Quest Main = Game.GetFormFromFile(0x0001F59A, "SD_MainFramework.esp") as quest
       SDF = Main as SD:SanityFrameworkQuestScript
       RegisterForRemoteEvent(PlayerRef, "OnPlayerLoadGame")
