@@ -1,0 +1,1 @@
+Scriptname SD:PerkBeastCanineScript extends Perk
