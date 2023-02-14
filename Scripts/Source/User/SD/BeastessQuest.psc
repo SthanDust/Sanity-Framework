@@ -78,7 +78,7 @@ Spell Property SP_TentacleSlime auto
 
 Event OnQuestInit()
     StartTimer(1,0)
-
+ 
 EndEvent
 
 Event Actor.OnPlayerLoadGame(Actor akSender)

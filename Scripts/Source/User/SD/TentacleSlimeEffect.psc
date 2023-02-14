@@ -11,6 +11,7 @@ Event OnEffectStart(Actor akTarget, Actor akCaster)
         Quest Main = Game.GetFormFromFile(0x0001F59A, "SD_MainFramework.esp") as quest
         SDF = Main as SD:SanityFrameworkQuestScript
         SDF.DNotify("You are filled with warm, pulsating slime")
+         
         PlayerRef.EquipItem(TentacleSlime, false, true)
     EndIf
 EndEvent
