@@ -308,21 +308,7 @@ Event AAF:AAF_API.OnAnimationStop(AAF:AAF_API akSender, Var[] akArgs)
     
   endif
   
-  int i = 0
-   while i < actors.length
-    if actors[i] != PlayerRef
-      Beast.CheckRace(actors[i])
-        if actors[i].GetRace() == Beast.SD_TentacleRace
-          bool impregnated = false
-          If !impregnated
-            impregnated = Beast.TryTentaclePreg(actors[i])
-            DNotify("Removing Tentacle")
-            Beast.RemoveTentacle(actors[i])
-          EndIf
-        EndIf
-    endif
-      i = i + 1
-    EndWhile
+
   
 EndEvent
 

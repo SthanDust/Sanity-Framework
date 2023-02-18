@@ -61,7 +61,7 @@ EndGroup
 SD:SanityFrameworkQuestScript SDF
 FPFP_Player_Script FPE
 FPFP_BasePregData BPD
-
+AAF:AAF_API AAF_API
 CustomEvent OnBeastess
 
 
@@ -104,13 +104,14 @@ Event OnTimer(int aiTimerID)
       LoadFPE()
       LoadTentacles()
       LoadWLD()
-
+      AAF_API = Game.GetFormFromFile(0x00000F99, "AAF.esm") as AAF:AAF_API
       Quest Main = Game.GetFormFromFile(0x0001F59A, "SD_MainFramework.esp") as quest
       SDF = Main as SD:SanityFrameworkQuestScript
       RegisterForRemoteEvent(PlayerRef, "OnPlayerLoadGame")
       RegisterForRemoteEvent(PlayerRef, "OnLocationChange")
       StartTimerGameTime(1, tickTimerID)
       StartTimerGameTime(24, dayTimerID)
+      RegisterForCustomEvent(AAF_API, "OnAnimationStop")
     EndIf
 EndEvent
 
@@ -430,23 +431,24 @@ Function TentacleAmbush(float Distance = 233.0)
   Actor[] akActors = PlayerRef.FindAllReferencesWithKeyword(SD_Tentacle, maxDistance) as Actor[]
   ; here we are interrupting the normal pregnancy
   PlayerRef.AddKeyword(SD_NoPregKeyword)
-  SDF.PlaySexAnimation(akActors)
+  AAF:AAF_API:SceneSettings sexScene = AAF_API.GetSceneSettings()
+  sexScene.meta = "SD_TentacleAmbush"
+  SDF.PlaySexAnimation(akActors, sexScene)
     
 EndFunction
 
-Bool Function TryTentaclePreg(Actor akActor)
+Function TryTentaclePreg(Actor akActor)
   If !IsPregnant()
     PlayerRef.RemoveKeyword(SD_NoPregKeyword)
-    AAF_InvisibilitySpell.Cast(akActor, akActor)
-    akActor.SetPosition(Game.GetPlayer().GetPositionX(),Game.GetPlayer().GetPositionY(), Game.GetPlayer().GetPositionZ() - 500.0)
+    ImpregnateRace(akActor)
+    akActor.SetPosition(Game.GetPlayer().GetPositionX(),Game.GetPlayer().GetPositionY(), -500.0)
+    akActor.AddSpell(AAF_InvisibilitySpell, false)
     Race tempRace = GetRandomRace()
     akActor.SetRace(tempRace)
     BPD.TrySpermFrom(akActor)
-    Utility.Wait(5)
-    RemoveTentacle(akActor)
-    return true
+    Utility.Wait(1)
   EndIf
-  return false
+  RemoveTentacle(akActor)
 EndFunction
 
 Race Function GetRandomRace()
@@ -510,3 +512,33 @@ Function TestTentacle()
   TentacleAmbush(200.0)
 ENdFunction
 
+Event AAF:AAF_API.OnAnimationStop(AAF:AAF_API akSender, Var[] akArgs)
+  
+  Actor[] actors = Utility.VarToVarArray(akArgs[1]) as Actor[]
+	Int idx = actors.Find(PlayerRef)
+	Actor partnerActor
+  int status = akArgs[0] as int
+  if idx <= -1 || status != 0
+    return
+  endif
+  
+  String[] Tags = Utility.VarToVarArray(akArgs[3]) as String[] 
+  String position = akArgs[2] as String
+  string meta = akArgs[4] as string
+   string[] metatag = LL_FourPlay.StringSplit(theString = meta, delimiter = ",")
+  SDF.DNotify("Meta: " + meta)
+If (metaTag.Find("SD_TentacleAmbush") > -1)
+  SDF.DNotify("Found Tag")
+    int i = 0
+  while i < actors.length
+    if i != idx
+      CheckRace(actors[i])
+    endif
+    if actors[i].GetRace() == SD_TentacleRace
+      SDF.DNotify("Checking Pregnant")
+     TryTentaclePreg(actors[i])
+    EndIf
+    i = i + 1
+  EndWhile
+EndIf
+EndEvent
