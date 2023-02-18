@@ -307,19 +307,22 @@ Event AAF:AAF_API.OnAnimationStop(AAF:AAF_API akSender, Var[] akArgs)
     ModifySanity(PlayerRef, -2.0 + mod)
     
   endif
-  DNotify("Num Actors: " + actors.Length)
+  
   int i = 0
    while i < actors.length
     if actors[i] != PlayerRef
       Beast.CheckRace(actors[i])
-      if actors[i].GetRace() == Beast.SD_TentacleRace
-        Beast.TryTentaclePreg()
-        DNotify("Removing Tentacle")
-        Beast.RemoveTentacle(actors[i])
-      EndIf
+        if actors[i].GetRace() == Beast.SD_TentacleRace
+          bool impregnated = false
+          If !impregnated
+            impregnated = Beast.TryTentaclePreg(actors[i])
+            DNotify("Removing Tentacle")
+            Beast.RemoveTentacle(actors[i])
+          EndIf
+        EndIf
     endif
-    i += 1
-  EndWhile
+      i = i + 1
+    EndWhile
   
 EndEvent
 

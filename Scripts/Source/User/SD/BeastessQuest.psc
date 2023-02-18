@@ -31,6 +31,7 @@ Group Global_Vars
   GlobalVariable Property SD_Setting_Integrate_WLD  auto
   Actor Property PlayerRef auto
   Race Property HumanRace auto
+  Spell Property AAF_InvisibilitySpell auto
 EndGroup
 
 Group Pregnancy
@@ -78,9 +79,9 @@ string[] property maleplacement auto
 string[] property femaleplacement auto
 string[] property resultcomment auto 
 Spell Property SP_TentacleSlime auto 
+int tickTimerID = 1
+int dayTimerID = 2
 
-Armor InjectMCRandom
-Armor InjectDLCRandom
 
 
 Event OnQuestInit()
@@ -108,6 +109,8 @@ Event OnTimer(int aiTimerID)
       SDF = Main as SD:SanityFrameworkQuestScript
       RegisterForRemoteEvent(PlayerRef, "OnPlayerLoadGame")
       RegisterForRemoteEvent(PlayerRef, "OnLocationChange")
+      StartTimerGameTime(1, tickTimerID)
+      StartTimerGameTime(24, dayTimerID)
     EndIf
 EndEvent
 
@@ -132,6 +135,36 @@ Function ResetBeastess()
   SD_Beastess_Reptile_Preg.Value = 0
 EndFunction
 
+Event OnTimerGameTime(int aiTimerID)
+  if (aiTimerID == tickTimerID)
+    OnTick()
+  EndIf
+  if (aiTimerID == dayTimerID)
+    OnDay()
+  EndIF
+EndEvent
+
+Function OnTick()
+  SDF.DNotify("The Time is " + GetCurrentHourOfDay())
+  StartTimerGameTime(1, tickTimerID)
+  ObjectReference[] t = PlayerRef.FindAllReferencesOfType(PlayerRef.GetBaseObject(), 500.0)
+  if t.length <= 1
+    SDF.DNotify("Actor is not alone. " + t.Length)
+  EndIf
+EndFunction
+
+Function OnDay()
+  StartTimerGameTime(24, dayTimerID)
+EndFunction
+
+float Function GetCurrentHourOfDay() 
+ 
+	float Time = Utility.GetCurrentGameTime()
+	Time -= Math.Floor(Time) ; Remove "previous in-game days passed" bit
+	Time *= 24 ; Convert from fraction of a day to number of hours
+	Return Time
+ 
+EndFunction
 
 Function CheckRace(Actor akActor)
   Race akRace = akActor.GetRace()
@@ -259,6 +292,7 @@ Function LoadFPE()
       Pregnancy = Game.GetFormFromFile(0x00000FA8, "FP_FamilyPlanningEnhanced.esp") as Faction 
       FPE = Game.GetFormFromFile(0x00000F99, "FP_FamilyPlanningEnhanced.esp") as FPFP_Player_Script
       BPD = FPE.GetPregnancyInfo(PlayerRef)
+      
       RegisterForCustomEvent(FPE, "FPFP_GetPregnant")
       RegisterForCustomEvent(FPE, "FPFP_GiveBirth")
       BloodyFanny = BPD.SP_BloodyBirth as Spell 
@@ -268,8 +302,7 @@ EndFunction
 Function LoadWLD()
   if (Game.IsPluginInstalled("INVB_WastelandOffspring.esp"))
     SD_Setting_Integrate_WLD.SetValueInt(1)
-    InjectDLCRandom = Game.GetFormFromFile(0x001002DA, "INVB_WastelandOffspring.esp") as Armor 
-    InjectMCRandom = Game.GetFormFromFile(0x00100590, "INVB_WastelandOffspring.esp") as Armor 
+
   EndIf
 EndFunction
 
@@ -401,40 +434,49 @@ Function TentacleAmbush(float Distance = 233.0)
     
 EndFunction
 
-Function TryTentaclePreg()
+Bool Function TryTentaclePreg(Actor akActor)
   If !IsPregnant()
     PlayerRef.RemoveKeyword(SD_NoPregKeyword)
-    SDF.DNotify("trying to impregnate")
-    PlayerRef.EquipItem(InjectDLCRandom, false, true)
-    return
+    AAF_InvisibilitySpell.Cast(akActor, akActor)
+    akActor.SetPosition(Game.GetPlayer().GetPositionX(),Game.GetPlayer().GetPositionY(), Game.GetPlayer().GetPositionZ() - 500.0)
+    Race tempRace = GetRandomRace()
+    akActor.SetRace(tempRace)
+    BPD.TrySpermFrom(akActor)
+    Utility.Wait(5)
+    RemoveTentacle(akActor)
+    return true
   EndIf
+  return false
 EndFunction
 
 Race Function GetRandomRace()
+  
+  
   int ran = Utility.RandomInt(0, 100)
+  SDF.DNotify("Ran: " + ran)
   If (ran <= 13)
-    int t = Utility.RandomInt(0, SD_CanineRaces.Length)
+    int t = Utility.RandomInt(0, SD_CanineRaces.Length -1)
     return SD_CanineRaces[t]
   ElseIf (ran > 13 && ran <=24)
-    int t = Utility.RandomInt(0, SD_AlienRaces.Length)
+    int t = Utility.RandomInt(0, SD_AlienRaces.Length -1)
     return SD_AlienRaces[t]
   elseIf (ran > 24 && ran <= 36)
-    int t = Utility.RandomInt(0, SD_InsectRaces.Length)
+    int t = Utility.RandomInt(0, SD_InsectRaces.Length -1)
     return SD_InsectRaces[t]
   ElseIf (ran > 36 && ran <= 51)
-    int t = Utility.RandomInt(0, SD_MolluskRaces.Length)
+    int t = Utility.RandomInt(0, SD_MolluskRaces.Length -1)
     return SD_MolluskRaces[t]
   ElseIf (ran > 51 && ran <= 63)
-    int t = Utility.RandomInt(0, SD_NecroRaces.Length)
+    int t = Utility.RandomInt(0, SD_NecroRaces.Length -1)
     return SD_NecroRaces[t]
   ElseIf (ran > 63 && ran <= 74)
-    int t = Utility.RandomInt(0, SD_ReptileRaces.Length)
+    int t = Utility.RandomInt(0, SD_ReptileRaces.Length -1)
     return SD_ReptileRaces[t]
   ElseIf (ran > 74 && ran <= 86)
-    int t = Utility.RandomInt(0, SD_MutantRaces.Length)
+    int t = Utility.RandomInt(0, SD_MutantRaces.Length -1)
     return SD_MutantRaces[t]
   ElseIf (ran > 86)
-    int t = Utility.RandomInt(0, SD_HumanRaces.Length)
+    int t = Utility.RandomInt(0, SD_HumanRaces.Length -1)
     return SD_HumanRaces[t]
   EndIF
 EndFunction
