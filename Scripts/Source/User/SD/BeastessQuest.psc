@@ -68,7 +68,8 @@ Armor TentacleSlime
 ActorBase AggressiveTentacle
 ActorBase PassiveTentacle
 Sound TentacleSound
-Keyword SD_Tentacle 
+Keyword SD_Tentacle
+Keyword SD_NoPregKeyword
 Actor[] ActiveTentacles
 Keyword property LocSetWaterfront auto
 string[] property slimeadjectives auto
@@ -101,7 +102,8 @@ Event OnTimer(int aiTimerID)
     if(aiTimerID == 0)
       LoadFPE()
       LoadTentacles()
-      
+      LoadWLD()
+
       Quest Main = Game.GetFormFromFile(0x0001F59A, "SD_MainFramework.esp") as quest
       SDF = Main as SD:SanityFrameworkQuestScript
       RegisterForRemoteEvent(PlayerRef, "OnPlayerLoadGame")
@@ -132,7 +134,10 @@ EndFunction
 
 
 Function CheckRace(Actor akActor)
-  Race akRace = akActor.GetRace()  
+  Race akRace = akActor.GetRace()
+  If akActor.HasKeyword(SD_Tentacle)
+    akRace = SD_TentacleRace
+  EndIf
   SDF.DNotify("Beastess Increase: " + akRace.GetName())
   if SD_CanineRaces.Find(akRace) > -1
     SD_Beastess_Canine.Value += 1
@@ -180,14 +185,16 @@ Function CheckRace(Actor akActor)
   EndIf
   If akRace.GetName() == "Tentacle"
     SD_Beastess_Tentacle.Value += 1
-    ImpregnateTentacle()
     SendCustomEvent("OnBeastess")
     return
   EndIf
 EndFunction
 
 Function ImpregnateRace(Actor akActor)
-    Race akRace = akActor.GetRace()  
+    Race akRace = akActor.GetRace()
+    If akActor.HasKeyword(SD_Tentacle) 
+      akActor.SetRace(SD_TentacleRace)
+    EndIF
     SDF.DNotify("Beastess Impregnation: " + akRace.GetName())
     if SD_CanineRaces.Find(akRace) > -1
         SD_Beastess_Canine_Preg.Value += 1
@@ -235,21 +242,20 @@ Function ImpregnateRace(Actor akActor)
         SendCustomEvent("OnBeastess")
         return
     EndIf
-  
+
+    If akRace.GetName() == "Tentacle"
+      SD_Beastess_Tentacle_Preg.Value += 1
+      SendCustomEvent("OnBeastess")
+      return
+    EndIf
 EndFunction
 
-Function ImpregnateTentacle()
-  If !IsPregnant()
-    SDF.DNotify("Attempting Tentacle Pregnancy")
-    PlayerRef.EquipItem(InjectMCRandom, false, true)
-  EndIf
-  
-  SP_TentacleSlime.Cast(PlayerRef, PlayerRef)
-EndFunction
+
 
 Function LoadFPE()
     if (Game.IsPluginInstalled("FP_FamilyPlanningEnhanced.esp"))
       SD_Setting_Integrate_FPE.SetValueInt(1)
+      SD_NoPregKeyword = Game.GetFormFromFile(0x00017742, "FP_FamilyPlanningEnhanced.esp") as Keyword
       Pregnancy = Game.GetFormFromFile(0x00000FA8, "FP_FamilyPlanningEnhanced.esp") as Faction 
       FPE = Game.GetFormFromFile(0x00000F99, "FP_FamilyPlanningEnhanced.esp") as FPFP_Player_Script
       BPD = FPE.GetPregnancyInfo(PlayerRef)
@@ -262,8 +268,8 @@ EndFunction
 Function LoadWLD()
   if (Game.IsPluginInstalled("INVB_WastelandOffspring.esp"))
     SD_Setting_Integrate_WLD.SetValueInt(1)
-    InjectDLCRandom = Game.GetFormFromFile(0x000002DA, "INVB_WastelandOffspring.esp") as Armor 
-    InjectMCRandom = Game.GetFormFromFile(0x00000590, "INVB_WastelandOffspring.esp") as Armor 
+    InjectDLCRandom = Game.GetFormFromFile(0x001002DA, "INVB_WastelandOffspring.esp") as Armor 
+    InjectMCRandom = Game.GetFormFromFile(0x00100590, "INVB_WastelandOffspring.esp") as Armor 
   EndIf
 EndFunction
 
@@ -370,6 +376,12 @@ Function ShowBodyGen()
   
 EndFunction
 
+Function RemoveTentacle(Actor akActor)
+  SDF.DNotify("Deleting Tentacle")
+  akActor.Disable(true)
+  akActor.DeleteWhenAble()
+EndFunction
+
 Function TentacleAmbush(float Distance = 233.0)
   
   ActorBase temp = PassiveTentacle
@@ -382,11 +394,49 @@ Function TentacleAmbush(float Distance = 233.0)
     i = i + 1
   EndWhile
   
-  
   Actor[] akActors = PlayerRef.FindAllReferencesWithKeyword(SD_Tentacle, maxDistance) as Actor[]
-  
+  ; here we are interrupting the normal pregnancy
+  PlayerRef.AddKeyword(SD_NoPregKeyword)
   SDF.PlaySexAnimation(akActors)
     
+EndFunction
+
+Function TryTentaclePreg()
+  If !IsPregnant()
+    PlayerRef.RemoveKeyword(SD_NoPregKeyword)
+    SDF.DNotify("trying to impregnate")
+    PlayerRef.EquipItem(InjectDLCRandom, false, true)
+    return
+  EndIf
+EndFunction
+
+Race Function GetRandomRace()
+  int ran = Utility.RandomInt(0, 100)
+  If (ran <= 13)
+    int t = Utility.RandomInt(0, SD_CanineRaces.Length)
+    return SD_CanineRaces[t]
+  ElseIf (ran > 13 && ran <=24)
+    int t = Utility.RandomInt(0, SD_AlienRaces.Length)
+    return SD_AlienRaces[t]
+  elseIf (ran > 24 && ran <= 36)
+    int t = Utility.RandomInt(0, SD_InsectRaces.Length)
+    return SD_InsectRaces[t]
+  ElseIf (ran > 36 && ran <= 51)
+    int t = Utility.RandomInt(0, SD_MolluskRaces.Length)
+    return SD_MolluskRaces[t]
+  ElseIf (ran > 51 && ran <= 63)
+    int t = Utility.RandomInt(0, SD_NecroRaces.Length)
+    return SD_NecroRaces[t]
+  ElseIf (ran > 63 && ran <= 74)
+    int t = Utility.RandomInt(0, SD_ReptileRaces.Length)
+    return SD_ReptileRaces[t]
+  ElseIf (ran > 74 && ran <= 86)
+    int t = Utility.RandomInt(0, SD_MutantRaces.Length)
+    return SD_MutantRaces[t]
+  ElseIf (ran > 86)
+    int t = Utility.RandomInt(0, SD_HumanRaces.Length)
+    return SD_HumanRaces[t]
+  EndIF
 EndFunction
 
 Function SpawnTentacle(ActorBase akTentacle, float maxDistance)
@@ -407,11 +457,12 @@ Function SpawnTentacle(ActorBase akTentacle, float maxDistance)
   Actor newTent = PlayerRef.PlaceAtMe(akTentacle, 1) as Actor
   float[] pos = newTent.GetSafePosition(dist, dist)
   ActiveTentacles.Add(newTent)
-  
+  newTent.AddKeyword(SD_Tentacle)
   newTent.SetPosition(Game.GetPlayer().GetPositionX() + (dist * fSin),Game.GetPlayer().GetPositionY() + (dist * fCos), pos[2])
   TentacleSound.Play(newTent)
-  newTent.AddKeyword(SD_Tentacle)
+  
 EndFunction
+
 
 Function TestTentacle()
   TentacleAmbush(200.0)
