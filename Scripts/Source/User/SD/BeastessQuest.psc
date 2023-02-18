@@ -27,6 +27,8 @@ Group Global_Vars
   GlobalVariable Property SD_Beastess_Alien_Preg    auto
   GlobalVariable Property SD_Beastess_Tentacle_Preg auto
   GlobalVariable Property SD_Setting_Integrate_Tent auto 
+  GlobalVariable Property SD_Setting_Integrate_FPE  auto
+  GlobalVariable Property SD_Setting_Integrate_WLD  auto
   Actor Property PlayerRef auto
   Race Property HumanRace auto
 EndGroup
@@ -40,6 +42,7 @@ Group Pregnancy
   Bool Property IsPregnant auto
   Bool property akBirth auto
   Spell Property BloodyFanny auto
+ 
 EndGroup    
 
 Group Beast_Races
@@ -74,6 +77,9 @@ string[] property maleplacement auto
 string[] property femaleplacement auto
 string[] property resultcomment auto 
 Spell Property SP_TentacleSlime auto 
+
+Armor InjectMCRandom
+Armor InjectDLCRandom
 
 
 Event OnQuestInit()
@@ -235,8 +241,7 @@ EndFunction
 Function ImpregnateTentacle()
   If !IsPregnant()
     SDF.DNotify("Attempting Tentacle Pregnancy")
-  Else
-    
+    PlayerRef.EquipItem(InjectMCRandom, false, true)
   EndIf
   
   SP_TentacleSlime.Cast(PlayerRef, PlayerRef)
@@ -244,6 +249,7 @@ EndFunction
 
 Function LoadFPE()
     if (Game.IsPluginInstalled("FP_FamilyPlanningEnhanced.esp"))
+      SD_Setting_Integrate_FPE.SetValueInt(1)
       Pregnancy = Game.GetFormFromFile(0x00000FA8, "FP_FamilyPlanningEnhanced.esp") as Faction 
       FPE = Game.GetFormFromFile(0x00000F99, "FP_FamilyPlanningEnhanced.esp") as FPFP_Player_Script
       BPD = FPE.GetPregnancyInfo(PlayerRef)
@@ -251,6 +257,14 @@ Function LoadFPE()
       RegisterForCustomEvent(FPE, "FPFP_GiveBirth")
       BloodyFanny = BPD.SP_BloodyBirth as Spell 
     endif
+EndFunction
+
+Function LoadWLD()
+  if (Game.IsPluginInstalled("INVB_WastelandOffspring.esp"))
+    SD_Setting_Integrate_WLD.SetValueInt(1)
+    InjectDLCRandom = Game.GetFormFromFile(0x000002DA, "INVB_WastelandOffspring.esp") as Armor 
+    InjectMCRandom = Game.GetFormFromFile(0x00000590, "INVB_WastelandOffspring.esp") as Armor 
+  EndIf
 EndFunction
 
 Function LoadZazEffects()
@@ -368,7 +382,7 @@ Function TentacleAmbush(float Distance = 233.0)
     i = i + 1
   EndWhile
   
-
+  
   Actor[] akActors = PlayerRef.FindAllReferencesWithKeyword(SD_Tentacle, maxDistance) as Actor[]
   
   SDF.PlaySexAnimation(akActors)
