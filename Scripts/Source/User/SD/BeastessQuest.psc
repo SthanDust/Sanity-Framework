@@ -576,7 +576,6 @@ Event AAF:AAF_API.OnAnimationStop(AAF:AAF_API akSender, Var[] akArgs)
         int t = Utility.RandomInt()
         SDF.DNotify("Checking Pregnancy: " + t + " Chance: " + SD_Beastess_Tentacle_Preg_Chance.GetValueInt() )
         If !IsPregnant() && (SD_Beastess_Tentacle_Preg_Chance.GetValueInt()>= t )
-          
           TryTentaclePreg(actors[i])
         Else 
           SDF.DNotify("Deleting Tentacle.")
