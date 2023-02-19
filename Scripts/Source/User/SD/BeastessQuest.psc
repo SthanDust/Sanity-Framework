@@ -65,6 +65,7 @@ Group Tentacles
   Keyword property LocSetWaterfront auto
   Spell Property SP_TentacleSlime auto
   string[] Property SP_TentacleAttackMessages auto 
+  string[] Property SP_TentacleLeaveMessages auto 
 
 EndGroup
 
@@ -93,7 +94,8 @@ float hour = 0.04200
  
 int tickTimerID = 1
 int dayTimerID = 2
-
+int sexTimerID = 69
+bool havingSex = false 
 
 
 Event OnQuestInit()
@@ -125,6 +127,9 @@ Event OnTimer(int aiTimerID)
       StartTimerGameTime(24, dayTimerID)
       RegisterForCustomEvent(AAF_API, "OnAnimationStop")
     EndIf
+    if (aiTimerID == sexTimerID)
+      OnSex()
+    EndIf
 EndEvent
 
 Function ResetBeastess()
@@ -155,12 +160,10 @@ Event OnTimerGameTime(int aiTimerID)
   if (aiTimerID == dayTimerID)
     OnDay()
   EndIF
+  
 EndEvent
 
 Function OnTick()
-  SDF.DNotify("The Time is " + GetCurrentHourOfDay())
-  
-  
   if !PlayerRef.IsInCombat() && !PlayerRef.IsInScene()
     DoTentacleAmbush()
   EndIf
@@ -169,6 +172,13 @@ EndFunction
 
 Function OnDay()
   StartTimerGameTime(24, dayTimerID)
+EndFunction
+
+Function OnSex()
+  If havingSex
+    AAF_API.ChangePosition(PlayerRef)
+    
+  EndIf
 EndFunction
 
 float Function GetCurrentHourOfDay() 
@@ -439,29 +449,26 @@ Function TentacleAmbush(float Distance = 233.0)
   float maxDistance = Distance
   
   int numTentacles = Utility.RandomInt(1,5)
+  Actor[] akActors = new Actor[numTentacles]
   int i = 0
   while i < numTentacles
-    SpawnTentacle(maxDistance)
+    akActors[i] = SpawnTentacle(maxDistance)
     i = i + 1
   EndWhile
+  Utility.Wait(1)
   
-  Actor[] akActors = PlayerRef.FindAllReferencesWithKeyword(SD_Tentacle, maxDistance) as Actor[]
-  If akActors.Length > 5
-    SDF.DNotify("Too Many Tentacles!")
-    int t = akActors.Length - 5
-    int j = 0
-    while j < t
-      akActors.RemoveLast()
-      j = j + 1
-    endWhile
-  EndIf
-  ; here we are interrupting the normal pregnancy
+  
   PlayerRef.AddKeyword(SD_NoPregKeyword)
+  akActors.Add(PlayerRef)
+  ; here we are interrupting the normal pregnancy
+  
   AAF:AAF_API:SceneSettings sexScene = AAF_API.GetSceneSettings()
   sexScene.meta = "SD_TentacleAmbush"
   sexScene.duration = 34
   sexScene.skipWalk = True
   SDF.PlaySexAnimation(akActors, sexScene)
+  havingSex = true
+  StartTimer(15, 69)
   int k = Utility.RandomInt(0, SP_TentacleAttackMessages.Length - 1)
   Debug.MessageBox("<font face='$HandwrittenFont' size='20'>" + SP_TentacleAttackMessages[k] + "</font> \n \n")  
 EndFunction
@@ -471,7 +478,7 @@ Function TryTentaclePreg(Actor akActor)
   float temp = Utility.RandomFloat()
 
   If !IsPregnant() 
-    ;Game.FadeOutGame(true, true, 0, 2, true)
+    Game.FadeOutGame(true, true, 0, 2, true)
     PlayerRef.RemoveKeyword(SD_NoPregKeyword)
     ImpregnateRace(akActor)
     akActor.SetPosition(Game.GetPlayer().GetPositionX(),Game.GetPlayer().GetPositionY(), 500.0)
@@ -481,8 +488,7 @@ Function TryTentaclePreg(Actor akActor)
     BPD.TrySpermFrom(akActor)
     Utility.Wait(2)
     RemoveTentacle(akActor)
-    ;Game.FadeOutGame(false, true, 0, 2, false)
-    ;Debug.MessageBox("You don't know how or why, but you've been impregnated by something...")
+    Game.FadeOutGame(false, true, 0, 2, false)
   EndIf
  
 EndFunction
@@ -519,7 +525,7 @@ Race Function GetRandomRace()
   EndIF
 EndFunction
 
-Function SpawnTentacle(float maxDistance)
+Actor Function SpawnTentacle(float maxDistance)
   
   int rnd = Utility.RandomInt(0, 3)
   ActorBase akTentacle = SD_Tentacles[rnd] 
@@ -534,12 +540,11 @@ Function SpawnTentacle(float maxDistance)
   fCos = Math.cos(fAngle)
   fHeight = Game.GetPlayer().GetPositionZ() 
   Actor newTent = PlayerRef.PlaceAtMe(akTentacle, 1) as Actor
-  float[] pos = newTent.GetSafePosition(dist, dist)
- 
   newTent.AddKeyword(SD_Tentacle)
+  float[] pos = newTent.GetSafePosition(dist, dist)
   newTent.SetPosition(Game.GetPlayer().GetPositionX() + (dist * fSin),Game.GetPlayer().GetPositionY() + (dist * fCos), pos[2])
   TentacleSound.Play(newTent)
-  
+  return newTent
 EndFunction
 
 
@@ -547,11 +552,9 @@ Function DoTentacleAmbush()
   int rnd = Utility.RandomInt()
   If ((SD_Beastess_Tentacle_Enabled.Value == 1) && (rnd < SD_Beastess_Tentacle_Attack_Chance.GetValueInt() ))
     float time = Utility.GetCurrentGameTime() - LastTentacleTime
-    SDF.DNotify("Time Since Last Tentacle: " + time + " Hours: " + (hour * SD_Beastess_Tentacle_Attack_Wait.Value))
+    
     If (time > (hour * SD_Beastess_Tentacle_Attack_Wait.Value))
-      TentacleAmbush(200.0)
-    Else
-      SDF.DNotify("Too Soon For Tentacle Attack.")
+      TentacleAmbush(50.0)
     EndIf 
   EndIf
 ENdFunction
@@ -565,10 +568,8 @@ Event AAF:AAF_API.OnAnimationStop(AAF:AAF_API akSender, Var[] akArgs)
   if idx <= -1 || status != 0
     return
   endif
-
-  if status > 0
-    SDF.DNotify("Status Error: " + akArgs[1])
-  EndIf
+  
+  
   
   String[] Tags = Utility.VarToVarArray(akArgs[3]) as String[] 
   String position = akArgs[2] as String
@@ -577,7 +578,7 @@ Event AAF:AAF_API.OnAnimationStop(AAF:AAF_API akSender, Var[] akArgs)
    actors.Remove(idx)
   
   If (metaTag.Find("SD_TentacleAmbush") > -1)
-
+    havingSex = false
     int i = 0
     int aLength = actors.length
     
@@ -590,18 +591,18 @@ Event AAF:AAF_API.OnAnimationStop(AAF:AAF_API akSender, Var[] akArgs)
         If !IsPregnant() && (SD_Beastess_Tentacle_Preg_Chance.GetValueInt()>= t )
           TryTentaclePreg(actors[i])
         Else 
-          SDF.DNotify("Deleting Tentacle.")
           RemoveTentacle(actors[i])
         EndIf
       EndIf
       i = i + 1
     EndWhile
-    If !PlayerRef.HasMagicEffectWithKeyword(SD_TentacleEffect)
-      SP_TentacleSlime.Cast(PlayerRef, PlayerRef)
-    EndIf
+    
+    SP_TentacleSlime.Cast(PlayerRef, PlayerRef)
+    int m = Utility.RandomInt(0, SP_TentacleLeaveMessages.Length - 1)
+    Debug.MessageBox("<font face='$HandwrittenFont' size='20'>" + SP_TentacleLeaveMessages[m] + "</font> \n \n")
     If (Utility.RandomInt() <= SD_Beastess_DarkGift_Chance.GetValueInt())
       PlayerRef.AddItem(SD_Skokushu, 1, false)
-      Debug.MessageBox("<font face='$HandwrittenFont' size='20'>You have received a gift from the depths...</font> \n \n")
+      Debug.Notification("You have received a gift from the depths...")
     EndIf
     LastTentacleTime = Utility.GetCurrentGameTime()
   EndIf

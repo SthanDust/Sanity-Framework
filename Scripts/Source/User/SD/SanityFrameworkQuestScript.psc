@@ -336,7 +336,7 @@ Function PlaySexAnimation(Actor[] akList, AAF:AAF_API:SceneSettings SceneSet = N
     sexScene = SceneSet
   EndIF
 
-  akList.Add(PlayerRef)
+  
   AAF_API.StartScene(akList, sexScene) 
   DNotify("Playing Sex Scene")
 EndFunction

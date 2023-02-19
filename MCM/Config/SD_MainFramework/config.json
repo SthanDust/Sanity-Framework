@@ -145,9 +145,44 @@
             "pageDisplayName": "Beastess",
             "content": [
                 {
-                    "text": "The beast or beastess is within you.  Use these settings to govern that aspect of the mod.",
-                    "align": "center",
+                    "text": "The Beastess",
+                    "align": "left",
                     "type": "section"
+                },
+                {
+                    "text": "Beastess is another aspect of depravity that works best for the female player.  It gives abilities based on sexual encounters with non-humans.",
+                    "type": "text",
+                    "align": "left"
+                },
+                {
+                    "text": "Reset Beast(ess) Values",
+                    "type": "button",
+                    "help": "Resets your beast(ess) stats.",
+                    "action": {
+                        "type": "CallFunction",
+                        "form": "SD_MainFramework.esp|1F59A",
+                        "function": "ResetBeastess"
+                    }
+                },
+                {
+                    "text": "Check Beast(ess) Values",
+                    "type": "button",
+                    "help": "Check your beast(ess) stats.",
+                    "action": {
+                        "type": "CallFunction",
+                        "form": "SD_MainFramework.esp|27F62",
+                        "function": "GetStats"
+                    }
+                },
+                {
+                    "text": "Tentacles",
+                    "align": "left",
+                    "type": "section"
+                },
+                {
+                    "text": "This section handles tentacle as created in the Animated Tentacles mod.  This will not function otherwise.",
+                    "type": "text",
+                    "align": "left"
                 },
                 {
                     "id": "fTentacleEnabled:Beastess",
@@ -204,11 +239,21 @@
                     "help": "How often the mod will look to initiate a random encounter. (Default = 3).",
                     "type": "slider",
                     "valueOptions": {
-                        "min": 3,
+                        "min": 0,
                         "max": 96,
                         "step": 1,
                         "sourceType": "GlobalValue",
                         "sourceForm": "SD_MainFramework.esp|5BC2"
+                    }
+                },
+                {
+                    "text": "Force a Tentacle Encounter",
+                    "type": "button",
+                    "help": "This spawns a random tentacle encounter.  Make sure you set the values to allow for 100% chance and no wait.",
+                    "action": {
+                        "type": "CallFunction",
+                        "form": "SD_MainFramework.esp|27F62",
+                        "function": "DoTentacleAmbush"
                     }
                 }
 
@@ -279,36 +324,6 @@
                         "type": "CallFunction",
                         "form": "SD_MainFramework.esp|5B92",
                         "function": "ResetActorValues"
-                    }
-                },
-                {
-                    "text": "Beast(ess) Settings",
-                    "align": "Left",
-                    "type": "section"
-                },
-                {
-                    "text": "Beastess Quest is a side quest that works best for the female player.  It gives abilities based on sexual encounters with non-humans.",
-                    "type": "text",
-                    "align": "left"
-                },
-                {
-                    "text": "Reset Beast(ess) Values",
-                    "type": "button",
-                    "help": "Resets your beast(ess) stats.",
-                    "action": {
-                        "type": "CallFunction",
-                        "form": "SD_MainFramework.esp|1F59A",
-                        "function": "ResetBeastess"
-                    }
-                },
-                {
-                    "text": "Check Beast(ess) Values",
-                    "type": "button",
-                    "help": "Check your beast(ess) stats.",
-                    "action": {
-                        "type": "CallFunction",
-                        "form": "SD_MainFramework.esp|27F62",
-                        "function": "GetStats"
                     }
                 },
                 {
