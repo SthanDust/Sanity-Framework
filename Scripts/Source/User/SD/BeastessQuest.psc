@@ -34,6 +34,7 @@ Group Global_Vars
   GlobalVariable Property SD_Beastess_Tentacle_Attack_Chance auto
   GlobalVariable Property SD_Beastess_Tentacle_Enabled auto
   GlobalVariable Property SD_Beastess_Tentacle_Attack_Wait auto 
+  GlobalVariable Property SD_Beastess_Tentacle_Sex_Duration auto
   Actor Property PlayerRef auto
   Race Property HumanRace auto
   Potion Property SD_SplinterPotionGabryal auto 
@@ -63,9 +64,10 @@ Group Tentacles
   Keyword Property SD_NoPregKeyword auto 
   Float Property LastTentacleTime auto 
   Keyword property LocSetWaterfront auto
-  Spell Property SP_TentacleSlime auto
+  
   string[] Property SP_TentacleAttackMessages auto 
   string[] Property SP_TentacleLeaveMessages auto 
+  Potion Property SD_SlimePotion auto 
 
 EndGroup
 
@@ -93,6 +95,7 @@ float hour = 0.04200
 Potion Cumflation_Low
 Potion Cumflation_High
 Potion Cumflation_Med
+Perk Cumflated
  
 int tickTimerID = 1
 int dayTimerID = 2
@@ -321,6 +324,7 @@ Function LoadFPE()
       Cumflation_High = Game.GetFormFromFile(0x0000C128, "FP_FamilyPlanningEnhanced.esp") as Potion
       Cumflation_Low = Game.GetFormFromFile(0x0000C12C, "FP_FamilyPlanningEnhanced.esp") as Potion
       Cumflation_Med = Game.GetFormFromFile(0x0000C12D, "FP_FamilyPlanningEnhanced.esp") as Potion
+      Cumflated = Game.GetFormFromFile(0x0000C223, "FP_FamilyPlanningEnhanced.esp") as Perk
       RegisterForCustomEvent(FPE, "FPFP_GetPregnant")
       RegisterForCustomEvent(FPE, "FPFP_GiveBirth")
       BloodyFanny = BPD.SP_BloodyBirth as Spell 
@@ -468,13 +472,16 @@ Function TentacleAmbush(float Distance = 233.0)
   
   AAF:AAF_API:SceneSettings sexScene = AAF_API.GetSceneSettings()
   sexScene.meta = "SD_TentacleAmbush"
-  sexScene.duration = 34
+  sexScene.duration = SD_Beastess_Tentacle_Sex_Duration.GetValueInt()
   sexScene.skipWalk = True
+  int k = Utility.RandomInt(0, SP_TentacleAttackMessages.Length - 1)
+  Debug.MessageBox("<font face='$HandwrittenFont' size='20'>" + SP_TentacleAttackMessages[k] + "</font> \n \n") 
   SDF.PlaySexAnimation(akActors, sexScene)
   havingSex = true
-  StartTimer(15, 69)
-  int k = Utility.RandomInt(0, SP_TentacleAttackMessages.Length - 1)
-  Debug.MessageBox("<font face='$HandwrittenFont' size='20'>" + SP_TentacleAttackMessages[k] + "</font> \n \n")  
+  int posSwitch = SD_Beastess_Tentacle_Sex_Duration.GetValueInt() / 2
+  StartTimer(posSwitch, 69)
+  
+   
 EndFunction
 
 Function TryTentaclePreg(Actor akActor)
@@ -565,10 +572,9 @@ ENdFunction
 
 Function DoPostAmbush(int numAttackers)
   
-    PlayerRef.DispelSpell(SP_TentacleSlime)
-    SP_TentacleSlime.Cast(PlayerRef, PlayerRef)
+    
     int m = Utility.RandomInt(0, SP_TentacleLeaveMessages.Length - 1)
-    Debug.MessageBox("<font face='$HandwrittenFont' size='20'>" + SP_TentacleLeaveMessages[m] + "</font> \n \n")
+    Debug.Notification(SP_TentacleLeaveMessages[m])
     If (Utility.RandomInt() <= SD_Beastess_DarkGift_Chance.GetValueInt())
       PlayerRef.AddItem(SD_Skokushu, 1, false)
       Debug.Notification("You have received a gift from the depths...")
@@ -580,20 +586,20 @@ Function DoPostAmbush(int numAttackers)
     Else 
       SDF.ModifySanity(PlayerRef, -5.0)
     EndIf
-    If IsPregnant() && SD_Setting_Integrate_FPE.GetValueInt() == 1
+    If IsPregnant() && SD_Setting_Integrate_FPE.GetValueInt() == 1 && !PlayerRef.HasPerk(Cumflated)
       float month = BPD.GetCurrentMonth()
       SDF.DNotify("Months: " + month)
       If month <= 3
         If numAttackers == 1
-          PlayerRef.Equipitem(Cumflation_Low)
+          PlayerRef.EquipItem(Cumflation_Low, false, true)
         ElseIf numAttackers > 1 && numAttackers <=3
-          PlayerRef.Equipitem(Cumflation_Med)
+          PlayerRef.EquipItem(Cumflation_Med, false, true)
         Else 
-          PlayerRef.Equipitem(Cumflation_High)
+          PlayerRef.EquipItem(Cumflation_High, false, true)
         EndIf
       EndIf
     EndIf
-
+    PlayerRef.EquipItem(SD_SlimePotion, false, true)
 EndFunction
 
 Event AAF:AAF_API.OnAnimationStop(AAF:AAF_API akSender, Var[] akArgs)
@@ -622,15 +628,15 @@ Event AAF:AAF_API.OnAnimationStop(AAF:AAF_API akSender, Var[] akArgs)
     while i < aLength
         
       CheckRace(actors[i])
-      if actors[i].HasKeyword(SD_Tentacle)
-        int t = Utility.RandomInt()
-        
-        If !IsPregnant() && (SD_Beastess_Tentacle_Preg_Chance.GetValueInt()>= t )
-          TryTentaclePreg(actors[i])
-        Else 
-          RemoveTentacle(actors[i])
-        EndIf
+      
+      int t = Utility.RandomInt()
+      
+      If !IsPregnant() && (SD_Beastess_Tentacle_Preg_Chance.GetValueInt()>= t )
+        TryTentaclePreg(actors[i])
+      Else 
+        RemoveTentacle(actors[i])
       EndIf
+      
       i = i + 1
     EndWhile
     DoPostAmbush(aLength)

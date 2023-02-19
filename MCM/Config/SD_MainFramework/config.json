@@ -252,6 +252,19 @@
                     }
                 },
                 {
+                    "id": "fTentacleSexDuration:Beastess",
+                    "text": "How long will sex last",
+                    "help": "How long the sex animation will last. (Default = 55).",
+                    "type": "slider",
+                    "valueOptions": {
+                        "min": 30,
+                        "max": 120,
+                        "step": 1,
+                        "sourceType": "GlobalValue",
+                        "sourceForm": "SD_MainFramework.esp|5BC4"
+                    }
+                },
+                {
                     "text": "Force a Tentacle Encounter",
                     "type": "button",
                     "help": "This spawns a random tentacle encounter.  Make sure you set the values to allow for 100% chance and no wait.",
