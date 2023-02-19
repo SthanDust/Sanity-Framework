@@ -142,6 +142,29 @@
             ]
         },
         {
+            "pageDisplayName": "Beastess",
+            "content": [
+                {
+                    "text": "The beast or beastess is within you.  Use these settings to govern that aspect of the mod.",
+                    "align": "center",
+                    "type": "section"
+                },
+                {
+                    "id": "fTentaclePregnancyChance:Beastess",
+                    "text": "Tentacle Pregnancy Chance",
+                    "help": "If the player is raped by tentacles during a random encounter, what are the chances the tentacles will have stolen DNA to impregnate.  This overrides the normal FPE pregnancy.",
+                    "type": "slider",
+                    "valueOptions": {
+                        "min": 1,
+                        "max": 100,
+                        "step": 1,
+                        "sourceType": "GlobalValue",
+                        "sourceForm": "SD_MainFramework.esp|38E517"
+                    } 
+                }
+            ]
+        },
+        {
             "pageDisplayName": "Debug",
             "content": [
                 {

@@ -24,14 +24,17 @@ Group Global_Vars
   GlobalVariable Property SD_Beastess_Insect_Preg   auto
   GlobalVariable Property SD_Beastess_Mollusk_Preg  auto 
   GlobalVariable Property SD_Beastess_Mutant_Preg   auto
-  GlobalVariable Property SD_Beastess_Alien_Preg    auto
-  GlobalVariable Property SD_Beastess_Tentacle_Preg auto
-  GlobalVariable Property SD_Setting_Integrate_Tent auto 
-  GlobalVariable Property SD_Setting_Integrate_FPE  auto
-  GlobalVariable Property SD_Setting_Integrate_WLD  auto
+  GlobalVariable Property SD_Beastess_Alien_Preg           auto
+  GlobalVariable Property SD_Beastess_Tentacle_Preg        auto
+  GlobalVariable Property SD_Setting_Integrate_Tent        auto 
+  GlobalVariable Property SD_Setting_Integrate_FPE         auto
+  GlobalVariable Property SD_Setting_Integrate_WLD         auto
+  GlobalVariable Property SD_Beastess_DarkGift_Chance      auto 
+  GlobalVariable Property SD_Beastess_Tentacle_Preg_Chance auto
   Actor Property PlayerRef auto
   Race Property HumanRace auto
-  Spell Property AAF_InvisibilitySpell auto
+  Potion Property SD_SplinterPotionGabryal auto 
+  Potion Property SD_Skokushu auto 
 EndGroup
 
 Group Pregnancy
@@ -55,6 +58,7 @@ Group Beast_Races
   Race[] Property SD_MolluskRaces auto
   Race[] Property SD_MutantRaces auto
   Race[] Property SD_AlienRaces auto 
+  ActorBase[] Property SD_Tentacles auto
   Race Property SD_TentacleRace auto
 EndGroup
 
@@ -66,18 +70,17 @@ CustomEvent OnBeastess
 
 
 Armor TentacleSlime
-ActorBase AggressiveTentacle
+ActorBase PassiveBrainTentacle
+ActorBase PassivePlantTentacle
+ActorBase PassiveMechTentacle
 ActorBase PassiveTentacle
 Sound TentacleSound
 Keyword SD_Tentacle
 Keyword SD_NoPregKeyword
-Actor[] ActiveTentacles
+Float LastTentacleTime 
+
 Keyword property LocSetWaterfront auto
-string[] property slimeadjectives auto
-string[] property fluidadjectives auto
-string[] property maleplacement auto 
-string[] property femaleplacement auto
-string[] property resultcomment auto 
+
 Spell Property SP_TentacleSlime auto 
 int tickTimerID = 1
 int dayTimerID = 2
@@ -316,10 +319,17 @@ EndFunction
 Function LoadTentacles()
   If (Game.IsPluginInstalled("AnimatedTentacles.esp") == 1)
     SD_Setting_Integrate_Tent.SetValue(1)
+    SD_Tentacles = new ActorBase[4]
     SD_TentacleRace = Game.GetFormFromFile(0x00000F9A, "AnimatedTentacles.esp") as Race
     TentacleSound = Game.GetFormFromFile(0x00005C5C, "AnimatedTentacles.esp") as Sound
-    AggressiveTentacle = Game.GetFormFromFile(0x00002675, "AnimatedTentacles.esp") as ActorBase
+    PassiveBrainTentacle = Game.GetFormFromFile(0x000035C0, "AnimatedTentacles.esp") as ActorBase
+    SD_Tentacles[0] = PassiveBrainTentacle
+    PassivePlantTentacle = Game.GetFormFromFile(0x00005C5D, "AnimatedTentacles.esp") as ActorBase
+    SD_Tentacles[1] = PassivePlantTentacle
     PassiveTentacle = Game.GetFormFromFile(0x00000F9D, "AnimatedTentacles.esp") as ActorBase
+    SD_Tentacles[2] = PassiveTentacle
+    PassiveMechTentacle = Game.GetFormFromFile(0x00005C62, "AnimatedTentacles.esp") as ActorBase
+    SD_Tentacles[3] = PassiveMechTentacle
     SD_Tentacle = Game.GetFormFromFile(0x00001ED6, "AnimatedTentacles.esp") as Keyword
     LoadZazEffects()
   Else
@@ -411,20 +421,19 @@ Function ShowBodyGen()
 EndFunction
 
 Function RemoveTentacle(Actor akActor)
-  SDF.DNotify("Deleting Tentacle")
   akActor.Disable(true)
-  akActor.DeleteWhenAble()
+  akActor.Delete()
 EndFunction
 
 Function TentacleAmbush(float Distance = 233.0)
   
-  ActorBase temp = PassiveTentacle
+  
   float maxDistance = Distance
-  SDF.DNotify("Starting Tentacle Ambush...")
+  
   int numTentacles = Utility.RandomInt(1,5)
   int i = 0
   while i < numTentacles
-    SpawnTentacle(temp,maxDistance)
+    SpawnTentacle(maxDistance)
     i = i + 1
   EndWhile
   
@@ -433,22 +442,26 @@ Function TentacleAmbush(float Distance = 233.0)
   PlayerRef.AddKeyword(SD_NoPregKeyword)
   AAF:AAF_API:SceneSettings sexScene = AAF_API.GetSceneSettings()
   sexScene.meta = "SD_TentacleAmbush"
+  sexScene.skipWalk = true 
+  sexScene.duration = 34
   SDF.PlaySexAnimation(akActors, sexScene)
-    
+  Debug.MessageBox("<font face='$HandwrittenFont' size='20'>Slithering tentacles arise from the ground and grapple at you...</font> \n \n")  
 EndFunction
 
 Function TryTentaclePreg(Actor akActor)
   If !IsPregnant()
+    Game.FadeOutGame(true, true, 0, 2, true)
     PlayerRef.RemoveKeyword(SD_NoPregKeyword)
     ImpregnateRace(akActor)
-    akActor.SetPosition(Game.GetPlayer().GetPositionX(),Game.GetPlayer().GetPositionY(), -500.0)
-    akActor.AddSpell(AAF_InvisibilitySpell, false)
+    akActor.SetPosition(Game.GetPlayer().GetPositionX(),Game.GetPlayer().GetPositionY(), 500.0)
     Race tempRace = GetRandomRace()
     akActor.SetRace(tempRace)
+    akActor.EquipItem(SD_SplinterPotionGabryal, false, true)    
     BPD.TrySpermFrom(akActor)
-    Utility.Wait(1)
+    RemoveTentacle(akActor)
+    Game.FadeOutGame(false, true, 0, 2, false)
   EndIf
-  RemoveTentacle(akActor)
+ 
 EndFunction
 
 Race Function GetRandomRace()
@@ -483,24 +496,23 @@ Race Function GetRandomRace()
   EndIF
 EndFunction
 
-Function SpawnTentacle(ActorBase akTentacle, float maxDistance)
-  SDF.DNotify("Spawning...")
-  If (ActiveTentacles == None)
-    ActiveTentacles = new Actor[1]
-  EndIf
+Function SpawnTentacle(float maxDistance)
+  
+  int rnd = Utility.RandomInt(0, 3)
+  ActorBase akTentacle = SD_Tentacles[rnd] 
   float fAngle
   float fSin
   float fCos
   float fHeight
   float dist = Utility.RandomFloat(100.0, maxDistance)
-  float newAngle = Utility.RandomFloat(100.0, 240.0)
+  float newAngle = Utility.RandomFloat(160.0, 200.0)
   fAngle = Game.GetPlayer().GetAngleZ() + newAngle
   fSin = Math.sin(fAngle)
   fCos = Math.cos(fAngle)
   fHeight = Game.GetPlayer().GetPositionZ() 
   Actor newTent = PlayerRef.PlaceAtMe(akTentacle, 1) as Actor
   float[] pos = newTent.GetSafePosition(dist, dist)
-  ActiveTentacles.Add(newTent)
+ 
   newTent.AddKeyword(SD_Tentacle)
   newTent.SetPosition(Game.GetPlayer().GetPositionX() + (dist * fSin),Game.GetPlayer().GetPositionY() + (dist * fCos), pos[2])
   TentacleSound.Play(newTent)
@@ -508,7 +520,7 @@ Function SpawnTentacle(ActorBase akTentacle, float maxDistance)
 EndFunction
 
 
-Function TestTentacle()
+Function DoTentacleAmbush()
   TentacleAmbush(200.0)
 ENdFunction
 
@@ -521,24 +533,40 @@ Event AAF:AAF_API.OnAnimationStop(AAF:AAF_API akSender, Var[] akArgs)
   if idx <= -1 || status != 0
     return
   endif
+
+  if status > 0
+    SDF.DNotify("Status Error: " + akArgs[1])
+  EndIf
   
   String[] Tags = Utility.VarToVarArray(akArgs[3]) as String[] 
   String position = akArgs[2] as String
   string meta = akArgs[4] as string
    string[] metatag = LL_FourPlay.StringSplit(theString = meta, delimiter = ",")
-  SDF.DNotify("Meta: " + meta)
-If (metaTag.Find("SD_TentacleAmbush") > -1)
-  SDF.DNotify("Found Tag")
+   actors.Remove(idx)
+  
+  If (metaTag.Find("SD_TentacleAmbush") > -1)
+    SDF.DNotify("Found Tag")
     int i = 0
-  while i < actors.length
-    if i != idx
+    int aLength = actors.length
+    
+    while i < aLength
+        
       CheckRace(actors[i])
-    endif
-    if actors[i].GetRace() == SD_TentacleRace
-      SDF.DNotify("Checking Pregnant")
-     TryTentaclePreg(actors[i])
+      if actors[i].HasKeyword(SD_Tentacle)
+        If !IsPregnant()
+          TryTentaclePreg(actors[i])
+        Else 
+          RemoveTentacle(actors[i])
+        EndIf
+        
+      EndIf
+      i = i + 1
+    EndWhile
+    If (Utility.RandomInt() <= SD_Beastess_DarkGift_Chance.GetValueInt())
+      PlayerRef.AddItem(SD_Skokushu, 1, false)
+      Debug.MessageBox("<font face='$HandwrittenFont' size='20'>You have received a gift from the depths...</font> \n \n")
     EndIf
-    i = i + 1
-  EndWhile
-EndIf
+    LastTentacleTime = Utility.GetCurrentGameTime()
+  EndIf
 EndEvent
+
