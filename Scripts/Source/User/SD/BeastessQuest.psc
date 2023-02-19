@@ -46,7 +46,7 @@ Group Pregnancy
   Bool Property IsPregnant auto
   Bool property akBirth auto
   Spell Property BloodyFanny auto
- 
+ Keyword Property SD_TentacleEffect auto
 EndGroup    
 
 Group Tentacles
@@ -457,7 +457,6 @@ Function TentacleAmbush(float Distance = 233.0)
   PlayerRef.AddKeyword(SD_NoPregKeyword)
   AAF:AAF_API:SceneSettings sexScene = AAF_API.GetSceneSettings()
   sexScene.meta = "SD_TentacleAmbush"
-  sexScene.skipWalk = true 
   sexScene.duration = 34
   SDF.PlaySexAnimation(akActors, sexScene)
   int k = Utility.RandomInt(0, SP_TentacleAttackMessages.Length - 1)
@@ -469,7 +468,7 @@ Function TryTentaclePreg(Actor akActor)
   float temp = Utility.RandomFloat()
 
   If !IsPregnant() 
-    Game.FadeOutGame(true, true, 0, 2, true)
+    ;Game.FadeOutGame(true, true, 0, 2, true)
     PlayerRef.RemoveKeyword(SD_NoPregKeyword)
     ImpregnateRace(akActor)
     akActor.SetPosition(Game.GetPlayer().GetPositionX(),Game.GetPlayer().GetPositionY(), 500.0)
@@ -479,7 +478,7 @@ Function TryTentaclePreg(Actor akActor)
     BPD.TrySpermFrom(akActor)
     Utility.Wait(2)
     RemoveTentacle(akActor)
-    Game.FadeOutGame(false, true, 0, 2, false)
+    ;Game.FadeOutGame(false, true, 0, 2, false)
     Debug.MessageBox("You don't know how or why, but you've been impregnated by something...")
   EndIf
  
@@ -582,7 +581,9 @@ Event AAF:AAF_API.OnAnimationStop(AAF:AAF_API akSender, Var[] akArgs)
         Else 
           SDF.DNotify("Deleting Tentacle.")
           RemoveTentacle(actors[i])
-          SP_TentacleSlime.Cast(PlayerRef, PlayerRef)
+          If !PlayerRef.HasMagicEffectWithKeyword(SD_TentacleEffect)
+            SP_TentacleSlime.Cast(PlayerRef, PlayerRef)
+          EndIf
         EndIf
         
       EndIf
