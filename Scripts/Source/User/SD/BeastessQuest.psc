@@ -449,7 +449,10 @@ Function TentacleAmbush(float Distance = 233.0)
 EndFunction
 
 Function TryTentaclePreg(Actor akActor)
-  If !IsPregnant()
+  
+  float temp = Utility.RandomFloat()
+
+  If !IsPregnant() && (temp <= SD_Beastess_Tentacle_Preg_Chance.Value)
     Game.FadeOutGame(true, true, 0, 2, true)
     PlayerRef.RemoveKeyword(SD_NoPregKeyword)
     ImpregnateRace(akActor)

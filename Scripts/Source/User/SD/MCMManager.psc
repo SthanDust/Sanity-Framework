@@ -112,6 +112,7 @@ Function OnMCMSettingChange(string modName, string id)
   if modName == thisMod
       MCMUpdate()
   endif
+  
   RegisterForExternalEvent("OnMCMSettingChange|"+thisMod, "OnMCMSettingChange")
 EndFunction
 
@@ -133,6 +134,7 @@ Function MCMUpdate()
     Else
         SD_Setting_ThoughtsEnabled.SetValue(0.0)
     EndIf
+    
     
     SD_Setting_ThoughtFrequency.SetValue(MCM.GetModSettingFloat(thisMod, "fMessageFrequency:Globals")  as float)
 
