@@ -49,6 +49,21 @@ Group Pregnancy
  
 EndGroup    
 
+Group Tentacles
+  Armor Property TentacleSlime auto 
+  ActorBase Property PassiveBrainTentacle auto
+  ActorBase Property PassivePlantTentacle auto 
+  ActorBase Property PassiveMechTentacle auto 
+  ActorBase Property PassiveTentacle auto 
+  Sound Property TentacleSound auto
+  Keyword Property SD_Tentacle auto
+  Keyword Property SD_NoPregKeyword auto 
+  Float Property LastTentacleTime auto 
+  Keyword property LocSetWaterfront auto
+  Spell Property SP_TentacleSlime auto
+  string[] Property SP_TentacleAttackMessages auto 
+EndGroup
+
 Group Beast_Races
   Race[] Property SD_CanineRaces auto 
   Race[] Property SD_ReptileRaces auto 
@@ -69,19 +84,9 @@ AAF:AAF_API AAF_API
 CustomEvent OnBeastess
 
 
-Armor TentacleSlime
-ActorBase PassiveBrainTentacle
-ActorBase PassivePlantTentacle
-ActorBase PassiveMechTentacle
-ActorBase PassiveTentacle
-Sound TentacleSound
-Keyword SD_Tentacle
-Keyword SD_NoPregKeyword
-Float LastTentacleTime 
 
-Keyword property LocSetWaterfront auto
 
-Spell Property SP_TentacleSlime auto 
+ 
 int tickTimerID = 1
 int dayTimerID = 2
 
@@ -150,11 +155,12 @@ EndEvent
 
 Function OnTick()
   SDF.DNotify("The Time is " + GetCurrentHourOfDay())
-  StartTimerGameTime(1, tickTimerID)
+  
   ObjectReference[] t = PlayerRef.FindAllReferencesOfType(PlayerRef.GetBaseObject(), 500.0)
   if t.length <= 1
-    SDF.DNotify("Actor is not alone. " + t.Length)
+    SDF.DNotify("Actor is not alone. " + PlayerRef.GetBaseObject().GetName())
   EndIf
+  StartTimerGameTime(1, tickTimerID)
 EndFunction
 
 Function OnDay()
@@ -380,7 +386,7 @@ Function GetStats()
       beastString += "Marine:  Sex - " + SD_Beastess_Mollusk.GetValueInt() + " Pregnancy - " + SD_Beastess_Mollusk_Preg.GetValueInt() + "\n"
       beastString += "Mutant:  Sex - " + SD_Beastess_Mutant.GetValueInt() + "  Pregnancy - " + SD_Beastess_Mutant_Preg.GetValueInt() + " \n"
       beastString += "Insect:  Sex - " + SD_Beastess_Insect.GetValueInt() + "  Pregnancy - " + SD_Beastess_Insect_Preg.GetValueInt() + " \n"
-      beastString += "Tentacle:  Sex - " + SD_Beastess_Tentacle.GetValueInt() + " \n"
+      beastString += "Tentacle:  Sex - " + SD_Beastess_Tentacle.GetValueInt() + " Pregnancy - " + SD_Beastess_Tentacle_Preg.GetValueInt() + "\n"
       beastString += "Necro:   Sex - " + SD_Beastess_Necro.GetValueInt() + "   Pregnancy - " + SD_Beastess_Necro_Preg.GetValueInt() + "  </font>"
     Debug.MessageBox(beastString)
 EndFunction
@@ -438,6 +444,15 @@ Function TentacleAmbush(float Distance = 233.0)
   EndWhile
   
   Actor[] akActors = PlayerRef.FindAllReferencesWithKeyword(SD_Tentacle, maxDistance) as Actor[]
+  If akActors.Length > 5
+    SDF.DNotify("Too Many Tentacles!")
+    int t = akActors.Length - 5
+    int j = 0
+    while j < t
+      akActors.RemoveLast()
+      j = j + 1
+    endWhile
+  EndIf
   ; here we are interrupting the normal pregnancy
   PlayerRef.AddKeyword(SD_NoPregKeyword)
   AAF:AAF_API:SceneSettings sexScene = AAF_API.GetSceneSettings()
@@ -445,14 +460,15 @@ Function TentacleAmbush(float Distance = 233.0)
   sexScene.skipWalk = true 
   sexScene.duration = 34
   SDF.PlaySexAnimation(akActors, sexScene)
-  Debug.MessageBox("<font face='$HandwrittenFont' size='20'>Slithering tentacles arise from the ground and grapple at you...</font> \n \n")  
+  int k = Utility.RandomInt(0, SP_TentacleAttackMessages.Length - 1)
+  Debug.MessageBox("<font face='$HandwrittenFont' size='20'>" + SP_TentacleAttackMessages[k] + "</font> \n \n")  
 EndFunction
 
 Function TryTentaclePreg(Actor akActor)
   
   float temp = Utility.RandomFloat()
 
-  If !IsPregnant() && (temp <= SD_Beastess_Tentacle_Preg_Chance.Value)
+  If !IsPregnant() 
     Game.FadeOutGame(true, true, 0, 2, true)
     PlayerRef.RemoveKeyword(SD_NoPregKeyword)
     ImpregnateRace(akActor)
@@ -461,8 +477,10 @@ Function TryTentaclePreg(Actor akActor)
     akActor.SetRace(tempRace)
     akActor.EquipItem(SD_SplinterPotionGabryal, false, true)    
     BPD.TrySpermFrom(akActor)
+    Utility.Wait(2)
     RemoveTentacle(akActor)
     Game.FadeOutGame(false, true, 0, 2, false)
+    Debug.MessageBox("You don't know how or why, but you've been impregnated by something...")
   EndIf
  
 EndFunction
@@ -556,10 +574,15 @@ Event AAF:AAF_API.OnAnimationStop(AAF:AAF_API akSender, Var[] akArgs)
         
       CheckRace(actors[i])
       if actors[i].HasKeyword(SD_Tentacle)
-        If !IsPregnant()
+        int t = Utility.RandomInt()
+        SDF.DNotify("Checking Pregnancy: " + t + " Chance: " + SD_Beastess_Tentacle_Preg_Chance.GetValueInt() )
+        If !IsPregnant() && (SD_Beastess_Tentacle_Preg_Chance.GetValueInt()>= t )
+          
           TryTentaclePreg(actors[i])
         Else 
+          SDF.DNotify("Deleting Tentacle.")
           RemoveTentacle(actors[i])
+          SP_TentacleSlime.Cast(PlayerRef, PlayerRef)
         EndIf
         
       EndIf
