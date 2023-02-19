@@ -90,7 +90,9 @@ CustomEvent OnBeastess
 
 float hour = 0.04200
 
-
+Potion Cumflation_Low
+Potion Cumflation_High
+Potion Cumflation_Med
  
 int tickTimerID = 1
 int dayTimerID = 2
@@ -316,7 +318,9 @@ Function LoadFPE()
       Pregnancy = Game.GetFormFromFile(0x00000FA8, "FP_FamilyPlanningEnhanced.esp") as Faction 
       FPE = Game.GetFormFromFile(0x00000F99, "FP_FamilyPlanningEnhanced.esp") as FPFP_Player_Script
       BPD = FPE.GetPregnancyInfo(PlayerRef)
-      
+      Cumflation_High = Game.GetFormFromFile(0x0000C128, "FP_FamilyPlanningEnhanced.esp") as Potion
+      Cumflation_Low = Game.GetFormFromFile(0x0000C12C, "FP_FamilyPlanningEnhanced.esp") as Potion
+      Cumflation_Med = Game.GetFormFromFile(0x0000C12D, "FP_FamilyPlanningEnhanced.esp") as Potion
       RegisterForCustomEvent(FPE, "FPFP_GetPregnant")
       RegisterForCustomEvent(FPE, "FPFP_GiveBirth")
       BloodyFanny = BPD.SP_BloodyBirth as Spell 
@@ -516,10 +520,10 @@ Race Function GetRandomRace()
   ElseIf (ran > 63 && ran <= 74)
     int t = Utility.RandomInt(0, SD_ReptileRaces.Length -1)
     return SD_ReptileRaces[t]
-  ElseIf (ran > 74 && ran <= 86)
+  ElseIf (ran > 74 && ran <= 90)
     int t = Utility.RandomInt(0, SD_MutantRaces.Length -1)
     return SD_MutantRaces[t]
-  ElseIf (ran > 86)
+  ElseIf (ran > 90)
     int t = Utility.RandomInt(0, SD_HumanRaces.Length -1)
     return SD_HumanRaces[t]
   EndIF
@@ -534,7 +538,7 @@ Actor Function SpawnTentacle(float maxDistance)
   float fCos
   float fHeight
   float dist = Utility.RandomFloat(100.0, maxDistance)
-  float newAngle = Utility.RandomFloat(160.0, 200.0)
+  float newAngle = Utility.RandomFloat(45, 270)
   fAngle = Game.GetPlayer().GetAngleZ() + newAngle
   fSin = Math.sin(fAngle)
   fCos = Math.cos(fAngle)
@@ -558,6 +562,39 @@ Function DoTentacleAmbush()
     EndIf 
   EndIf
 ENdFunction
+
+Function DoPostAmbush(int numAttackers)
+  
+    PlayerRef.DispelSpell(SP_TentacleSlime)
+    SP_TentacleSlime.Cast(PlayerRef, PlayerRef)
+    int m = Utility.RandomInt(0, SP_TentacleLeaveMessages.Length - 1)
+    Debug.MessageBox("<font face='$HandwrittenFont' size='20'>" + SP_TentacleLeaveMessages[m] + "</font> \n \n")
+    If (Utility.RandomInt() <= SD_Beastess_DarkGift_Chance.GetValueInt())
+      PlayerRef.AddItem(SD_Skokushu, 1, false)
+      Debug.Notification("You have received a gift from the depths...")
+    EndIf
+    If numAttackers == 1
+      SDF.ModifySanity(PlayerRef, -1.0)
+    ElseIf numAttackers > 1 && numAttackers <=3
+      SDF.ModifySanity(PlayerRef, -3.0)
+    Else 
+      SDF.ModifySanity(PlayerRef, -5.0)
+    EndIf
+    If IsPregnant() && SD_Setting_Integrate_FPE.GetValueInt() == 1
+      float month = BPD.GetCurrentMonth()
+      SDF.DNotify("Months: " + month)
+      If month <= 3
+        If numAttackers == 1
+          PlayerRef.Equipitem(Cumflation_Low)
+        ElseIf numAttackers > 1 && numAttackers <=3
+          PlayerRef.Equipitem(Cumflation_Med)
+        Else 
+          PlayerRef.Equipitem(Cumflation_High)
+        EndIf
+      EndIf
+    EndIf
+
+EndFunction
 
 Event AAF:AAF_API.OnAnimationStop(AAF:AAF_API akSender, Var[] akArgs)
   
@@ -596,14 +633,7 @@ Event AAF:AAF_API.OnAnimationStop(AAF:AAF_API akSender, Var[] akArgs)
       EndIf
       i = i + 1
     EndWhile
-    
-    SP_TentacleSlime.Cast(PlayerRef, PlayerRef)
-    int m = Utility.RandomInt(0, SP_TentacleLeaveMessages.Length - 1)
-    Debug.MessageBox("<font face='$HandwrittenFont' size='20'>" + SP_TentacleLeaveMessages[m] + "</font> \n \n")
-    If (Utility.RandomInt() <= SD_Beastess_DarkGift_Chance.GetValueInt())
-      PlayerRef.AddItem(SD_Skokushu, 1, false)
-      Debug.Notification("You have received a gift from the depths...")
-    EndIf
+    DoPostAmbush(aLength)
     LastTentacleTime = Utility.GetCurrentGameTime()
   EndIf
 EndEvent

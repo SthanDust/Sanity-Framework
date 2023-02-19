@@ -160,7 +160,7 @@
                     "help": "Resets your beast(ess) stats.",
                     "action": {
                         "type": "CallFunction",
-                        "form": "SD_MainFramework.esp|1F59A",
+                        "form": "SD_MainFramework.esp|27F62",
                         "function": "ResetBeastess"
                     }
                 },
@@ -181,6 +181,11 @@
                 },
                 {
                     "text": "This section handles tentacle as created in the Animated Tentacles mod.  This will not function otherwise.",
+                    "type": "text",
+                    "align": "left"
+                },
+                {
+                    "text": "A new terror has befallen the Commonwealth.  Tentacles are preying on citizens, some have even become impregnated as a result.  It is unknown what is causing this to happen...",
                     "type": "text",
                     "align": "left"
                 },
