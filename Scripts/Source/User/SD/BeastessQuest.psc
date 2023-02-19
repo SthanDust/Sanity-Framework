@@ -31,6 +31,9 @@ Group Global_Vars
   GlobalVariable Property SD_Setting_Integrate_WLD         auto
   GlobalVariable Property SD_Beastess_DarkGift_Chance      auto 
   GlobalVariable Property SD_Beastess_Tentacle_Preg_Chance auto
+  GlobalVariable Property SD_Beastess_Tentacle_Attack_Chance auto
+  GlobalVariable Property SD_Beastess_Tentacle_Enabled auto
+  GlobalVariable Property SD_Beastess_Tentacle_Attack_Wait auto 
   Actor Property PlayerRef auto
   Race Property HumanRace auto
   Potion Property SD_SplinterPotionGabryal auto 
@@ -62,6 +65,7 @@ Group Tentacles
   Keyword property LocSetWaterfront auto
   Spell Property SP_TentacleSlime auto
   string[] Property SP_TentacleAttackMessages auto 
+
 EndGroup
 
 Group Beast_Races
@@ -83,7 +87,7 @@ FPFP_BasePregData BPD
 AAF:AAF_API AAF_API
 CustomEvent OnBeastess
 
-
+float hour = 0.04200
 
 
  
@@ -156,9 +160,9 @@ EndEvent
 Function OnTick()
   SDF.DNotify("The Time is " + GetCurrentHourOfDay())
   
-  ObjectReference[] t = PlayerRef.FindAllReferencesOfType(PlayerRef.GetBaseObject(), 500.0)
-  if t.length <= 1
-    SDF.DNotify("Actor is not alone. " + PlayerRef.GetBaseObject().GetName())
+  
+  if !PlayerRef.IsInCombat() && !PlayerRef.IsInScene()
+    DoTentacleAmbush()
   EndIf
   StartTimerGameTime(1, tickTimerID)
 EndFunction
@@ -340,6 +344,7 @@ Function LoadTentacles()
     LoadZazEffects()
   Else
     SD_Setting_Integrate_Tent.SetValue(0)
+    SD_Beastess_Tentacle_Enabled.SetValue(0)
   EndIf
 EndFunction
 
@@ -427,13 +432,10 @@ Function ShowBodyGen()
 EndFunction
 
 Function RemoveTentacle(Actor akActor)
-  akActor.Disable(true)
-  akActor.Delete()
+  akActor.Kill()
 EndFunction
 
 Function TentacleAmbush(float Distance = 233.0)
-  
-  
   float maxDistance = Distance
   
   int numTentacles = Utility.RandomInt(1,5)
@@ -458,6 +460,7 @@ Function TentacleAmbush(float Distance = 233.0)
   AAF:AAF_API:SceneSettings sexScene = AAF_API.GetSceneSettings()
   sexScene.meta = "SD_TentacleAmbush"
   sexScene.duration = 34
+  sexScene.skipWalk = True
   SDF.PlaySexAnimation(akActors, sexScene)
   int k = Utility.RandomInt(0, SP_TentacleAttackMessages.Length - 1)
   Debug.MessageBox("<font face='$HandwrittenFont' size='20'>" + SP_TentacleAttackMessages[k] + "</font> \n \n")  
@@ -479,7 +482,7 @@ Function TryTentaclePreg(Actor akActor)
     Utility.Wait(2)
     RemoveTentacle(akActor)
     ;Game.FadeOutGame(false, true, 0, 2, false)
-    Debug.MessageBox("You don't know how or why, but you've been impregnated by something...")
+    ;Debug.MessageBox("You don't know how or why, but you've been impregnated by something...")
   EndIf
  
 EndFunction
@@ -541,7 +544,16 @@ EndFunction
 
 
 Function DoTentacleAmbush()
-  TentacleAmbush(200.0)
+  int rnd = Utility.RandomInt()
+  If ((SD_Beastess_Tentacle_Enabled.Value == 1) && (rnd < SD_Beastess_Tentacle_Attack_Chance.GetValueInt() ))
+    float time = Utility.GetCurrentGameTime() - LastTentacleTime
+    SDF.DNotify("Time Since Last Tentacle: " + time + " Hours: " + (hour * SD_Beastess_Tentacle_Attack_Wait.Value))
+    If (time > (hour * SD_Beastess_Tentacle_Attack_Wait.Value))
+      TentacleAmbush(200.0)
+    Else
+      SDF.DNotify("Too Soon For Tentacle Attack.")
+    EndIf 
+  EndIf
 ENdFunction
 
 Event AAF:AAF_API.OnAnimationStop(AAF:AAF_API akSender, Var[] akArgs)
@@ -565,7 +577,7 @@ Event AAF:AAF_API.OnAnimationStop(AAF:AAF_API akSender, Var[] akArgs)
    actors.Remove(idx)
   
   If (metaTag.Find("SD_TentacleAmbush") > -1)
-    SDF.DNotify("Found Tag")
+
     int i = 0
     int aLength = actors.length
     
@@ -574,20 +586,19 @@ Event AAF:AAF_API.OnAnimationStop(AAF:AAF_API akSender, Var[] akArgs)
       CheckRace(actors[i])
       if actors[i].HasKeyword(SD_Tentacle)
         int t = Utility.RandomInt()
-        SDF.DNotify("Checking Pregnancy: " + t + " Chance: " + SD_Beastess_Tentacle_Preg_Chance.GetValueInt() )
+        
         If !IsPregnant() && (SD_Beastess_Tentacle_Preg_Chance.GetValueInt()>= t )
           TryTentaclePreg(actors[i])
         Else 
           SDF.DNotify("Deleting Tentacle.")
           RemoveTentacle(actors[i])
-          If !PlayerRef.HasMagicEffectWithKeyword(SD_TentacleEffect)
-            SP_TentacleSlime.Cast(PlayerRef, PlayerRef)
-          EndIf
         EndIf
-        
       EndIf
       i = i + 1
     EndWhile
+    If !PlayerRef.HasMagicEffectWithKeyword(SD_TentacleEffect)
+      SP_TentacleSlime.Cast(PlayerRef, PlayerRef)
+    EndIf
     If (Utility.RandomInt() <= SD_Beastess_DarkGift_Chance.GetValueInt())
       PlayerRef.AddItem(SD_Skokushu, 1, false)
       Debug.MessageBox("<font face='$HandwrittenFont' size='20'>You have received a gift from the depths...</font> \n \n")

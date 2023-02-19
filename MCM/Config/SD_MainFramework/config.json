@@ -150,6 +150,16 @@
                     "type": "section"
                 },
                 {
+                    "id": "fTentacleEnabled:Beastess",
+                    "text": "Tentacles Enabled",
+                    "help": "Tentacles Enabled.",
+                    "type": "switcher",
+                    "valueOptions": {
+                        "sourceType": "GlobalValue",
+                        "sourceForm": "SD_MainFramework.esp|5BC0"
+                    }
+                },
+                {
                     "id": "fTentaclePregnancyChance:Beastess",
                     "text": "Tentacle Pregnancy Chance",
                     "help": "If the player is raped by tentacles during a random encounter, what are the chances the tentacles will have stolen DNA to impregnate.  This overrides the normal FPE pregnancy.",
@@ -159,9 +169,49 @@
                         "max": 100,
                         "step": 1,
                         "sourceType": "GlobalValue",
-                        "sourceForm": "SD_MainFramework.esp|100E517"
+                        "sourceForm": "SD_MainFramework.esp|E517"
                     } 
+                },
+                {
+                    "id": "fTentacleDarkGiftChance:Beastess",
+                    "text": "Tentacle Dark Gift Chance",
+                    "help": "The chance that the tentacles will reward you with a dark gift.",
+                    "type": "slider",
+                    "valueOptions": {
+                        "min": 1,
+                        "max": 100,
+                        "step": 1,
+                        "sourceType": "GlobalValue",
+                        "sourceForm": "SD_MainFramework.esp|E515"
+                    }
+                },
+                {
+                    "id": "fTentacleAttackChance:Beastess",
+                    "text": "Tentacle Attack Chance",
+                    "help": "Chance that you will randomly be attacked by tentacles.",
+                    "type": "slider",
+                    "valueOptions": {
+                        "min": 1,
+                        "max": 100,
+                        "step": 1,
+                        "sourceType": "GlobalValue",
+                        "sourceForm": "SD_MainFramework.esp|5BBC"
+                    }
+                },
+                {
+                    "id": "fTentacleAttackWait:Beastess",
+                    "text": "Tentacle Hours to Wait",
+                    "help": "How often the mod will look to initiate a random encounter. (Default = 3).",
+                    "type": "slider",
+                    "valueOptions": {
+                        "min": 3,
+                        "max": 96,
+                        "step": 1,
+                        "sourceType": "GlobalValue",
+                        "sourceForm": "SD_MainFramework.esp|5BC2"
+                    }
                 }
+
             ]
         },
         {
