@@ -338,7 +338,6 @@ Function PlaySexAnimation(Actor[] akList, AAF:AAF_API:SceneSettings SceneSet = N
 
   
   AAF_API.StartScene(akList, sexScene) 
-  DNotify("Playing Sex Scene")
 EndFunction
 
 Function SanityCheck(int prevSanity, int newSanity)

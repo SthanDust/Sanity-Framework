@@ -586,7 +586,6 @@ Function DoPostAmbush(int numAttackers)
     PlayerRef.EquipItem(SD_SlimePotion, false, true)
     If IsPregnant() && SD_Setting_Integrate_FPE.GetValueInt() == 1 && !PlayerRef.HasPerk(Cumflated)
       float month = BPD.GetCurrentMonth()
-      SDF.DNotify("Months: " + month)
       If month <= 3
         If numAttackers == 1
           PlayerRef.EquipItem(Cumflation_Low, false, true)
@@ -638,6 +637,8 @@ Event AAF:AAF_API.OnAnimationStop(AAF:AAF_API akSender, Var[] akArgs)
     Utility.Wait(2)
     DoPostAmbush(aLength)
     LastTentacleTime = Utility.GetCurrentGameTime()
+  Else
+    return
   EndIf
 EndEvent
 
