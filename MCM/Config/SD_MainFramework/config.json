@@ -83,61 +83,6 @@
                         "step": 1,
                         "sourceType": "ModSettingFloat"
                     }
-                },
-                {
-                    "text": "Mod Integrations and Overrides",
-                    "align": "Left",
-                    "type": "section"
-                },
-                {
-                    "text": "Integrations allow the my mod to know if you want to use them. If the mod is detected, it will be automatically enabled, so you should check the settings to make sure it isn't conflicting with another mod's functions. Overrides is to allow Sanity to ignore certain aspects of integrated mods.",
-                    "type": "text",
-                    "align": "center"
-                },
-                {
-                    "id": "bEnableAFV:Integrate",
-                    "text": "AAF Violate",
-                    "help": "Turns off Violate Integration",
-                    "type": "switcher",
-                    "valueOptions": {
-                        "sourceType": "ModSettingBool"
-                    }
-                },
-                {
-                    "id": "bEnableFPE:Integrate",
-                    "text": "Family Planning Enhanced Redux",
-                    "help": "Turns off FPER Integration.",
-                    "type": "switcher",
-                    "valueOptions": {
-                        "sourceType": "ModSettingBool"
-                    }
-                },
-                {
-                    "id": "bEnableWLD:Integrate",
-                    "text": "Wasteland Dairy Framework",
-                    "help": "Turns off Wasteland Dairy Framework Integration.",
-                    "type": "switcher",
-                    "valueOptions": {
-                        "sourceType": "ModSettingBool"
-                    }
-                },
-                {
-                    "id": "bEnableHBW:Integrate",
-                    "text": "Hardship Beggar Whore",
-                    "help": "Turns off Hardship Beggar Whore Integration.",
-                    "type": "switcher",
-                    "valueOptions": {
-                        "sourceType": "ModSettingBool"
-                    }
-                },
-                {
-                    "id": "bEnableTSex:Integrate",
-                    "text": "TSex Integration",
-                    "help": "Turns off TSex Integration.",
-                    "type": "switcher",
-                    "valueOptions": {
-                        "sourceType": "ModSettingBool"
-                    }
                 }
             ]
         },

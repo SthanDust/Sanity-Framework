@@ -14,6 +14,7 @@ Group General
     GlobalVariable Property SD_Setting_Integrate_JB auto
     GlobalVariable Property SD_Setting_Integrate_HBW auto
     GlobalVariable Property SD_Setting_Integrate_Tent auto
+    GlobalVariable Property SD_Setting_Integrate_TSEX auto 
     GlobalVariable Property SD_Internal_MCMLoaded auto 
     GlobalVariable Property SD_Internal_FirstLoad auto
     GlobalVariable Property SD_Setting_ThoughtsEnabled auto
@@ -38,6 +39,7 @@ import Game
 import SD:SanityFrameworkQuestScript
 
 SD:SanityFrameworkQuestScript SDF
+SD:BeastessQuest Beast
 
 Event OnInit()
     Quest Main = Game.GetFormFromFile(0x0001F59A, "SD_MainFramework.esp") as quest
@@ -59,7 +61,8 @@ Event Actor.OnPlayerLoadGame(Actor akSender)
     ;use this to repeat things
     Quest Main = Game.GetFormFromFile(0x0001F59A, "SD_MainFramework.esp") as quest
     SDF = Main as SD:SanityFrameworkQuestScript
-    
+    Quest BST = Game.GetFormFromFile(0x00027F62, "SD_MainFramework.esp") as Quest
+    Beast = BST as SD:BeastessQuest
     if (CheckForMCM())
         RegisterForMenuOpenCloseEvent("PauseMenu")
         CheckVersion()
@@ -73,13 +76,16 @@ EndEvent
 
 Function CheckVersion()
     float current = SD_FVersion.GetValue()    
-    float newVersion = 2001.0
+    float newVersion = 2002.0
 
     if  (current != newVersion)
 
         SDF.Stop()
         Utility.Wait(3)
         SDF.Start()
+        Beast.Stop()
+        Utility.Wait(2)
+        Beast.Start()
         SDF.DNotify("MCM: Update Complete to version " + newVersion)
         SD_FVersion.SetValue(newVersion)
         MCM.SetModSettingFloat(thisMod, "fVersion", newVersion)
@@ -188,46 +194,46 @@ EndFunction
 Function CheckIntegrations()
     If (Game.IsPluginInstalled("FP_FamilyPlanningEnhanced.esp"))
         SD_Setting_Integrate_FPE.SetValue(1.0)
-        MCM.SetModSettingBool(thisMod, "bEnableFPE", true)
     Else
         SD_Setting_Integrate_FPE.SetValue(0.0)
-        MCM.SetModSettingBool(thisMod, "bEnableFPE", false)
     EndIf
     If (Game.IsPluginInstalled("Beggar_Whore.esp"))
         SD_Setting_Integrate_HBW.SetValue(1.0)
-        MCM.SetModSettingBool(thisMod, "bEnableHBW", true)
     Else
         SD_Setting_Integrate_HBW.SetValue(0.0)
-        MCM.SetModSettingBool(thisMod, "bEnableHBW", false)
     EndIf
     If (Game.IsPluginInstalled("AAF_Violate.esp"))
         SD_Setting_Integrate_Vio.SetValue(1.0)
-        MCM.SetModSettingBool(thisMod, "bEnableAFV", true)
     Else
         SD_Setting_Integrate_Vio.SetValue(0.0)
-        MCM.SetModSettingBool(thisMod, "bEnableAFV", false)
     EndIf
 
     If (Game.IsPluginInstalled("INVB_WastelandDairy.esp"))
         SD_Setting_Integrate_WLD.SetValue(1.0)
-        MCM.SetModSettingBool(thisMod, "bEnableWLD", true)
+        
     Else
         SD_Setting_Integrate_WLD.SetValue(0.0)
-        MCM.SetModSettingBool(thisMod, "bEnableWLD", false)
+        
     EndIf
 
     If (Game.IsPluginInstalled("Just Business.esp"))
         SD_Setting_Integrate_JB.SetValue(1.0)
-        MCM.SetModSettingBool(thisMod, "bEnableJB", true)
+        
     Else
         SD_Setting_Integrate_JB.SetValue(0.0)
-        MCM.SetModSettingBool(thisMod, "bEnableJB", false)
+        
     EndIf  
 
     If (Game.IsPluginInstalled("AnimatedTentacles.esp"))
         SD_Setting_Integrate_Tent.SetValue(1.0)
     Else
         SD_Setting_Integrate_Tent.SetValue(0.0)
+    EndIf
+
+    If (Game.IsPluginInstalled("TSEX.esm"))
+        SD_Setting_Integrate_Tsex.SetValue(1.0)
+    Else
+        SD_Setting_Integrate_Tsex.SetValue(0.0)
     EndIf
 EndFunction
 

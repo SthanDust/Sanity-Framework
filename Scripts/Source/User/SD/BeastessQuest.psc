@@ -312,8 +312,6 @@ Function ImpregnateRace(Actor akActor)
     EndIf
 EndFunction
 
-
-
 Function LoadFPE()
     if (Game.IsPluginInstalled("FP_FamilyPlanningEnhanced.esp"))
       SD_Setting_Integrate_FPE.SetValueInt(1)
@@ -557,7 +555,6 @@ Actor Function SpawnTentacle(float maxDistance)
   TentacleSound.Play(newTent)
   return newTent
 EndFunction
-
 
 Function DoTentacleAmbush()
   int rnd = Utility.RandomInt()
