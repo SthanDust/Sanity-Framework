@@ -210,6 +210,19 @@
                     }
                 },
                 {
+                    "id": "fTentacleSpawnChance:Beastess",
+                    "text": "Chance for Aggressive Spawn",
+                    "help": "Will another tentacle spawn. (Default = 20).",
+                    "type": "slider",
+                    "valueOptions": {
+                        "min": 1,
+                        "max": 100,
+                        "step": 1,
+                        "sourceType": "GlobalValue",
+                        "sourceForm": "SD_MainFramework.esp|A07C"
+                    }
+                },
+                {
                     "text": "Force a Tentacle Encounter",
                     "type": "button",
                     "help": "This spawns a random tentacle encounter.  Make sure you set the values to allow for 100% chance and no wait.",
