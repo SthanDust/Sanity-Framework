@@ -169,7 +169,7 @@ Event OnTimerGameTime(int aiTimerID)
 EndEvent
 
 Function OnTick()
-  if !PlayerRef.IsInCombat() && !PlayerRef.IsInScene()
+  if !PlayerRef.IsInCombat() && !PlayerRef.IsInScene() && !havingSex
     DoTentacleAmbush()
   EndIf
   StartTimerGameTime(1, tickTimerID)
@@ -478,7 +478,7 @@ Function TentacleAmbush(float Distance = 233.0)
   Debug.MessageBox("<font face='$HandwrittenFont' size='20'>" + SP_TentacleAttackMessages[k] + "</font> \n \n") 
   SDF.PlaySexAnimation(akActors, sexScene)
   havingSex = true
-  int posSwitch = SD_Beastess_Tentacle_Sex_Duration.GetValueInt() / 2
+  int posSwitch = (SD_Beastess_Tentacle_Sex_Duration.GetValueInt() / 2) as int
   StartTimer(posSwitch, 69)
   
    
@@ -586,6 +586,7 @@ Function DoPostAmbush(int numAttackers)
     Else 
       SDF.ModifySanity(PlayerRef, -5.0)
     EndIf
+    PlayerRef.EquipItem(SD_SlimePotion, false, true)
     If IsPregnant() && SD_Setting_Integrate_FPE.GetValueInt() == 1 && !PlayerRef.HasPerk(Cumflated)
       float month = BPD.GetCurrentMonth()
       SDF.DNotify("Months: " + month)
@@ -599,7 +600,7 @@ Function DoPostAmbush(int numAttackers)
         EndIf
       EndIf
     EndIf
-    PlayerRef.EquipItem(SD_SlimePotion, false, true)
+    
 EndFunction
 
 Event AAF:AAF_API.OnAnimationStop(AAF:AAF_API akSender, Var[] akArgs)
@@ -611,9 +612,7 @@ Event AAF:AAF_API.OnAnimationStop(AAF:AAF_API akSender, Var[] akArgs)
   if idx <= -1 || status != 0
     return
   endif
-  
-  
-  
+    
   String[] Tags = Utility.VarToVarArray(akArgs[3]) as String[] 
   String position = akArgs[2] as String
   string meta = akArgs[4] as string
@@ -639,6 +638,7 @@ Event AAF:AAF_API.OnAnimationStop(AAF:AAF_API akSender, Var[] akArgs)
       
       i = i + 1
     EndWhile
+    Utility.Wait(2)
     DoPostAmbush(aLength)
     LastTentacleTime = Utility.GetCurrentGameTime()
   EndIf
