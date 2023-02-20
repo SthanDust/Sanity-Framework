@@ -25,7 +25,7 @@ Event OnEffectFinish(Actor akTarget, Actor akCaster)
     Debug.Notification("The fluid has left you and seeps into the ground beneath you.")
     int t = Utility.RandomInt()
     if t < SD_Beastess_Tentacle_Spawn.GetValueInt()
-        AggressiveTentacleSpawn = Game.GetFormFromFile(0x000035C0, "AnimatedTentacles.esp") as ActorBase
+        AggressiveTentacleSpawn = Game.GetFormFromFile(0x00002675, "AnimatedTentacles.esp") as ActorBase
         Actor tempt = PlayerRef.PlaceAtMe(AggressiveTentacleSpawn) as Actor
         tempt.EquipItem(SD_TentacleDeath, true, true)
         Debug.Notification("A more aggressive tentacle has emerged from the fluid that leaked out of you.  Run before it gets you!")
