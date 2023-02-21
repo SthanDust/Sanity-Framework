@@ -58,7 +58,7 @@ Event OnTimer(int aiTimerID)
         Quest Main = Game.GetFormFromFile(0x0001F59A, "SD_MainFramework.esp") as quest
         SDF = Main as SD:SanityFrameworkQuestScript
         Quest BST = Game.GetFormFromFile(0x00027F62, "SD_MainFramework.esp") as Quest
-        SD_Internal_MCMLoaded.SetValue(0)
+        SD_Internal_MCMLoaded.SetValue(0.0)
         Beast = BST as SD:BeastessQuest
         if (CheckForMCM())
             RegisterForMenuOpenCloseEvent("PauseMenu")
