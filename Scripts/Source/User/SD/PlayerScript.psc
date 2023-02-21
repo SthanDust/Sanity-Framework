@@ -73,9 +73,6 @@ Perk[] Property SD_Mutations auto
 Weather Property RainyWeather Auto
 int messageFrequency = 20
 
-
-
-
 float tickFrequency = 1.0
 int tickTimerID = 34
 int dayTimerID = 24
@@ -135,8 +132,8 @@ Event OnTimer(int aiTimerID)
       PlayerRef = Game.GetPlayer()
     EndIf
     SF_Main = Main as SD:SanityFrameworkQuestScript
+
     SF_Main.LoadSDF()
-    SF_Main.DNotify("Loading From PLayer")
     if (Game.IsPluginInstalled("FP_FamilyPlanningEnhanced.esp") && SD_Setting_Integrate_FPE.Value == 1)
       Pregnancy = Game.GetFormFromFile(0x00000FA8, "FP_FamilyPlanningEnhanced.esp") as Faction
       if PlayerRef.IsInFaction(Pregnancy) && PlayerRef.GetFactionRank(Pregnancy) > -1
@@ -145,7 +142,7 @@ Event OnTimer(int aiTimerID)
         IsPregnant = false
       endif
     endif
-	  
+   
     
     messageFrequency = SD_Setting_ThoughtFrequency.GetValueInt()
     RegisterForPlayerSleep()
@@ -195,7 +192,6 @@ Function OnTick()
   ;What's the weather like
   Weather w = Weather.GetCurrentWeather()
   if (w.GetClassification() == 2)
-    SF_Main.DNOtify("It's Raining")
     SF_Main.ModifyDepression(PlayerRef, -0.05 + negTolerance)
     if !alreadySaid && (Utility.RandomInt(0,100) < SF_Main.GetDepression(PlayerRef)) && !PlayerRef.IsTalking()
       Say(SD_RandomDepressionThought, PlayerRef) 
@@ -327,13 +323,13 @@ Event OnPlayerSleepStop(bool abInterrupted, ObjectReference akBed)
   float x = Utility.GetCurrentGameTime();
   bool alreadySaid = false
   float rng =  Utility.RandomFloat() * 100
-  SF_Main.DNotify("stopped sleeping")
+
   ;You can't be happy if you want to sleep 8 hours and only get 5.  No stress relief for you otherwise.  That's why it's called desired sleep time, silly.
-  if (x >= iSleepDesired) && !abInterrupted
+  if !abInterrupted
     SF_Main.ModifyStress(PlayerRef, 0.5)
     SF_Main.ModifySanity(PlayerRef, 0.05)
     SF_Main.ModifyTrauma(PlayerRef, 5)
-  Else
+
     if (Utility.RandomInt(0,100) < messageFrequency) && !alreadySaid
       Say(SD_RandomSleepThought, PlayerRef)    
       alreadySaid = true
@@ -392,6 +388,7 @@ EndEvent
 
 Event OnRadiationDamage(ObjectReference akTarget, bool abIngested)
   IF akTarget == PlayerRef
+    
     RegisterForRadiationDamageEvent(PlayerRef)
   EndIF
 EndEvent
@@ -424,3 +421,4 @@ Event OnCombatStateChanged(Actor akTarget, int aeCombatState)
       ManageSplinters()
     endIf
 endEvent
+

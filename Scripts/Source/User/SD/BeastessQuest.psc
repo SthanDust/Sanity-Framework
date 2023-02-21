@@ -60,7 +60,6 @@ Group Tentacles
   ActorBase Property PassiveMechTentacle auto 
   ActorBase Property PassiveTentacle auto 
   Sound Property TentacleSound auto
-  Keyword Property AT_Tentacle auto
   Keyword Property SD_NoPregKeyword auto 
   Float Property LastTentacleTime auto 
   Keyword property LocSetWaterfront auto
@@ -198,10 +197,7 @@ EndFunction
 
 Function CheckRace(Actor akActor)
   Race akRace = akActor.GetRace()
-  If akActor.HasKeyword(AT_Tentacle)
-    akRace = SD_TentacleRace
-  EndIf
-  SDF.DNotify("Beastess Increase: " + akRace.GetName())
+
   if SD_CanineRaces.Find(akRace) > -1
     SD_Beastess_Canine.Value += 1
     SendCustomEvent("OnBeastess")
@@ -255,8 +251,6 @@ EndFunction
 
 Function ImpregnateRace(Actor akActor)
     Race akRace = akActor.GetRace()
-
-    SDF.DNotify("Beastess Impregnation: " + akRace.GetName())
     if SD_CanineRaces.Find(akRace) > -1
         SD_Beastess_Canine_Preg.Value += 1
         SendCustomEvent("OnBeastess")
@@ -355,7 +349,6 @@ Function LoadTentacles()
     SD_Tentacles[2] = PassiveTentacle
     PassiveMechTentacle = Game.GetFormFromFile(0x00005C62, "AnimatedTentacles.esp") as ActorBase
     SD_Tentacles[3] = PassiveMechTentacle
-    AT_Tentacle = Game.GetFormFromFile(0x00001ED6, "AnimatedTentacles.esp") as Keyword
     LoadZazEffects()
   Else
     SD_Setting_Integrate_Tent.SetValue(0)
@@ -385,8 +378,9 @@ EndEvent
 
 Event FPFP_Player_Script.FPFP_GiveBirth(FPFP_Player_Script akSender, Var[] akArgs)
   akMother = akArgs[0] as Actor
-  akBirth = akArgs[2] as bool
+  
   if (akMother == PlayerRef)
+    akBirth = akArgs[2] as bool
     If CurrentFatherRace != HumanRace
       SDF.ModifySanity(PlayerRef, -0.5)
     EndIf
@@ -447,7 +441,7 @@ Function ShowBodyGen()
 EndFunction
 
 Function RemoveTentacle(Actor akActor)
-  akActor.Kill()
+  akActor.KillSilent()
 EndFunction
 
 Function TentacleAmbush(float Distance = 233.0)
@@ -493,6 +487,7 @@ Function TryTentaclePreg(Actor akActor)
     akActor.SetRace(tempRace)
     akActor.EquipItem(SD_SplinterPotionGabryal, false, true)    
     BPD.TrySpermFrom(akActor)
+    akActor.SetRace(SD_TentacleRace)
     RemoveTentacle(akActor)
     Game.FadeOutGame(false, true, 0, 2, false)
   Else 
@@ -537,7 +532,8 @@ EndFunction
 Actor Function SpawnTentacle(float maxDistance)
   
   int rnd = Utility.RandomInt(0, 3)
-  ActorBase akTentacle = SD_Tentacles[rnd] 
+  ActorBase akTentacle = SD_Tentacles[rnd]
+  
   float fAngle
   float fSin
   float fCos
@@ -549,7 +545,10 @@ Actor Function SpawnTentacle(float maxDistance)
   fCos = Math.cos(fAngle)
   fHeight = Game.GetPlayer().GetPositionZ() 
   Actor newTent = PlayerRef.PlaceAtMe(akTentacle, 1) as Actor
-  newTent.AddKeyword(AT_Tentacle)
+  If newTent.GetRace() != SD_TentacleRace
+    newTent.SetRace(SD_TentacleRace)
+  EndIf
+  ;newTent.AddKeyword(AT_Tentacle)
   float[] pos = newTent.GetSafePosition(dist, dist)
   newTent.SetPosition(Game.GetPlayer().GetPositionX() + (dist * fSin),Game.GetPlayer().GetPositionY() + (dist * fCos), pos[2])
   TentacleSound.Play(newTent)
@@ -615,7 +614,11 @@ Event AAF:AAF_API.OnAnimationStop(AAF:AAF_API akSender, Var[] akArgs)
       CheckRace(actors[i])
       
       int t = Utility.RandomInt()
-      TryTentaclePreg(actors[i])      
+      If i == 0
+        TryTentaclePreg(actors[i])
+      Else 
+        RemoveTentacle(actors[i])   
+      EndIf
       i = i + 1
     EndWhile
     Utility.Wait(2)

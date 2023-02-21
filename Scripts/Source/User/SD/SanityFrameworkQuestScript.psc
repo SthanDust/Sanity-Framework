@@ -155,7 +155,7 @@ Function DNotify(string text)
 EndFunction
 
 Function LoadSDF()
-
+  
   RegisterForRemoteEvent(PlayerRef, "OnKill")
   RegisterForHitEvent(PlayerRef)
   RegisterForRemoteEvent(PlayerRef, "OnPlayerLoadGame")
@@ -365,7 +365,5 @@ Function SanityCheck(int prevSanity, int newSanity)
       EndIf
   EndIf
 EndFunction
-
-
 
 
