@@ -60,11 +60,9 @@ CustomEvent OnGriefUpdate
 CustomEvent OnTraumaUpdate
 CustomEvent OnBeastess
 
-Event OnQuestInit()
-  Debug.Notification("OnQuestInit SF Quest")
+Event OnInit()
   OpenLog()
   StartTimer(1,0)
-
 EndEvent
 
 Event Actor.OnPlayerLoadGame(Actor akSender)
@@ -108,7 +106,7 @@ EndEvent
 Event OnTimer(int aiTimerID)
   if(aiTimerID == 0)
       IntializeStartup()
-      RegisterForRemoteEvent(PlayerRef, "OnPlayerLoadGame")
+      
       DNotify("Timer Fired in SF Main")
   EndIf
 EndEvent
@@ -160,7 +158,7 @@ Function LoadSDF()
 
   RegisterForRemoteEvent(PlayerRef, "OnKill")
   RegisterForHitEvent(PlayerRef)
-    
+  RegisterForRemoteEvent(PlayerRef, "OnPlayerLoadGame")
   Quest temp = Game.GetFormFromFile(0x00027F62, "SD_MainFramework.esp") as Quest
   Beast = temp as SD:BeastessQuest
  

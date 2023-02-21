@@ -41,11 +41,8 @@ import SD:SanityFrameworkQuestScript
 SD:SanityFrameworkQuestScript SDF
 SD:BeastessQuest Beast
 
-Event OnQuestInit()
+Event OnInit()
     StartTimer(1, 1)
-    Debug.Notification("OnQuestInit MCM Quest")
-    RegisterForRemoteEvent(PlayerRef, "OnPlayerLoadGame")
-    RegisterForExternalEvent("OnMCMSettingChange|"+thisMod, "OnMCMSettingChange")
 EndEvent
 
 Event Actor.OnPlayerLoadGame(Actor akSender)
@@ -62,7 +59,7 @@ Event OnTimer(int aiTimerID)
         Beast = BST as SD:BeastessQuest
         if (CheckForMCM())
             RegisterForMenuOpenCloseEvent("PauseMenu")
-            CheckVersion()
+            ;CheckVersion()
             CheckIntegrations()
             RegisterForRemoteEvent(PlayerRef, "OnPlayerLoadGame")
             RegisterForExternalEvent("OnMCMSettingChange|"+thisMod, "OnMCMSettingChange")

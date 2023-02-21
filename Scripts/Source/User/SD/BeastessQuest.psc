@@ -103,10 +103,10 @@ int sexTimerID = 69
 bool havingSex = false 
 
 
-Event OnQuestInit()
+Event OnInit()
     StartTimer(1,0)
-    Debug.Notification("OnQuestInit beastess Quest")
- RegisterForRemoteEvent(PlayerRef, "OnPlayerLoadGame")
+    Debug.Notification("OnInit beastess Quest")
+ 
 EndEvent
 
 Event Actor.OnPlayerLoadGame(Actor akSender)
