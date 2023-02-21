@@ -60,7 +60,7 @@ Group Tentacles
   ActorBase Property PassiveMechTentacle auto 
   ActorBase Property PassiveTentacle auto 
   Sound Property TentacleSound auto
-  Keyword Property SD_Tentacle auto
+  Keyword Property AT_Tentacle auto
   Keyword Property SD_NoPregKeyword auto 
   Float Property LastTentacleTime auto 
   Keyword property LocSetWaterfront auto
@@ -169,7 +169,7 @@ Event OnTimerGameTime(int aiTimerID)
 EndEvent
 
 Function OnTick()
-  if !PlayerRef.IsInCombat() && !PlayerRef.IsInScene() && !havingSex
+  if !PlayerRef.IsInCombat() && !PlayerRef.IsInScene() && !havingSex && !PlayerRef.IsGhost() && !PlayerRef.HasKeyword(AAF_API.AAF_ActorBusy)  && PlayerRef.IsAIEnabled()
     DoTentacleAmbush()
   EndIf
   StartTimerGameTime(1, tickTimerID)
@@ -197,7 +197,7 @@ EndFunction
 
 Function CheckRace(Actor akActor)
   Race akRace = akActor.GetRace()
-  If akActor.HasKeyword(SD_Tentacle)
+  If akActor.HasKeyword(AT_Tentacle)
     akRace = SD_TentacleRace
   EndIf
   SDF.DNotify("Beastess Increase: " + akRace.GetName())
@@ -254,9 +254,7 @@ EndFunction
 
 Function ImpregnateRace(Actor akActor)
     Race akRace = akActor.GetRace()
-    If akActor.HasKeyword(SD_Tentacle) 
-      akActor.SetRace(SD_TentacleRace)
-    EndIF
+
     SDF.DNotify("Beastess Impregnation: " + akRace.GetName())
     if SD_CanineRaces.Find(akRace) > -1
         SD_Beastess_Canine_Preg.Value += 1
@@ -356,7 +354,7 @@ Function LoadTentacles()
     SD_Tentacles[2] = PassiveTentacle
     PassiveMechTentacle = Game.GetFormFromFile(0x00005C62, "AnimatedTentacles.esp") as ActorBase
     SD_Tentacles[3] = PassiveMechTentacle
-    SD_Tentacle = Game.GetFormFromFile(0x00001ED6, "AnimatedTentacles.esp") as Keyword
+    AT_Tentacle = Game.GetFormFromFile(0x00001ED6, "AnimatedTentacles.esp") as Keyword
     LoadZazEffects()
   Else
     SD_Setting_Integrate_Tent.SetValue(0)
@@ -471,7 +469,6 @@ Function TentacleAmbush(float Distance = 233.0)
   AAF:AAF_API:SceneSettings sexScene = AAF_API.GetSceneSettings()
   sexScene.meta = "SD_TentacleAmbush"
   sexScene.duration = SD_Beastess_Tentacle_Sex_Duration.GetValueInt()
-  sexScene.skipWalk = true
   int k = Utility.RandomInt(0, SP_TentacleAttackMessages.Length - 1)
   Debug.MessageBox("<font face='$HandwrittenFont' size='20'>" + SP_TentacleAttackMessages[k] + "</font> \n \n") 
   SDF.PlaySexAnimation(akActors, sexScene)
@@ -495,9 +492,11 @@ Function TryTentaclePreg(Actor akActor)
     akActor.SetRace(tempRace)
     akActor.EquipItem(SD_SplinterPotionGabryal, false, true)    
     BPD.TrySpermFrom(akActor)
-    Utility.Wait(2)
     RemoveTentacle(akActor)
     Game.FadeOutGame(false, true, 0, 2, false)
+  Else 
+     BPD.TrySpermFrom(akActor)
+     RemoveTentacle(akActor)
   EndIf
  
 EndFunction
@@ -549,7 +548,7 @@ Actor Function SpawnTentacle(float maxDistance)
   fCos = Math.cos(fAngle)
   fHeight = Game.GetPlayer().GetPositionZ() 
   Actor newTent = PlayerRef.PlaceAtMe(akTentacle, 1) as Actor
-  newTent.AddKeyword(SD_Tentacle)
+  newTent.AddKeyword(AT_Tentacle)
   float[] pos = newTent.GetSafePosition(dist, dist)
   newTent.SetPosition(Game.GetPlayer().GetPositionX() + (dist * fSin),Game.GetPlayer().GetPositionY() + (dist * fCos), pos[2])
   TentacleSound.Play(newTent)
@@ -584,18 +583,7 @@ Function DoPostAmbush(int numAttackers)
       SDF.ModifySanity(PlayerRef, -5.0)
     EndIf
     PlayerRef.EquipItem(SD_SlimePotion, false, true)
-    If IsPregnant() && SD_Setting_Integrate_FPE.GetValueInt() == 1 && !PlayerRef.HasPerk(Cumflated)
-      float month = BPD.GetCurrentMonth()
-      If month <= 3
-        If numAttackers == 1
-          PlayerRef.EquipItem(Cumflation_Low, false, true)
-        ElseIf numAttackers > 1 && numAttackers <=3
-          PlayerRef.EquipItem(Cumflation_Med, false, true)
-        Else 
-          PlayerRef.EquipItem(Cumflation_High, false, true)
-        EndIf
-      EndIf
-    EndIf
+    
     
 EndFunction
 
@@ -612,10 +600,11 @@ Event AAF:AAF_API.OnAnimationStop(AAF:AAF_API akSender, Var[] akArgs)
   String[] Tags = Utility.VarToVarArray(akArgs[3]) as String[] 
   String position = akArgs[2] as String
   string meta = akArgs[4] as string
-   string[] metatag = LL_FourPlay.StringSplit(theString = meta, delimiter = ",")
-   actors.Remove(idx)
+  string[] metatag = LL_FourPlay.StringSplit(theString = meta, delimiter = ",")
+  
   
   If (metaTag.Find("SD_TentacleAmbush") > -1)
+    actors.Remove(idx)
     havingSex = false
     int i = 0
     int aLength = actors.length
@@ -625,20 +614,12 @@ Event AAF:AAF_API.OnAnimationStop(AAF:AAF_API akSender, Var[] akArgs)
       CheckRace(actors[i])
       
       int t = Utility.RandomInt()
-      
-      If !IsPregnant() && (SD_Beastess_Tentacle_Preg_Chance.GetValueInt()>= t )
-        TryTentaclePreg(actors[i])
-      Else 
-        RemoveTentacle(actors[i])
-      EndIf
-      
+      TryTentaclePreg(actors[i])      
       i = i + 1
     EndWhile
     Utility.Wait(2)
     DoPostAmbush(aLength)
     LastTentacleTime = Utility.GetCurrentGameTime()
-  Else
-    return
   EndIf
 EndEvent
 

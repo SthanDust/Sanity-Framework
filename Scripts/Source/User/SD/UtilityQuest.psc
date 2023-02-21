@@ -23,7 +23,7 @@ Group Sex_Attributes
     GlobalVariable property SD_FPA_Arousal auto
     GlobalVariable property SD_FPA_DrugLevel auto
     GlobalVariable property SD_FPA_IsPlayerAddictedToSex auto
-    GlobalVariable property SD_Integrate_FPA auto
+    GlobalVariable property SD_Setting_Integrate_FPA auto
     Actor Property PlayerRef auto
 EndGroup
 
@@ -47,25 +47,6 @@ Event OnQuestInit()
     AddChems()
 EndEvent
 
-Function PlaceBehindActor(Actor akActor, Actor akActorToPlace)
-float fAngle
-float fSin
-float fCos
-float fHeight
-
-SDF.DNotify("Moving " + akActor.GetName())
-fAngle = akActor.GetAngleZ() + 180.0
-fSin = Math.sin(fAngle)
-fCos = Math.cos(fAngle)
-fHeight = akActor.GetPositionZ() 
- 
-akActorToPlace.MoveTo(akActor, 70.0 * fSin, 70.0 * fCos, fHeight, False)
-akActor.Enable(true)
-EndFunction
-
-Event Actor.OnPlayerLoadGame(Actor akSender)
-    StartTimer(2, 1)
-EndEvent
 
 Event OnTimer(int aiTimerID)
     If (aiTimerID == 1)
@@ -90,7 +71,7 @@ Function LoadSA()
         SD_FPA_WearAnal.Value = (Game.GetFormFromFile(0x00011A41, "FPAttributes.esp") as GlobalVariable).getValueInt()
         SD_FPA_WearVagi.Value = (Game.GetFormFromFile(0x00011A40, "FPAttributes.esp") as GlobalVariable).getValueInt()
         SD_FPA_WearOral.Value = (Game.GetFormFromFile(0x00000FAA, "FPAttributes.esp") as GlobalVariable).getValueInt()
-        SD_Integrate_FPA.Value = 1
+        SD_Setting_Integrate_FPA.Value = 1
     EndIf
 EndFunction
 

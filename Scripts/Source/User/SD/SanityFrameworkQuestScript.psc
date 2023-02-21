@@ -45,6 +45,7 @@ import Game
 
 AAF:AAF_API AAF_API
 SD:BeastessQuest Beast
+SD:PlayerScript PScript
 
 string thisMod = "SD_MainFramework"
 string logName = "SanityFramework"
@@ -159,7 +160,7 @@ Function LoadSDF()
   
   Quest temp = Game.GetFormFromFile(0x00027F62, "SD_MainFramework.esp") as Quest
   Beast = temp as SD:BeastessQuest
-  
+ 
 
   ;CheckCompanion()
 EndFunction

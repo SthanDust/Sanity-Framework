@@ -136,6 +136,7 @@ Event OnTimer(int aiTimerID)
   
     SF_Main = Main as SD:SanityFrameworkQuestScript
     SF_Main.LoadSDF()
+    SF_Main.DNotify("Loading From PLayer")
     if (Game.IsPluginInstalled("FP_FamilyPlanningEnhanced.esp") && SD_Setting_Integrate_FPE.Value == 1)
       Pregnancy = Game.GetFormFromFile(0x00000FA8, "FP_FamilyPlanningEnhanced.esp") as Faction
       if PlayerRef.IsInFaction(Pregnancy) && PlayerRef.GetFactionRank(Pregnancy) > -1
@@ -194,7 +195,7 @@ Function OnTick()
   ;What's the weather like
   Weather w = Weather.GetCurrentWeather()
   if (w.GetClassification() == 2)
-    
+    SF_Main.DNOtify("It's Raining")
     SF_Main.ModifyDepression(PlayerRef, -0.05 + negTolerance)
     if !alreadySaid && (Utility.RandomInt(0,100) < SF_Main.GetDepression(PlayerRef)) && !PlayerRef.IsTalking()
       Say(SD_RandomDepressionThought, PlayerRef) 
@@ -326,6 +327,7 @@ Event OnPlayerSleepStop(bool abInterrupted, ObjectReference akBed)
   float x = Utility.GetCurrentGameTime();
   bool alreadySaid = false
   float rng =  Utility.RandomFloat() * 100
+  SF_Main.DNotify("stopped sleeping")
   ;You can't be happy if you want to sleep 8 hours and only get 5.  No stress relief for you otherwise.  That's why it's called desired sleep time, silly.
   if (x >= iSleepDesired) && !abInterrupted
     SF_Main.ModifyStress(PlayerRef, 0.5)

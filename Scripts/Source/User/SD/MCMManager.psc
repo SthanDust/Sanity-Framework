@@ -41,36 +41,31 @@ import SD:SanityFrameworkQuestScript
 SD:SanityFrameworkQuestScript SDF
 SD:BeastessQuest Beast
 
-Event OnInit()
-    Quest Main = Game.GetFormFromFile(0x0001F59A, "SD_MainFramework.esp") as quest
-    SDF = Main as SD:SanityFrameworkQuestScript
-    SD_Internal_MCMLoaded.SetValue(0)
-    SDF.DNotify("MCM: OnInit")
-    if (CheckForMCM(True))
-        CheckVersion()
-        CheckIntegrations()
-        SD_Internal_MCMLoaded.SetValue(1)
-    endif
-   
-    RegisterForRemoteEvent(PlayerRef, "OnPlayerLoadGame")
-	RegisterForExternalEvent("OnMCMSettingChange|"+thisMod, "OnMCMSettingChange")
-    
+Event OnQuestInit()
+    StartTimer(1, 1)
 EndEvent
 
 Event Actor.OnPlayerLoadGame(Actor akSender)
     ;use this to repeat things
-    Quest Main = Game.GetFormFromFile(0x0001F59A, "SD_MainFramework.esp") as quest
-    SDF = Main as SD:SanityFrameworkQuestScript
-    Quest BST = Game.GetFormFromFile(0x00027F62, "SD_MainFramework.esp") as Quest
-    Beast = BST as SD:BeastessQuest
-    if (CheckForMCM())
-        RegisterForMenuOpenCloseEvent("PauseMenu")
-        CheckVersion()
-        CheckIntegrations()
-        RegisterForRemoteEvent(PlayerRef, "OnPlayerLoadGame")
-        RegisterForExternalEvent("OnMCMSettingChange|"+thisMod, "OnMCMSettingChange")
-        SD_Internal_MCMLoaded.SetValue(1)
-    endif
+    StartTimer(2, 1)
+EndEvent
+
+Event OnTimer(int aiTimerID)
+    if aiTimerID == 1
+        Quest Main = Game.GetFormFromFile(0x0001F59A, "SD_MainFramework.esp") as quest
+        SDF = Main as SD:SanityFrameworkQuestScript
+        Quest BST = Game.GetFormFromFile(0x00027F62, "SD_MainFramework.esp") as Quest
+        SD_Internal_MCMLoaded.SetValue(0)
+        Beast = BST as SD:BeastessQuest
+        if (CheckForMCM())
+            RegisterForMenuOpenCloseEvent("PauseMenu")
+            CheckVersion()
+            CheckIntegrations()
+            RegisterForRemoteEvent(PlayerRef, "OnPlayerLoadGame")
+            RegisterForExternalEvent("OnMCMSettingChange|"+thisMod, "OnMCMSettingChange")
+            SD_Internal_MCMLoaded.SetValue(1)
+        endif
+    EndIf 
 EndEvent
 
 
@@ -115,36 +110,13 @@ bool Function CheckForMCM(bool FirstLoad = false)
 EndFunction
 
 Function OnMCMSettingChange(string modName, string id)
-  if modName == thisMod
-      MCMUpdate()
-  endif
+  
   
   RegisterForExternalEvent("OnMCMSettingChange|"+thisMod, "OnMCMSettingChange")
 EndFunction
 
 
-Function MCMUpdate()
-    If (MCM.GetModSettingBool(thisMod, "bMCMDebugOn:Debug"))
-        SD_Framework_Debugging.SetValue(1.0)
-    Else
-        SD_Framework_Debugging.SetValue(0.0)
-    EndIf
-    If (MCM.GetModSettingBool(thisMod, "bMCMModEnabled:Globals"))
-         SD_Framework_Enabled.SetValue(1.0)
-    Else
-         SD_Framework_Enabled.SetValue(0.0)
-    EndIf
-   
-    If (MCM.GetModSettingBool(thisMod, "bMCMThoughtsEnabled:Globals"))
-        SD_Setting_ThoughtsEnabled.SetValue(1.0)
-    Else
-        SD_Setting_ThoughtsEnabled.SetValue(0.0)
-    EndIf
-    
-    
-    SD_Setting_ThoughtFrequency.SetValue(MCM.GetModSettingFloat(thisMod, "fMessageFrequency:Globals")  as float)
 
-EndFunction
 
 function Uninstall()
     SDF.DNotify("Uninstalling Framework.")
@@ -166,7 +138,7 @@ function ResetMod()
     
     CheckVersion()
     If CheckForMCM()
-        MCMUpdate()
+        
         CheckIntegrations()
         SDF.DNotify("Framework has now reset.  Check your MCM for setting changes")
     Else
