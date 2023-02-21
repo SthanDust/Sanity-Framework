@@ -45,7 +45,7 @@ import Game
 
 AAF:AAF_API AAF_API
 SD:BeastessQuest Beast
-SD:PlayerScript PScript
+
 
 string thisMod = "SD_MainFramework"
 string logName = "SanityFramework"
@@ -61,14 +61,17 @@ CustomEvent OnTraumaUpdate
 CustomEvent OnBeastess
 
 Event OnQuestInit()
-
+  Debug.Notification("OnQuestInit SF Quest")
   OpenLog()
   StartTimer(1,0)
+
 EndEvent
 
 Event Actor.OnPlayerLoadGame(Actor akSender)
   OpenLog()
+  
   StartTimer(2, 0)
+  
 EndEvent
 
 
@@ -106,6 +109,7 @@ Event OnTimer(int aiTimerID)
   if(aiTimerID == 0)
       IntializeStartup()
       RegisterForRemoteEvent(PlayerRef, "OnPlayerLoadGame")
+      DNotify("Timer Fired in SF Main")
   EndIf
 EndEvent
 
@@ -145,7 +149,7 @@ function ShowDebugInfo()
 EndFunction
 
 Function DNotify(string text)
-  If SD_Framework_Debugging.GetValue() == 1
+  If SD_Framework_Debugging.GetValueInt() == 1
     Debug.Notification("[SDF] " + text)
   EndIf
     Debug.Trace("[SDF] " + text, 0) ; just to get started
@@ -156,22 +160,12 @@ Function LoadSDF()
 
   RegisterForRemoteEvent(PlayerRef, "OnKill")
   RegisterForHitEvent(PlayerRef)
-
-  
+    
   Quest temp = Game.GetFormFromFile(0x00027F62, "SD_MainFramework.esp") as Quest
   Beast = temp as SD:BeastessQuest
  
-
-  ;CheckCompanion()
 EndFunction
 
-Function CheckCompanion()
-   Actor[] Followers =  Game.GetPlayerFollowers()
-   int index = 0
-   while index < Followers.Length
-   index = index + 1
-   EndWhile
-EndFunction
 
 Function OpenLog()
   ;Debug.Notification("Opening Debug Log...")

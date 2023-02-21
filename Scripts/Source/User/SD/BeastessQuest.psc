@@ -105,7 +105,8 @@ bool havingSex = false
 
 Event OnQuestInit()
     StartTimer(1,0)
- 
+    Debug.Notification("OnQuestInit beastess Quest")
+ RegisterForRemoteEvent(PlayerRef, "OnPlayerLoadGame")
 EndEvent
 
 Event Actor.OnPlayerLoadGame(Actor akSender)

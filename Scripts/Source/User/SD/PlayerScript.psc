@@ -119,21 +119,21 @@ EndFunction
 
 Event OnInit()
     StartTimer(1,1)
-    
 EndEvent
 
 Event OnPlayerLoadGame()
     StartTimer(3, 1)
     PlayerRef.EquipItem(SD_SanityPotion, false, true)
-
 EndEvent
 
 Event OnTimer(int aiTimerID)
   if(aiTimerID == 1)
     
     Quest Main = Game.GetFormFromFile(0x0001F59A, "SD_MainFramework.esp") as quest
-    
-  
+    If PlayerRef == None
+      SF_Main.DNotify("PlayerRef is none")
+      PlayerRef = Game.GetPlayer()
+    EndIf
     SF_Main = Main as SD:SanityFrameworkQuestScript
     SF_Main.LoadSDF()
     SF_Main.DNotify("Loading From PLayer")
@@ -185,7 +185,7 @@ Function OnTick()
   string lastMessage;
   SetSexAttributes()
 
-  If (SD_Setting_Integrate_FPE.GetValue() == 1)
+  If (SD_Setting_Integrate_FPE.GetValue() == 1.0)
      HandleFamilyPlanning()
   EndIf
 

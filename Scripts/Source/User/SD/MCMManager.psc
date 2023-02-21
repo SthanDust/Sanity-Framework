@@ -4,7 +4,7 @@ string thisMod = "SD_MainFramework"
 string logName = "SanityFramework"
 
 Group General 
-    Actor Property PlayerRef auto const 
+    Actor Property PlayerRef auto
     GlobalVariable Property SD_FVersion auto 
     GlobalVariable Property SD_Framework_Enabled auto
     GlobalVariable Property SD_Framework_Debugging auto
@@ -43,6 +43,9 @@ SD:BeastessQuest Beast
 
 Event OnQuestInit()
     StartTimer(1, 1)
+    Debug.Notification("OnQuestInit MCM Quest")
+    RegisterForRemoteEvent(PlayerRef, "OnPlayerLoadGame")
+    RegisterForExternalEvent("OnMCMSettingChange|"+thisMod, "OnMCMSettingChange")
 EndEvent
 
 Event Actor.OnPlayerLoadGame(Actor akSender)
@@ -130,11 +133,14 @@ EndFunction
 function ResetMod()
     SDF.DNotify("Resetting the framework... Please wait")
     SD_Internal_FirstLoad.SetValue(1.0)
-    SD_FVersion.SetValue(0.0)
+    ;SD_FVersion.SetValue(0.0)
     
     SDF.Stop()
     SDF.Reset()
+    Beast.Stop()
+    Beast.Reset()
     SDF.Start()
+    Beast.Start()
     
     CheckVersion()
     If CheckForMCM()
