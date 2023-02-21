@@ -403,7 +403,6 @@ EndFunction
 Event OnLocationChange(Location akOldLoc, Location akNewLoc)
   
   If (SD_POI.Find(akNewLoc) > -1)
-    SF_Main.DNotify("Grief Location.")
     SF_Main.ModifyGrief(PlayerRef, -0.5)
   EndIf
 

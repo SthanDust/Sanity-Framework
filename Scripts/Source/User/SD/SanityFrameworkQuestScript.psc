@@ -106,8 +106,6 @@ EndEvent
 Event OnTimer(int aiTimerID)
   if(aiTimerID == 0)
       IntializeStartup()
-      
-      DNotify("Timer Fired in SF Main")
   EndIf
 EndEvent
 

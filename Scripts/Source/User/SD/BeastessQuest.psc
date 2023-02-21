@@ -104,8 +104,6 @@ bool havingSex = false
 
 Event OnInit()
     StartTimer(1,0)
-    Debug.Notification("OnInit beastess Quest")
- 
 EndEvent
 
 Event Actor.OnPlayerLoadGame(Actor akSender)
@@ -442,6 +440,8 @@ EndFunction
 
 Function RemoveTentacle(Actor akActor)
   akActor.KillSilent()
+  akActor.Disable()
+  akActor.Delete()
 EndFunction
 
 Function TentacleAmbush(float Distance = 233.0)
