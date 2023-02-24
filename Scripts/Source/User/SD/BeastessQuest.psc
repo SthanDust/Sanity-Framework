@@ -84,22 +84,22 @@ Group Beast_Races
 EndGroup
 
 SD:SanityFrameworkQuestScript SDF
-FPFP_Player_Script FPE
-FPFP_BasePregData BPD
-AAF:AAF_API AAF_API
-CustomEvent OnBeastess
+FPFP_Player_Script            FPE
+FPFP_BasePregData             BPD
+AAF:AAF_API                   AAF_API
+CustomEvent                   OnBeastess
 
 float hour = 0.04200
 
-Potion Cumflation_Low
-Potion Cumflation_High
-Potion Cumflation_Med
-Perk Cumflated
+Potion  Cumflation_Low
+Potion  Cumflation_High
+Potion  Cumflation_Med
+Perk    Cumflated
  
-int tickTimerID = 1
-int dayTimerID = 2
-int sexTimerID = 69
-bool havingSex = false 
+int   tickTimerID = 1
+int   dayTimerID = 2
+int   sexTimerID = 69
+bool  havingSex = false 
 
 
 Event OnInit()
@@ -167,7 +167,9 @@ Event OnTimerGameTime(int aiTimerID)
 EndEvent
 
 Function OnTick()
-  if !PlayerRef.IsInCombat() && !PlayerRef.IsInScene() && !havingSex && !PlayerRef.IsGhost() && !PlayerRef.HasKeyword(AAF_API.AAF_ActorBusy)  && PlayerRef.IsAIEnabled()
+  ;SDF.DNotify("InCombat: " + PlayerRef.IsInCombat() + " InScene: " + PlayerRef.IsInScene() + " HavingSex: " + havingSex + " IsGhost: " + PlayerRef.IsGhost() + " ActorBusy: " + PlayerRef.HasKeyword(AAF_API.AAF_ActorBusy) + " AIEnabled: " + PlayerRef.IsAIEnabled())
+  if !PlayerRef.IsInCombat() && !PlayerRef.IsInScene() && !havingSex && !PlayerRef.IsGhost() && !PlayerRef.HasKeyword(AAF_API.AAF_ActorBusy) 
+    ;SDF.DNotify("Doing Ambush")
     DoTentacleAmbush()
   EndIf
   StartTimerGameTime(1, tickTimerID)
