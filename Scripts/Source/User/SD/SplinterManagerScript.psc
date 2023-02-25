@@ -14,7 +14,15 @@ EndGroup
 
 Group Player_Variables
     Actor property PlayerRef auto 
-    
+    Faction Property SD_OneFaction auto 
+    Faction Property SD_BeastFaction auto
+    Faction Property SD_SthanFaction auto
+    Faction Property SD_GabryalFaction auto 
+    Faction Property SD_YouFaction auto 
+    Faction Property SD_OliviaFaction auto 
+    Faction Property SD_AlexFaction auto
+    Faction Property SD_JackFaction auto
+    Faction[] Property SD_PlayerFactions auto 
 EndGroup
 
 SD:SanityFrameworkQuestScript SDF 
@@ -32,5 +40,20 @@ Event OnTimer(int aiTimerID)
       Quest Main = Game.GetFormFromFile(0x0001F59A, "SD_MainFramework.esp") as quest
       SDF = Main as SD:SanityFrameworkQuestScript
       RegisterForRemoteEvent(PlayerRef, "OnPlayerLoadGame")
+      CheckFactions()
     EndIf
 EndEvent
+
+Function CheckSplinters(Perk akPerk)
+EndFunction
+
+Function CheckFactions()
+    int index = 0
+    While (index < SD_PlayerFactions.Length)
+        Faction item = SD_PlayerFactions[index]
+        If !PlayerRef.IsInFaction(item)
+            PlayerRef.AddToFaction(item)
+        EndIf
+        index += 1
+    EndWhile
+EndFunction

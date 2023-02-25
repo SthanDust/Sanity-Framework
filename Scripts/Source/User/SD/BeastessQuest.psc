@@ -589,6 +589,9 @@ Function DoPostAmbush(int numAttackers)
     Else 
       SDF.ModifySanity(PlayerRef, -5.0)
     EndIf
+    If !PlayerRef.HasPerk(Cumflated)
+      PlayerRef.EquipItem(Cumflation_Low, false, true)
+    EndIf
     PlayerRef.EquipItem(SD_SlimePotion, false, true)
     
     
@@ -621,7 +624,7 @@ Event AAF:AAF_API.OnAnimationStop(AAF:AAF_API akSender, Var[] akArgs)
       CheckRace(actors[i])
       
       int t = Utility.RandomInt()
-      If i == 0
+      If i == 0 && t < SD_Beastess_Tentacle_Preg_Chance.GetValueInt()
         TryTentaclePreg(actors[i])
       Else 
         RemoveTentacle(actors[i])   

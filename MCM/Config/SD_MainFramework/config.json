@@ -170,7 +170,7 @@
                     "help": "If the player is raped by tentacles during a random encounter, what are the chances the tentacles will have stolen DNA to impregnate.  This overrides the normal FPE pregnancy.",
                     "type": "slider",
                     "valueOptions": {
-                        "min": 1,
+                        "min": 0,
                         "max": 100,
                         "step": 1,
                         "sourceType": "GlobalValue",
