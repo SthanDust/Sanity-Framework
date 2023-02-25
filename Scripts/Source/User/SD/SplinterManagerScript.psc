@@ -9,6 +9,7 @@ Group Perks
     Perk Property SD_SplinterJack auto 
     Perk Property SD_SplinterYou auto 
     Perk Property SD_SplinterGabryal auto 
+    Perk[] property SD_Splinters auto 
 EndGroup
 
 Group Player_Variables

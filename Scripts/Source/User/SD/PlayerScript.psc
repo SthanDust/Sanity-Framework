@@ -127,10 +127,7 @@ Event OnTimer(int aiTimerID)
   if(aiTimerID == 1)
     
     Quest Main = Game.GetFormFromFile(0x0001F59A, "SD_MainFramework.esp") as quest
-    If PlayerRef == None
-      SF_Main.DNotify("PlayerRef is none")
-      PlayerRef = Game.GetPlayer()
-    EndIf
+
     SF_Main = Main as SD:SanityFrameworkQuestScript
 
     SF_Main.LoadSDF()
