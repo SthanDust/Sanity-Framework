@@ -371,7 +371,7 @@
             "content": [
                 
                 {
-                    "text": "Chapter One: This is the Way the World Ends",
+                    "text": "Chapter One: This is the Way your World Ends",
                     "align": "Left",
                     "type": "section"
                 },
@@ -389,11 +389,15 @@
                     "type": "text"
                 },
                 {
-                    "text": "Alice's House in Concord (New Location)",
+                    "text": "Rabbit Hole in Concord (New Location)",
                     "type": "text"
                 },
                 {
                     "text": "The Church in Hyde Park",
+                    "type": "text"
+                },
+                {
+                    "text": "Where the catcher sits and watches",
                     "type": "text"
                 },
                 {
@@ -428,7 +432,7 @@
                 }
                 ,
                 {
-                    "text": "End of the Line -- Commonwealth",
+                    "text": "End of the Line -- Commonwealth (New Location)",
                     "type": "text"
                 }
             ]
