@@ -166,9 +166,9 @@ Event OnTimerGameTime(int aiTimerID)
 EndEvent
 
 Function OnTick()
-  SDF.DNotify("InCombat: " + PlayerRef.IsInCombat() + " InScene: " + PlayerRef.IsInScene() + " HavingSex: " + havingSex + " IsGhost: " + PlayerRef.IsGhost() + " ActorBusy: " + PlayerRef.HasKeyword(AAF_API.AAF_ActorBusy))
+  ;SDF.DNotify("InCombat: " + PlayerRef.IsInCombat() + " InScene: " + PlayerRef.IsInScene() + " HavingSex: " + havingSex + " IsGhost: " + PlayerRef.IsGhost() + " ActorBusy: " + PlayerRef.HasKeyword(AAF_API.AAF_ActorBusy))
   if !PlayerRef.IsInCombat() && !PlayerRef.IsInScene() && !havingSex && !PlayerRef.IsGhost() && !PlayerRef.HasKeyword(AAF_API.AAF_ActorBusy) 
-    SDF.DNotify("Doing Ambush")
+    ;SDF.DNotify("Doing Ambush")
     DoTentacleAmbush()
   EndIf
   StartTimerGameTime(1, tickTimerID)
