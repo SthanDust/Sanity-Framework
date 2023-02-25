@@ -148,6 +148,23 @@
                     }
                 },
                 {
+                    "id": "fTentacleType:Beastess",
+                    "text": "Tentacle Type",
+                    "type": "dropdown",
+                    "help": "Choose the type of tentacle you would like",
+                    "valueOptions": {
+                        "options": [
+                            "Random",
+                            "Brain",
+                            "Plant",
+                            "Normal",
+                            "Mechanical"
+                        ],
+                        "sourceType": "GlobalValue",
+                        "sourceForm": "SD_MainFramework.esp|1B32A"
+                    }
+                },
+                {
                     "id": "fTentaclePregnancyChance:Beastess",
                     "text": "Tentacle Pregnancy Chance",
                     "help": "If the player is raped by tentacles during a random encounter, what are the chances the tentacles will have stolen DNA to impregnate.  This overrides the normal FPE pregnancy.",

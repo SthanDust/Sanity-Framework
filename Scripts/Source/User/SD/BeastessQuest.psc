@@ -35,6 +35,7 @@ Group Global_Vars
   GlobalVariable Property SD_Beastess_Tentacle_Enabled auto
   GlobalVariable Property SD_Beastess_Tentacle_Attack_Wait auto 
   GlobalVariable Property SD_Beastess_Tentacle_Sex_Duration auto
+  GlobalVariable Property SD_Beastess_Tentacle_Spawn_Type auto 
   Actor Property PlayerRef auto
   Race Property HumanRace auto
   Potion Property SD_SplinterPotionGabryal auto 
@@ -111,9 +112,7 @@ Event Actor.OnPlayerLoadGame(Actor akSender)
 EndEvent
 
 Event Actor.OnLocationChange(Actor akSender, Location akOldLoc, Location akNewLoc)
-  If (akSender == PlayerRef && akNewLoc.HasKeyword(LocSetWaterfront))
-    
-  EndIf
+
 EndEvent
 
 Event OnTimer(int aiTimerID)
@@ -167,9 +166,9 @@ Event OnTimerGameTime(int aiTimerID)
 EndEvent
 
 Function OnTick()
-  ;SDF.DNotify("InCombat: " + PlayerRef.IsInCombat() + " InScene: " + PlayerRef.IsInScene() + " HavingSex: " + havingSex + " IsGhost: " + PlayerRef.IsGhost() + " ActorBusy: " + PlayerRef.HasKeyword(AAF_API.AAF_ActorBusy) + " AIEnabled: " + PlayerRef.IsAIEnabled())
+  SDF.DNotify("InCombat: " + PlayerRef.IsInCombat() + " InScene: " + PlayerRef.IsInScene() + " HavingSex: " + havingSex + " IsGhost: " + PlayerRef.IsGhost() + " ActorBusy: " + PlayerRef.HasKeyword(AAF_API.AAF_ActorBusy))
   if !PlayerRef.IsInCombat() && !PlayerRef.IsInScene() && !havingSex && !PlayerRef.IsGhost() && !PlayerRef.HasKeyword(AAF_API.AAF_ActorBusy) 
-    ;SDF.DNotify("Doing Ambush")
+    SDF.DNotify("Doing Ambush")
     DoTentacleAmbush()
   EndIf
   StartTimerGameTime(1, tickTimerID)
@@ -533,7 +532,14 @@ EndFunction
 
 Actor Function SpawnTentacle(float maxDistance)
   
-  int rnd = Utility.RandomInt(0, 3)
+  int rnd
+
+  If (SD_Beastess_Tentacle_Spawn_Type.GetValueInt() == 0)
+    rnd = Utility.RandomInt(0, 3)
+  Else
+    rnd = SD_Beastess_Tentacle_Spawn_Type.GetValueInt() - 1
+  EndIf
+  
   ActorBase akTentacle = SD_Tentacles[rnd]
   
   float fAngle
@@ -550,7 +556,6 @@ Actor Function SpawnTentacle(float maxDistance)
   If newTent.GetRace() != SD_TentacleRace
     newTent.SetRace(SD_TentacleRace)
   EndIf
-  ;newTent.AddKeyword(AT_Tentacle)
   float[] pos = newTent.GetSafePosition(dist, dist)
   newTent.SetPosition(Game.GetPlayer().GetPositionX() + (dist * fSin),Game.GetPlayer().GetPositionY() + (dist * fCos), pos[2])
   TentacleSound.Play(newTent)
