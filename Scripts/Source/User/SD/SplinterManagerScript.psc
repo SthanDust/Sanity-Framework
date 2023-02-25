@@ -48,6 +48,7 @@ Function CheckSplinters(Perk akPerk)
 EndFunction
 
 Function CheckFactions()
+    SDF.DNotify("Checking Factions")
     int index = 0
     While (index < SD_PlayerFactions.Length)
         Faction item = SD_PlayerFactions[index]

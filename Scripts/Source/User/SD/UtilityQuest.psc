@@ -11,7 +11,6 @@ Group Sex_Attributes
     GlobalVariable property SD_FPA_WearVagi auto
     GlobalVariable property SD_FPA_WearAnal auto
     GlobalVariable property SD_FPA_WearBottom auto
-    GlobalVariable property SD_FPA_BellyMorphPower auto
     GlobalVariable property SD_FPA_Willpower auto
     GlobalVariable property SD_FPA_SelfEsteem auto
     GlobalVariable property SD_FPA_Spirit auto
@@ -47,6 +46,9 @@ Event OnQuestInit()
     AddChems()
 EndEvent
 
+Event Actor.OnPlayerLoadGame(Actor akSender)
+    StartTimer(1, 1)
+EndEvent 
 
 Event OnTimer(int aiTimerID)
     If (aiTimerID == 1)
@@ -54,6 +56,7 @@ Event OnTimer(int aiTimerID)
         AddChems()
         Quest Main = Game.GetFormFromFile(0x0001F59A, "SD_MainFramework.esp") as quest
         SDF = Main as SD:SanityFrameworkQuestScript
+        RegisterForRemoteEvent(PlayerRef, "OnPlayerLoadGame")
     EndIf
 EndEvent
 
@@ -91,6 +94,7 @@ EndFunction
 
 Function AddChems()
     If !ChemsAdded
+        SDF.DNotify("Adding Chems")
         LL_Chems_Any.AddForm(SD_SmileXMed, 1, 2)
         LL_Chems_Any.AddForm(SD_MedX, 1, 1)
         ChemsAdded = true

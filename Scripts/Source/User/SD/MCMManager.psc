@@ -40,6 +40,8 @@ import SD:SanityFrameworkQuestScript
 
 SD:SanityFrameworkQuestScript SDF
 SD:BeastessQuest Beast
+SD:UtilityQuest UQuest
+SD:SplinterManagerScript Splint
 
 Event OnInit()
     StartTimer(1, 1)
@@ -57,9 +59,11 @@ Event OnTimer(int aiTimerID)
         Quest BST = Game.GetFormFromFile(0x00027F62, "SD_MainFramework.esp") as Quest
         SD_Internal_MCMLoaded.SetValue(0.0)
         Beast = BST as SD:BeastessQuest
+        UQuest = Game.GetFormFromFile(0x0000E580, "SD_MainFramework.esp") as SD:UtilityQuest
+        Splint = Game.GetFormFromFile(0x0000E518, "SD_MainFramework.esp") as SD:SplinterManagerScript
         if (CheckForMCM())
             RegisterForMenuOpenCloseEvent("PauseMenu")
-            ;CheckVersion()
+            CheckVersion()
             CheckIntegrations()
             RegisterForRemoteEvent(PlayerRef, "OnPlayerLoadGame")
             RegisterForExternalEvent("OnMCMSettingChange|"+thisMod, "OnMCMSettingChange")
@@ -71,22 +75,27 @@ EndEvent
 
 Function CheckVersion()
     float current = SD_FVersion.GetValue()    
-    float newVersion = 2002.0
+    float newVersion = 2003.0
 
     if  (current != newVersion)
 
-        SDF.Stop()
-        Utility.Wait(3)
-        SDF.Start()
+        ; SDF.Stop()
+        ; Utility.Wait(3)
+        ; SDF.Start()
         Beast.Stop()
-        Utility.Wait(2)
+        Utility.Wait(1)
         Beast.Start()
+        UQuest.Stop()
+        Utility.Wait(1)
+        UQuest.Start()
+        Splint.Stop()
+        Utility.Wait(1)
+        Splint.Start()
+
         SDF.DNotify("MCM: Update Complete to version " + newVersion)
         SD_FVersion.SetValue(newVersion)
         MCM.SetModSettingFloat(thisMod, "fVersion", newVersion)
 
-    Else
-        SDF.DNotify("MCM: Update not Needed for v" + current)
     EndIf
 
 EndFunction
