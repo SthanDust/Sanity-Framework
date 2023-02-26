@@ -165,6 +165,19 @@
                     }
                 },
                 {
+                    "id": "fTentacleSpawnCount:Beastess",
+                    "text": "Max Number of Tentacles",
+                    "help": "How many tentacles should be spawned. It will randomly spawn between 1 and this number",
+                    "type": "slider",
+                    "valueOptions": {
+                        "min": 1,
+                        "max": 5,
+                        "step": 1,
+                        "sourceType": "GlobalValue",
+                        "sourceForm": "SD_MainFramework.esp|1B33E"
+                    }
+                },
+                {
                     "id": "fTentaclePregnancyChance:Beastess",
                     "text": "Tentacle Pregnancy Chance",
                     "help": "If the player is raped by tentacles during a random encounter, what are the chances the tentacles will have stolen DNA to impregnate.  This overrides the normal FPE pregnancy.",

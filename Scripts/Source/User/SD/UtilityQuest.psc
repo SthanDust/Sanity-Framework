@@ -41,7 +41,7 @@ AAF:AAF_API AAF_API
 SD:SanityFrameworkQuestScript SDF
 
 bool ChemsAdded = false
-Event OnQuestInit()
+Event OnInit()
     StartTimer(2, 1)
     AddChems()
 EndEvent

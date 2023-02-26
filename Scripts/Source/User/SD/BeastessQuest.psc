@@ -8,34 +8,35 @@ import BodyGen
 
 
 Group Global_Vars
-  GlobalVariable Property SD_Beastess_Canine        auto
-  GlobalVariable Property SD_Beastess_Reptile       auto
-  GlobalVariable Property SD_Beastess_Human         auto
-  GlobalVariable Property SD_Beastess_Necro         auto
-  GlobalVariable Property SD_Beastess_Insect        auto
-  GlobalVariable Property SD_Beastess_Mollusk       auto 
-  GlobalVariable Property SD_Beastess_Mutant        auto
-  GlobalVariable Property SD_Beastess_Alien         auto
-  GlobalVariable Property SD_Beastess_Tentacle      auto
-  GlobalVariable Property SD_Beastess_Canine_Preg   auto
-  GlobalVariable Property SD_Beastess_Reptile_Preg  auto
-  GlobalVariable Property SD_Beastess_Human_Preg    auto
-  GlobalVariable Property SD_Beastess_Necro_Preg    auto
-  GlobalVariable Property SD_Beastess_Insect_Preg   auto
-  GlobalVariable Property SD_Beastess_Mollusk_Preg  auto 
-  GlobalVariable Property SD_Beastess_Mutant_Preg   auto
-  GlobalVariable Property SD_Beastess_Alien_Preg           auto
-  GlobalVariable Property SD_Beastess_Tentacle_Preg        auto
-  GlobalVariable Property SD_Setting_Integrate_Tent        auto 
-  GlobalVariable Property SD_Setting_Integrate_FPE         auto
-  GlobalVariable Property SD_Setting_Integrate_WLD         auto
-  GlobalVariable Property SD_Beastess_DarkGift_Chance      auto 
-  GlobalVariable Property SD_Beastess_Tentacle_Preg_Chance auto
-  GlobalVariable Property SD_Beastess_Tentacle_Attack_Chance auto
-  GlobalVariable Property SD_Beastess_Tentacle_Enabled auto
-  GlobalVariable Property SD_Beastess_Tentacle_Attack_Wait auto 
-  GlobalVariable Property SD_Beastess_Tentacle_Sex_Duration auto
-  GlobalVariable Property SD_Beastess_Tentacle_Spawn_Type auto 
+  GlobalVariable Property SD_Beastess_Canine                  auto
+  GlobalVariable Property SD_Beastess_Reptile                 auto
+  GlobalVariable Property SD_Beastess_Human                   auto
+  GlobalVariable Property SD_Beastess_Necro                   auto
+  GlobalVariable Property SD_Beastess_Insect                  auto
+  GlobalVariable Property SD_Beastess_Mollusk                 auto 
+  GlobalVariable Property SD_Beastess_Mutant                  auto
+  GlobalVariable Property SD_Beastess_Alien                   auto
+  GlobalVariable Property SD_Beastess_Tentacle                auto
+  GlobalVariable Property SD_Beastess_Canine_Preg             auto
+  GlobalVariable Property SD_Beastess_Reptile_Preg            auto
+  GlobalVariable Property SD_Beastess_Human_Preg              auto
+  GlobalVariable Property SD_Beastess_Necro_Preg              auto
+  GlobalVariable Property SD_Beastess_Insect_Preg             auto
+  GlobalVariable Property SD_Beastess_Mollusk_Preg            auto 
+  GlobalVariable Property SD_Beastess_Mutant_Preg             auto
+  GlobalVariable Property SD_Beastess_Alien_Preg              auto
+  GlobalVariable Property SD_Beastess_Tentacle_Preg           auto
+  GlobalVariable Property SD_Setting_Integrate_Tent           auto 
+  GlobalVariable Property SD_Setting_Integrate_FPE            auto
+  GlobalVariable Property SD_Setting_Integrate_WLD            auto
+  GlobalVariable Property SD_Beastess_DarkGift_Chance         auto 
+  GlobalVariable Property SD_Beastess_Tentacle_Preg_Chance    auto
+  GlobalVariable Property SD_Beastess_Tentacle_Attack_Chance  auto
+  GlobalVariable Property SD_Beastess_Tentacle_Enabled        auto
+  GlobalVariable Property SD_Beastess_Tentacle_Attack_Wait    auto 
+  GlobalVariable Property SD_Beastess_Tentacle_Sex_Duration   auto
+  GlobalVariable Property SD_Beastess_Tentacle_Spawn_Type     auto 
+  GlobalVariable Property SD_Beastess_Tentacle_Spawn_Count    auto 
   Actor Property PlayerRef auto
   Race Property HumanRace auto
   Potion Property SD_SplinterPotionGabryal auto 
@@ -448,7 +449,7 @@ EndFunction
 Function TentacleAmbush(float Distance = 233.0)
   float maxDistance = Distance
   
-  int numTentacles = Utility.RandomInt(1,5)
+  int numTentacles = Utility.RandomInt(1, SD_Beastess_Tentacle_Spawn_Count.GetValueInt())
   Actor[] akActors = new Actor[numTentacles]
   int i = 0
   while i < numTentacles
@@ -465,6 +466,7 @@ Function TentacleAmbush(float Distance = 233.0)
   AAF:AAF_API:SceneSettings sexScene = AAF_API.GetSceneSettings()
   sexScene.meta = "SD_TentacleAmbush"
   sexScene.duration = SD_Beastess_Tentacle_Sex_Duration.GetValueInt()
+  
   int k = Utility.RandomInt(0, SP_TentacleAttackMessages.Length - 1)
   Debug.MessageBox("<font face='$HandwrittenFont' size='20'>" + SP_TentacleAttackMessages[k] + "</font> \n \n") 
   SDF.PlaySexAnimation(akActors, sexScene)

@@ -9,7 +9,7 @@ Group Perks
     Perk Property SD_SplinterJack auto 
     Perk Property SD_SplinterYou auto 
     Perk Property SD_SplinterGabryal auto 
-    Perk[] property SD_Splinters auto 
+    Perk[] property SD_SplintersPerks auto 
 EndGroup
 
 Group Player_Variables
@@ -22,8 +22,20 @@ Group Player_Variables
     Faction Property SD_OliviaFaction auto 
     Faction Property SD_AlexFaction auto
     Faction Property SD_JackFaction auto
-    Faction[] Property SD_PlayerFactions auto 
+    Faction[] Property SD_SplinterFactions auto 
 EndGroup
+
+Group Splinter_Potions
+    Potion Property SD_SplinterPotionBeast auto 
+    Potion Property SD_SplinterPotionGabryal auto 
+    Potion Property SD_SplinterPotionOne auto 
+    Potion Property SD_SplinterPotionAlex auto 
+    Potion Property SD_SplinterPotionOlivia auto 
+    Potion Property SD_SplinterPotionJack auto 
+    Potion Property SD_SplinterPotionSthan auto 
+    Potion Property SD_SplinterPotionYou auto 
+    Potion[] Property SD_SplinterPotions auto 
+EndGroup 
 
 SD:SanityFrameworkQuestScript SDF 
 
@@ -40,18 +52,16 @@ Event OnTimer(int aiTimerID)
       Quest Main = Game.GetFormFromFile(0x0001F59A, "SD_MainFramework.esp") as quest
       SDF = Main as SD:SanityFrameworkQuestScript
       RegisterForRemoteEvent(PlayerRef, "OnPlayerLoadGame")
+      RegisterForRemoteEvent(PlayerRef, "OnCombatStateChanged")
       CheckFactions()
     EndIf
 EndEvent
 
-Function CheckSplinters(Perk akPerk)
-EndFunction
 
 Function CheckFactions()
-    SDF.DNotify("Checking Factions")
     int index = 0
-    While (index < SD_PlayerFactions.Length)
-        Faction item = SD_PlayerFactions[index]
+    While (index < SD_SplinterFactions.Length)
+        Faction item = SD_SplinterFactions[index]
         If !PlayerRef.IsInFaction(item)
             PlayerRef.AddToFaction(item)
         EndIf

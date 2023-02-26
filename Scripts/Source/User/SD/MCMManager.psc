@@ -75,7 +75,7 @@ EndEvent
 
 Function CheckVersion()
     float current = SD_FVersion.GetValue()    
-    float newVersion = 2003.0
+    float newVersion = 2005.0
 
     if  (current != newVersion)
 
@@ -139,7 +139,7 @@ EndFunction
 function ResetMod()
     SDF.DNotify("Resetting the framework... Please wait")
     SD_Internal_FirstLoad.SetValue(1.0)
-    ;SD_FVersion.SetValue(0.0)
+    SD_FVersion.SetValue(0.0)
     
     SDF.Stop()
     SDF.Reset()
