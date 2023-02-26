@@ -41,6 +41,7 @@ Group Global_Vars
   Race Property HumanRace auto
   Potion Property SD_SplinterPotionGabryal auto 
   Potion Property SD_Skokushu auto 
+  Book Property SD_TentaclesWeSeeYou auto 
 EndGroup
 
 Group Pregnancy
@@ -65,7 +66,7 @@ Group Tentacles
   Keyword Property SD_NoPregKeyword auto 
   Float Property LastTentacleTime auto 
   Keyword property LocSetWaterfront auto
-  
+  Faction Property SD_TentacleFaction auto 
   string[] Property SP_TentacleAttackMessages auto 
   string[] Property SP_TentacleLeaveMessages auto 
   Potion Property SD_SlimePotion auto 
@@ -93,15 +94,16 @@ CustomEvent                   OnBeastess
 
 float hour = 0.04200
 
-Potion  Cumflation_Low
-Potion  Cumflation_High
-Potion  Cumflation_Med
+Spell  Cumflation_Low
+Spell  Cumflation_High
+Spell  Cumflation_Med
 Perk    Cumflated
  
 int   tickTimerID = 1
 int   dayTimerID = 2
 int   sexTimerID = 69
-bool  havingSex = false 
+bool  havingSex = false
+bool playerTeleport = false 
 
 
 Event OnInit()
@@ -116,6 +118,8 @@ Event Actor.OnLocationChange(Actor akSender, Location akOldLoc, Location akNewLo
 
 EndEvent
 
+
+
 Event OnTimer(int aiTimerID)
     if(aiTimerID == 0)
       LoadFPE()
@@ -126,6 +130,7 @@ Event OnTimer(int aiTimerID)
       SDF = Main as SD:SanityFrameworkQuestScript
       RegisterForRemoteEvent(PlayerRef, "OnPlayerLoadGame")
       RegisterForRemoteEvent(PlayerRef, "OnLocationChange")
+      RegisterForPlayerTeleport()
       StartTimerGameTime(1, tickTimerID)
       StartTimerGameTime(24, dayTimerID)
       RegisterForCustomEvent(AAF_API, "OnAnimationStop")
@@ -167,10 +172,13 @@ Event OnTimerGameTime(int aiTimerID)
 EndEvent
 
 Function OnTick()
-  ;SDF.DNotify("InCombat: " + PlayerRef.IsInCombat() + " InScene: " + PlayerRef.IsInScene() + " HavingSex: " + havingSex + " IsGhost: " + PlayerRef.IsGhost() + " ActorBusy: " + PlayerRef.HasKeyword(AAF_API.AAF_ActorBusy))
-  if !PlayerRef.IsInCombat() && !PlayerRef.IsInScene() && !havingSex && !PlayerRef.IsGhost() && !PlayerRef.HasKeyword(AAF_API.AAF_ActorBusy) 
-    ;SDF.DNotify("Doing Ambush")
+  
+  if !PlayerRef.IsInCombat() && !PlayerRef.IsInScene() && !havingSex && !PlayerRef.IsGhost() && !PlayerRef.HasKeyword(AAF_API.AAF_ActorBusy) && !playerTeleport
+    
     DoTentacleAmbush()
+  ElseIf playerTeleport
+    
+    playerTeleport = false
   EndIf
   StartTimerGameTime(1, tickTimerID)
 EndFunction
@@ -312,9 +320,9 @@ Function LoadFPE()
       Pregnancy = Game.GetFormFromFile(0x00000FA8, "FP_FamilyPlanningEnhanced.esp") as Faction 
       FPE = Game.GetFormFromFile(0x00000F99, "FP_FamilyPlanningEnhanced.esp") as FPFP_Player_Script
       BPD = FPE.GetPregnancyInfo(PlayerRef)
-      Cumflation_High = Game.GetFormFromFile(0x0000C128, "FP_FamilyPlanningEnhanced.esp") as Potion
-      Cumflation_Low = Game.GetFormFromFile(0x0000C12C, "FP_FamilyPlanningEnhanced.esp") as Potion
-      Cumflation_Med = Game.GetFormFromFile(0x0000C12D, "FP_FamilyPlanningEnhanced.esp") as Potion
+      Cumflation_Low = Game.GetFormFromFile(0x0000125B3, "FP_FamilyPlanningEnhanced.esp") as Spell
+      Cumflation_Med = Game.GetFormFromFile(0x000125B4, "FP_FamilyPlanningEnhanced.esp") as Spell
+      Cumflation_High = Game.GetFormFromFile(0x000125B5, "FP_FamilyPlanningEnhanced.esp") as Spell
       Cumflated = Game.GetFormFromFile(0x0000C223, "FP_FamilyPlanningEnhanced.esp") as Perk
       RegisterForCustomEvent(FPE, "FPFP_GetPregnant")
       RegisterForCustomEvent(FPE, "FPFP_GiveBirth")
@@ -480,10 +488,10 @@ EndFunction
 Function TryTentaclePreg(Actor akActor)
   
   float temp = Utility.RandomFloat()
-
+  PlayerRef.RemoveKeyword(SD_NoPregKeyword)
   If !IsPregnant() 
     Game.FadeOutGame(true, true, 0, 2, true)
-    PlayerRef.RemoveKeyword(SD_NoPregKeyword)
+    
     ImpregnateRace(akActor)
     akActor.SetPosition(Game.GetPlayer().GetPositionX(),Game.GetPlayer().GetPositionY(), 500.0)
     Race tempRace = GetRandomRace()
@@ -559,12 +567,16 @@ Actor Function SpawnTentacle(float maxDistance)
     newTent.SetRace(SD_TentacleRace)
   EndIf
   float[] pos = newTent.GetSafePosition(dist, dist)
-  newTent.SetPosition(Game.GetPlayer().GetPositionX() + (dist * fSin),Game.GetPlayer().GetPositionY() + (dist * fCos), pos[2])
+  newTent.SetPosition(Game.GetPlayer().GetPositionX() + (dist * fSin),Game.GetPlayer().GetPositionY() + (dist * fCos), Game.GetPlayer().GetPositionZ())
   TentacleSound.Play(newTent)
   return newTent
 EndFunction
 
 Function DoTentacleAmbush()
+  If PlayerRef.IsInInterior()
+    
+    return
+  EndIf
   int rnd = Utility.RandomInt()
   If ((SD_Beastess_Tentacle_Enabled.Value == 1) && (rnd < SD_Beastess_Tentacle_Attack_Chance.GetValueInt() ))
     float time = Utility.GetCurrentGameTime() - LastTentacleTime
@@ -577,13 +589,17 @@ ENdFunction
 
 Function DoPostAmbush(int numAttackers)
   
-    
+    PlayerRef.RemoveKeyword(SD_NoPregKeyword)
     int m = Utility.RandomInt(0, SP_TentacleLeaveMessages.Length - 1)
     Debug.Notification(SP_TentacleLeaveMessages[m])
     If (Utility.RandomInt() <= SD_Beastess_DarkGift_Chance.GetValueInt())
       PlayerRef.AddItem(SD_Skokushu, 1, false)
       Debug.Notification("You have received a gift from the depths...")
     EndIf
+    If !PlayerRef.IsInFaction(SD_TentacleFaction)
+      PlayerRef.AddItem(SD_TentaclesWeSeeYou, 1, false)
+      
+    EndIf 
     If numAttackers == 1
       SDF.ModifySanity(PlayerRef, -1.0)
     ElseIf numAttackers > 1 && numAttackers <=3
@@ -591,8 +607,13 @@ Function DoPostAmbush(int numAttackers)
     Else 
       SDF.ModifySanity(PlayerRef, -5.0)
     EndIf
-    If !PlayerRef.HasPerk(Cumflated)
-      PlayerRef.EquipItem(Cumflation_Low, false, true)
+    If SD_Setting_Integrate_FPE.GetValueInt() == 1
+      If !PlayerRef.HasPerk(Cumflated) 
+      
+        PlayerRef.AddSpell(Cumflation_Low, false)
+        Utility.WAit(1)
+        PlayerRef.RemoveSpell(Cumflation_Low)
+      EndIf
     EndIf
     PlayerRef.EquipItem(SD_SlimePotion, false, true)
     
@@ -639,3 +660,10 @@ Event AAF:AAF_API.OnAnimationStop(AAF:AAF_API akSender, Var[] akArgs)
   EndIf
 EndEvent
 
+Event OnPlayerTeleport()
+  playerTeleport = true 
+endEvent
+
+Function FPEDebug()
+  PlayerRef.RemoveKeyword(SD_NoPregKeyword)
+EndFunction

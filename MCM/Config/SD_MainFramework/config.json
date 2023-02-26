@@ -345,6 +345,16 @@
                         "form": "SD_MainFramework.esp|27F62",
                         "function": "ShowBodyGen"
                     }
+                },
+                {
+                    "text": "Fix FPE Incompatibility",
+                    "type": "button",
+                    "help": "This fixes various bugs related to pregnancy in FPE and my mod.",
+                    "action": {
+                        "type": "CallFunction",
+                        "form": "SD_MainFramework.esp|27F62",
+                        "function": "FPEDebug"
+                    }
                 }
             ]
         },
