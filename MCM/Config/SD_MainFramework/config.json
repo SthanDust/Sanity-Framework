@@ -123,6 +123,21 @@
                     }
                 },
                 {
+                    "text": "Beasts",
+                    "align": "left",
+                    "type": "section"
+                },
+                {
+                    "text": "Call a Wolf",
+                    "type": "button",
+                    "help": "Calls a nearby wolf to do your bidding.",
+                    "action": {
+                        "type": "CallFunction",
+                        "form": "SD_MainFramework.esp|27F62",
+                        "function": "FindWolf"
+                    }
+                },
+                {
                     "text": "Tentacles",
                     "align": "left",
                     "type": "section"
