@@ -641,16 +641,16 @@ Event AAF:AAF_API.OnSceneEnd(AAF:AAF_API akSender, Var[] akArgs)
   string meta = akArgs[4] as string
   string[] metatag = LL_FourPlay.StringSplit(theString = meta, delimiter = ",")
   havingSex = false
-  
+  actors.Remove(idx)
   If (metaTag.Find("SD_TentacleAmbush") > -1)
-    actors.Remove(idx)
+    
     
     int i = 0
     int aLength = actors.length
     
     while i < aLength
         
-      CheckRace(actors[i])
+      
       
       int t = Utility.RandomInt()
       If i == 0 && t < SD_Beastess_Tentacle_Preg_Chance.GetValueInt() && SD_Setting_Integrate_FPE.GetValueInt() == 1
@@ -665,17 +665,23 @@ Event AAF:AAF_API.OnSceneEnd(AAF:AAF_API akSender, Var[] akArgs)
     LastTentacleTime = Utility.GetCurrentGameTime()
   EndIf
 
-  If metatag.Find("SD_WolfCall") > -1
-        actors.Remove(idx)
+    If metatag.Find("SD_WolfCall") > -1   
         
-        SDF.DNotify("Wolf Scene has Ended")
-        SummonedWolf.FollowerSetDistanceFar()
-        Summonedwolf.SetCompanion(false, false)
-        Summonedwolf.MoveToMyEditorLocation()
-        Summonedwolf.EvaluatePackage()
-        Debug.Notification("The wolf has pleased you and returned home...")
+        if (actors[0].IsInFaction(DLC03_WolfFaction))
+          Game.FadeOutGame(true, true, 0, 2, false)
+          SummonedWolf = actors[0]
+          Summonedwolf.MoveToMyEditorLocation()
+          SummonedWolf = None
+          
+          Utility.Wait(1.0)
+          Debug.Notification("The wolf has pleased you and returned home...")
+        EndIf
 
      EndIf
+     int ic = 0
+     While (ic < actors.Length)
+      CheckRace(actors[ic])
+     EndWhile
 
 EndEvent
 
@@ -689,10 +695,8 @@ EndFunction
 
 Function FindWolf()
     ObjectReference[] wolves = Game.GetPlayer().FindAllReferencesWithKeyword(ActorTypeDog, 3000.0)
-  
-
     int index = 0
-    SDF.DNotify("Length: " + wolves.Length)
+    
     If wolves.Length != 0
         While (index < wolves.Length)
             SummonedWolf = wolves[index] as Actor
@@ -713,19 +717,14 @@ Function CallWolf(bool sexTime)
     if (sexTime)
       havingSex = true
      
-     
-     SummonedWolf.SetCompanion()
-     SummonedWolf.FollowerSetDistanceNear()
-     SummonedWolf.EvaluatePackage()
-      Utility.Wait(2.0)
-      
+      Game.FadeOutGame(true, true, 0, 2, false)
       Actor[] akActors = new Actor[0]
       akActors.Add(PlayerRef)
       akActors.Add(SummonedWolf)
       
       AAF:AAF_API:SceneSettings sexScene = AAF_API.GetSceneSettings()
       sexScene.meta = "SD_WolfCall"
-      sexScene.duration = 60
+      sexScene.duration = 34
       sexScene.skipWalk = true
       SDF.PlaySexAnimation(akActors, sexScene)
     EndIf
