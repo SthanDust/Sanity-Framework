@@ -681,6 +681,7 @@ Event AAF:AAF_API.OnSceneEnd(AAF:AAF_API akSender, Var[] akArgs)
      int ic = 0
      While (ic < actors.Length)
       CheckRace(actors[ic])
+      ic = ic + 1
      EndWhile
 
 EndEvent
@@ -702,7 +703,7 @@ Function FindWolf()
             SummonedWolf = wolves[index] as Actor
             If (SummonedWolf.IsInFaction(DLC03_WolfFaction))
                 CallWolf(true)
-                return
+                return 
             EndIf
             index += 1
         EndWhile
@@ -718,14 +719,16 @@ Function CallWolf(bool sexTime)
       havingSex = true
      
       Game.FadeOutGame(true, true, 0, 2, false)
+      SummonedWolf.MoveTo(PlayerRef, 5.0,5.0)
       Actor[] akActors = new Actor[0]
       akActors.Add(PlayerRef)
       akActors.Add(SummonedWolf)
       
+
+
       AAF:AAF_API:SceneSettings sexScene = AAF_API.GetSceneSettings()
       sexScene.meta = "SD_WolfCall"
       sexScene.duration = 34
-      sexScene.skipWalk = true
       SDF.PlaySexAnimation(akActors, sexScene)
     EndIf
 EndFunction

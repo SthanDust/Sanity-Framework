@@ -75,7 +75,7 @@ EndEvent
 
 Function CheckVersion()
     float current = SD_FVersion.GetValue()    
-    float newVersion = 2006.0
+    float newVersion = 2008.0
 
     if  (current != newVersion)
 

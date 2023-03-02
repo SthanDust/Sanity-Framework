@@ -7,34 +7,34 @@ import Debug
 import BodyGen
 
 Group Sex_Attributes
-    GlobalVariable property SD_FPA_WearOral auto
-    GlobalVariable property SD_FPA_WearVagi auto
-    GlobalVariable property SD_FPA_WearAnal auto
-    GlobalVariable property SD_FPA_WearBottom auto
-    GlobalVariable property SD_FPA_Willpower auto
-    GlobalVariable property SD_FPA_SelfEsteem auto
-    GlobalVariable property SD_FPA_Spirit auto
-    GlobalVariable property SD_FPA_Orientation auto
-    GlobalVariable property SD_FPA_SexAddiction auto
-    GlobalVariable property SD_FPA_SexReputation auto
-    GlobalVariable property SD_FPA_Trauma auto
-    GlobalVariable property SD_FPA_Intox auto
-    GlobalVariable property SD_FPA_Arousal auto
-    GlobalVariable property SD_FPA_DrugLevel auto
-    GlobalVariable property SD_FPA_IsPlayerAddictedToSex auto
-    GlobalVariable property SD_Setting_Integrate_FPA auto
-    Actor Property PlayerRef auto
+    GlobalVariable      property SD_FPA_WearOral                auto
+    GlobalVariable      property SD_FPA_WearVagi                auto
+    GlobalVariable      property SD_FPA_WearAnal                auto
+    GlobalVariable      property SD_FPA_WearBottom              auto
+    GlobalVariable      property SD_FPA_Willpower               auto
+    GlobalVariable      property SD_FPA_SelfEsteem              auto
+    GlobalVariable      property SD_FPA_Spirit                  auto
+    GlobalVariable      property SD_FPA_Orientation             auto
+    GlobalVariable      property SD_FPA_SexAddiction            auto
+    GlobalVariable      property SD_FPA_SexReputation           auto
+    GlobalVariable      property SD_FPA_Trauma                  auto
+    GlobalVariable      property SD_FPA_Intox                   auto
+    GlobalVariable      property SD_FPA_Arousal                 auto
+    GlobalVariable      property SD_FPA_DrugLevel               auto
+    GlobalVariable      property SD_FPA_IsPlayerAddictedToSex   auto
+    GlobalVariable      property SD_Setting_Integrate_FPA       auto
+    Actor               Property PlayerRef                      auto
 EndGroup
 
 Group ImageSpace_Modifiers
-    ImageSpaceModifier Property SD_MigraineScreenEffect auto
-    ImageSpaceModifier Property SD_BlurScreenEffect auto
+    ImageSpaceModifier  Property SD_MigraineScreenEffect        auto
+    ImageSpaceModifier  Property SD_BlurScreenEffect            auto
 EndGroup
 
 Group Meds 
-    Potion Property SD_SmileXMed auto 
-    Potion Property SD_MedX auto
-    LeveledItem Property LL_Chems_Any auto
+    Potion              Property SD_SmileXMed                   auto 
+    Potion              Property SD_MedX                        auto
+    LeveledItem         Property LL_Chems_Any                   auto
 EndGroup
 
 AAF:AAF_API AAF_API
@@ -43,7 +43,6 @@ SD:SanityFrameworkQuestScript SDF
 bool ChemsAdded = false
 Event OnInit()
     StartTimer(2, 1)
-    AddChems()
 EndEvent
 
 Event Actor.OnPlayerLoadGame(Actor akSender)
