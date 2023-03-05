@@ -37,6 +37,7 @@ Group Global_Vars
   GlobalVariable Property SD_Beastess_Tentacle_Sex_Duration   auto
   GlobalVariable Property SD_Beastess_Tentacle_Spawn_Type     auto 
   GlobalVariable Property SD_Beastess_Tentacle_Spawn_Count    auto 
+  GlobalVariable Property SD_Beastess_Tentacle_Ignore_Preg    auto
   Actor Property PlayerRef auto
   Race Property HumanRace auto
   Potion Property SD_SplinterPotionGabryal auto 
@@ -78,6 +79,7 @@ Group Tentacles
   Faction Property SD_TentacleFaction auto 
   string[] Property SP_TentacleAttackMessages auto 
   string[] Property SP_TentacleLeaveMessages auto 
+  string[] Property SP_TentacleTeaseMessage auto 
   Potion Property SD_SlimePotion auto 
 
 EndGroup
@@ -111,8 +113,10 @@ Perk    Cumflated
 int   tickTimerID = 1
 int   dayTimerID = 2
 int   sexTimerID = 69
+int   debugTimerID = 13
 bool  havingSex = false
-bool playerTeleport = false 
+bool  playerTeleport = false 
+bool  playerCrafting = false
 
 
 Event OnInit()
@@ -127,7 +131,29 @@ Event Actor.OnLocationChange(Actor akSender, Location akOldLoc, Location akNewLo
 
 EndEvent
 
+Event Actor.OnPlayerUseWorkBench(Actor akSender, ObjectReference akWorkBench)
 
+  If (akSender == PlayerREf)
+    playerCrafting = true
+  EndIf
+
+EndEvent
+
+Event OnMenuOpenCloseEvent(string asMenuName, bool abOpening)
+  If abOpening
+    playerCrafting = true
+  else 
+    playerCrafting = false
+  EndIf
+EndEvent
+
+Event Actor.OnGetUp(Actor akSender, ObjectReference akFurniture)
+
+  If akSender == PlayerRef
+    playerCrafting = false
+  EndIf
+
+EndEvent
 
 Event OnTimer(int aiTimerID)
     if(aiTimerID == 0)
@@ -139,6 +165,10 @@ Event OnTimer(int aiTimerID)
       SDF = Main as SD:SanityFrameworkQuestScript
       RegisterForRemoteEvent(PlayerRef, "OnPlayerLoadGame")
       RegisterForRemoteEvent(PlayerRef, "OnLocationChange")
+      RegisterForRemoteEvent(PlayerRef, "OnPlayerUseWorkbench")
+      RegisterForRemoteEvent(PlayerRef, "OnGetUp")
+      RegisterForMenuOpenCloseEvent("WorkshopMenu")
+      RegisterForMenuOpenCloseEvent("CraftingMenu")
       RegisterForPlayerTeleport()
       StartTimerGameTime(1, tickTimerID)
       StartTimerGameTime(24, dayTimerID)
@@ -147,6 +177,7 @@ Event OnTimer(int aiTimerID)
     if (aiTimerID == sexTimerID)
       OnSex()
     EndIf
+
 EndEvent
 
 Function ResetBeastess()
@@ -176,19 +207,25 @@ Event OnTimerGameTime(int aiTimerID)
   EndIf
   if (aiTimerID == dayTimerID)
     OnDay()
-  EndIF
-  
+  EndIf
 EndEvent
 
+
+
 Function OnTick()
-  
-  if !PlayerRef.IsInCombat() && !PlayerRef.IsInScene() && !havingSex && !PlayerRef.IsGhost() && !PlayerRef.HasKeyword(AAF_API.AAF_ActorBusy) && !playerTeleport
-    
-    DoTentacleAmbush()
-  ElseIf playerTeleport
-    
-    playerTeleport = false
-  EndIf
+  If SD_Beastess_Tentacle_Enabled.GetValueInt() == 1
+    ;SDF.DNotify("InCombat: " + PlayerRef.IsInCombat() + " InScene: " + PlayerRef.IsInScene() + " IsGhost: " + PlayerRef.IsGhost() + " HavingSex: " + havingSex + " HasKeyword: " + PlayerRef.HasKeyword(AAF_API.AAF_ActorBusy) + " Teleported: " + playerTeleport + " Power Armour: " + PlayerRef.IsInPowerArmor() + " Interior: " + PlayerRef.IsInInterior())
+    if !PlayerRef.IsInCombat() && !PlayerRef.IsInScene() && !havingSex && !PlayerRef.IsGhost() && !PlayerRef.HasKeyword(AAF_API.AAF_ActorBusy) && !playerTeleport && !PlayerRef.IsInPowerArmor() && PlayerRef.IsAIEnabled() && !playerCrafting
+      If SD_Beastess_Tentacle_Ignore_Preg.GetValueInt() == 1 && IsPregnant
+        int t = Utility.RandomInt(0, SP_TentacleTeaseMessage.Length - 1)
+        Debug.Notification(SP_TentacleTeaseMessage[t])
+      Else
+        DoTentacleAmbush()
+      EndIf
+    ElseIf playerTeleport
+      playerTeleport = false
+    EndIf
+  EndIF
   StartTimerGameTime(1, tickTimerID)
 EndFunction
 
@@ -336,6 +373,7 @@ Function LoadFPE()
       RegisterForCustomEvent(FPE, "FPFP_GetPregnant")
       RegisterForCustomEvent(FPE, "FPFP_GiveBirth")
       BloodyFanny = BPD.SP_BloodyBirth as Spell 
+      IsPregnant = CheckPregnant()
     endif
 EndFunction
 
@@ -373,7 +411,7 @@ Function LoadTentacles()
   EndIf
 EndFunction
 
-bool Function IsPregnant()
+bool Function CheckPregnant()
     if PlayerRef.IsInFaction(Pregnancy) && (PlayerRef.GetFactionRank(Pregnancy) > -1)
         IsPregnant = true
     Else
@@ -427,7 +465,7 @@ Function ShowBlood()
 EndFunction
 
 Function ShowPregnancy()
-    If IsPregnant()
+    If CheckPregnant()
         string Preggers = "<font face='$ConsoleFont' size='15'>Pregnancy \n \n"
         Preggers += "Father is a " + CurrentFatherRace.GetName() + " \n"
 
@@ -484,9 +522,6 @@ Function TentacleAmbush(float Distance = 233.0)
   AAF:AAF_API:SceneSettings sexScene = AAF_API.GetSceneSettings()
   sexScene.meta = "SD_TentacleAmbush"
   sexScene.duration = SD_Beastess_Tentacle_Sex_Duration.GetValueInt()
-  sexScene.ignoreCombat = true
-  sexScene.skipWalk = true
-  
   int k = Utility.RandomInt(0, SP_TentacleAttackMessages.Length - 1)
   Debug.MessageBox("<font face='$HandwrittenFont' size='20'>" + SP_TentacleAttackMessages[k] + "</font> \n \n") 
   SDF.PlaySexAnimation(akActors, sexScene)
@@ -502,7 +537,7 @@ Function TryTentaclePreg(Actor akActor)
   float temp = Utility.RandomFloat()
   PlayerRef.RemoveKeyword(SD_NoPregKeyword)
   Game.FadeOutGame(true, true, 0, 2, true)
-  If !IsPregnant() 
+  If !CheckPregnant() 
     akActor.SetPosition(Game.GetPlayer().GetPositionX(),Game.GetPlayer().GetPositionY(), 500.0)
     Race tempRace = GetRandomRace()
     akActor.SetRace(tempRace)
@@ -512,12 +547,11 @@ Function TryTentaclePreg(Actor akActor)
       Debug.Notification("You feel you've become impregnated by something dreadful.")
     EndIf
     akActor.SetRace(SD_TentacleRace)
-    RemoveTentacle(akActor)
+  ElseIf CheckPregnant() && BPD.GetCurrentMonth() <= 2
     
-  Else 
      BPD.TrySpermFrom(akActor)
-     RemoveTentacle(akActor)
   EndIf
+  RemoveTentacle(akActor)
   Game.FadeOutGame(false, true, 0, 2, false)
  
 EndFunction
@@ -726,9 +760,9 @@ Function CallWolf(bool sexTime)
       
 
 
-      AAF:AAF_API:SceneSettings sexScene = AAF_API.GetSceneSettings()
-      sexScene.meta = "SD_WolfCall"
-      sexScene.duration = 34
-      SDF.PlaySexAnimation(akActors, sexScene)
+      AAF:AAF_API:SceneSettings sexScene2 = AAF_API.GetSceneSettings()
+      sexScene2.meta = "SD_WolfCall"
+      sexScene2.duration = 34
+      SDF.PlaySexAnimation(akActors, sexScene2)
     EndIf
 EndFunction

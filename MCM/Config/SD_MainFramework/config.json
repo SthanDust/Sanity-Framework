@@ -19,7 +19,7 @@
             "html": true
         },
         {
-            "text": "<font size=\"18\"><p align = \"center\">v 2.0 (Insanity Release)</p></font>",
+            "text": "<font size=\"18\"><p align = \"center\">v 2.09 (Tentacle Release)</p></font>",
             "type": "text",
             "html": true
         },
@@ -42,8 +42,6 @@
             "type": "text",
             "align": "center"
         }
-
-
     ],
     "pages": [
         {
@@ -130,7 +128,7 @@
                 {
                     "text": "Call a Wolf",
                     "type": "button",
-                    "help": "Calls a nearby wolf to do your bidding.",
+                    "help": "Calls a nearby wolf.  (THIS IS EXPERIMENTAL!)",
                     "action": {
                         "type": "CallFunction",
                         "form": "SD_MainFramework.esp|27F62",
@@ -190,6 +188,16 @@
                         "step": 1,
                         "sourceType": "GlobalValue",
                         "sourceForm": "SD_MainFramework.esp|1B33E"
+                    }
+                },
+                {
+                    "id": "fTentacleIgnorePregnancy:Beastess",
+                    "text": "Ignore Pregnancy",
+                    "help": "If the player is pregnant already, via FPE or FPER, it will not attack the player.",
+                    "type": "switcher",
+                    "valueOptions": {
+                        "sourceType": "GlobalValue",
+                        "sourceForm": "SD_MainFramework.esp|30936"
                     }
                 },
                 {

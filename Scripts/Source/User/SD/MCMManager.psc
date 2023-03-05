@@ -75,7 +75,7 @@ EndEvent
 
 Function CheckVersion()
     float current = SD_FVersion.GetValue()    
-    float newVersion = 2008.0
+    float newVersion = 2097.0
 
     if  (current != newVersion)
 
@@ -104,7 +104,7 @@ EndFunction
 
 
 bool Function CheckForMCM(bool FirstLoad = false)
-    SDF.DNotify("Checking MCM...")
+
     If !MCM.IsInstalled()
         If (FirstLoad)
             Utility.Wait(1.0)
