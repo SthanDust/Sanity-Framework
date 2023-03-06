@@ -57,7 +57,7 @@ Keyword Property SD_RandomWeatherThought auto
 Keyword Property SD_RandomGriefThought auto 
 Keyword Property SD_RandomStressThought auto 
 Keyword Property SD_RandomSleepThought auto 
-KeyWord Property SD_SplinterEffect auto 
+Keyword Property SD_SplinterEffect auto 
 
 Perk Property SD_SplinterOne auto
 Perk Property SD_SplinterGabryal auto
@@ -72,7 +72,6 @@ Perk[] Property SD_Mutations auto
 ;It can't rain all the time, can it?  When you're sad, can you tell the difference between rain and shine, buttercup?
 Weather Property RainyWeather Auto
 int messageFrequency = 20
-
 float tickFrequency = 1.0
 int tickTimerID = 34
 int dayTimerID = 24
@@ -151,7 +150,7 @@ Event OnTimer(int aiTimerID)
     RegisterForRemoteEvent(PlayerRef, "OnCombatStateChanged")
     RegisterForRadiationDamageEvent(PlayerRef)
     chaos += tickFrequency
-    StartTimerGameTime(chaos, tickTimerID)
+    StartTimerGameTime(1.0, tickTimerID)
     StartTimerGameTime(24, dayTimerID)
     LoadMessages()
   EndIf
@@ -171,7 +170,10 @@ Event OnTimerGameTime(int aiTimerID)
 EndEvent
 
 function OnDay()
-  SF_Main.DNotify("A day has passed.")
+  SF_Main.DNotify("Another day has passed.")
+  SF_Main.ModifyDepression(PlayerRef, 1.0)
+  SF_Main.ModifyGrief(PlayerRef, 1.0)
+  StartTimerGameTime(24, dayTimerID)
 EndFunction
 
 ;I wasted time, now doth time waste me
@@ -208,7 +210,7 @@ Function OnTick()
   alreadySaid = false
   
   RefreshPlayerEffects(Utility.GetCurrentGameTime())
-  StartTimerGameTime(tickFrequency, tickTimerID)
+  StartTimerGameTime(1.0, tickTimerID)
 EndFunction
 
 Function ManageSplinters()
@@ -287,11 +289,11 @@ EndFunction
 Function HandleFamilyPlanning()
   if (IsPregnant)
    
-    SF_Main.ModifyGrief(PlayerRef, 0.1)
-    SF_Main.ModifySanity(PlayerRef, 0.1)
-    SF_Main.ModifyDepression(PlayerRef, 0.1)
+    SF_Main.ModifyGrief(PlayerRef, 0.01)
+    SF_Main.ModifySanity(PlayerRef, 0.01)
+    SF_Main.ModifyDepression(PlayerRef, 0.01)
     SF_Main.ModifyStress(PlayerRef, -0.05)
-    SF_Main.ModifyTrauma(PlayerRef, 0.1)
+    SF_Main.ModifyTrauma(PlayerRef, 0.01)
   EndIf
 EndFunction
 
@@ -384,8 +386,7 @@ Event OnItemEquipped(Form akBaseObject, ObjectReference akReference)
 EndEvent
 
 Event OnRadiationDamage(ObjectReference akTarget, bool abIngested)
-  IF akTarget == PlayerRef
-    
+  IF akTarget == PlayerRef   
     RegisterForRadiationDamageEvent(PlayerRef)
   EndIF
 EndEvent

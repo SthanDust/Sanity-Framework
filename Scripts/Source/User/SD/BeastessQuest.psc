@@ -8,36 +8,36 @@ import BodyGen
 
 
 Group Global_Vars
-  GlobalVariable Property SD_Beastess_Canine                  auto
-  GlobalVariable Property SD_Beastess_Reptile                 auto
-  GlobalVariable Property SD_Beastess_Human                   auto
-  GlobalVariable Property SD_Beastess_Necro                   auto
-  GlobalVariable Property SD_Beastess_Insect                  auto
-  GlobalVariable Property SD_Beastess_Mollusk                 auto 
-  GlobalVariable Property SD_Beastess_Mutant                  auto
-  GlobalVariable Property SD_Beastess_Alien                   auto
-  GlobalVariable Property SD_Beastess_Tentacle                auto
-  GlobalVariable Property SD_Beastess_Canine_Preg             auto
-  GlobalVariable Property SD_Beastess_Reptile_Preg            auto
-  GlobalVariable Property SD_Beastess_Human_Preg              auto
-  GlobalVariable Property SD_Beastess_Necro_Preg              auto
-  GlobalVariable Property SD_Beastess_Insect_Preg             auto
-  GlobalVariable Property SD_Beastess_Mollusk_Preg            auto 
-  GlobalVariable Property SD_Beastess_Mutant_Preg             auto
-  GlobalVariable Property SD_Beastess_Alien_Preg              auto
-  GlobalVariable Property SD_Beastess_Tentacle_Preg           auto
-  GlobalVariable Property SD_Setting_Integrate_Tent           auto 
-  GlobalVariable Property SD_Setting_Integrate_FPE            auto
-  GlobalVariable Property SD_Setting_Integrate_WLD            auto
-  GlobalVariable Property SD_Beastess_DarkGift_Chance         auto 
-  GlobalVariable Property SD_Beastess_Tentacle_Preg_Chance    auto
-  GlobalVariable Property SD_Beastess_Tentacle_Attack_Chance  auto
-  GlobalVariable Property SD_Beastess_Tentacle_Enabled        auto
-  GlobalVariable Property SD_Beastess_Tentacle_Attack_Wait    auto 
-  GlobalVariable Property SD_Beastess_Tentacle_Sex_Duration   auto
-  GlobalVariable Property SD_Beastess_Tentacle_Spawn_Type     auto 
-  GlobalVariable Property SD_Beastess_Tentacle_Spawn_Count    auto 
-  GlobalVariable Property SD_Beastess_Tentacle_Ignore_Preg    auto
+  GlobalVariable Property SD_Beastess_Canine auto
+  GlobalVariable Property SD_Beastess_Reptile auto
+  GlobalVariable Property SD_Beastess_Human auto
+  GlobalVariable Property SD_Beastess_Necro auto
+  GlobalVariable Property SD_Beastess_Insect auto
+  GlobalVariable Property SD_Beastess_Mollusk auto 
+  GlobalVariable Property SD_Beastess_Mutant auto
+  GlobalVariable Property SD_Beastess_Alien auto
+  GlobalVariable Property SD_Beastess_Tentacle auto
+  GlobalVariable Property SD_Beastess_Canine_Preg auto
+  GlobalVariable Property SD_Beastess_Reptile_Preg auto
+  GlobalVariable Property SD_Beastess_Human_Preg auto
+  GlobalVariable Property SD_Beastess_Necro_Preg auto
+  GlobalVariable Property SD_Beastess_Insect_Preg auto
+  GlobalVariable Property SD_Beastess_Mollusk_Preg auto 
+  GlobalVariable Property SD_Beastess_Mutant_Preg auto
+  GlobalVariable Property SD_Beastess_Alien_Preg auto
+  GlobalVariable Property SD_Beastess_Tentacle_Preg auto
+  GlobalVariable Property SD_Setting_Integrate_Tent auto 
+  GlobalVariable Property SD_Setting_Integrate_FPE auto
+  GlobalVariable Property SD_Setting_Integrate_WLD auto
+  GlobalVariable Property SD_Beastess_DarkGift_Chance auto 
+  GlobalVariable Property SD_Beastess_Tentacle_Preg_Chance auto
+  GlobalVariable Property SD_Beastess_Tentacle_Attack_Chance auto
+  GlobalVariable Property SD_Beastess_Tentacle_Enabled auto
+  GlobalVariable Property SD_Beastess_Tentacle_Attack_Wait auto 
+  GlobalVariable Property SD_Beastess_Tentacle_Sex_Duration auto
+  GlobalVariable Property SD_Beastess_Tentacle_Spawn_Type auto 
+  GlobalVariable Property SD_Beastess_Tentacle_Spawn_Count auto 
+  GlobalVariable Property SD_Beastess_Tentacle_Ignore_Preg auto
   Actor Property PlayerRef auto
   Race Property HumanRace auto
   Potion Property SD_SplinterPotionGabryal auto 
@@ -57,7 +57,7 @@ Group Pregnancy
   Bool Property IsPregnant auto
   Bool property akBirth auto
   Spell Property BloodyFanny auto
- Keyword Property SD_TentacleEffect auto
+  Keyword Property SD_TentacleEffect auto
 EndGroup    
 
 Group Random_Beasts
@@ -81,7 +81,6 @@ Group Tentacles
   string[] Property SP_TentacleLeaveMessages auto 
   string[] Property SP_TentacleTeaseMessage auto 
   Potion Property SD_SlimePotion auto 
-
 EndGroup
 
 Group Beast_Races
@@ -98,17 +97,16 @@ Group Beast_Races
 EndGroup
 
 SD:SanityFrameworkQuestScript SDF
-FPFP_Player_Script            FPE
-FPFP_BasePregData             BPD
-AAF:AAF_API                   AAF_API
-CustomEvent                   OnBeastess
+FPFP_Player_Script FPE
+FPFP_BasePregData BPD
+AAF:AAF_API AAF_API
+
+CustomEvent OnBeastess
 
 float hour = 0.04200
 
-Spell  Cumflation_Low
-Spell  Cumflation_High
-Spell  Cumflation_Med
-Perk    Cumflated
+
+Perk   Cumflated
  
 int   tickTimerID = 1
 int   dayTimerID = 2
@@ -168,12 +166,12 @@ Event OnTimer(int aiTimerID)
       RegisterForRemoteEvent(PlayerRef, "OnPlayerUseWorkbench")
       RegisterForRemoteEvent(PlayerRef, "OnGetUp")
       RegisterForMenuOpenCloseEvent("WorkshopMenu")
-      RegisterForMenuOpenCloseEvent("CraftingMenu")
       RegisterForPlayerTeleport()
       StartTimerGameTime(1, tickTimerID)
       StartTimerGameTime(24, dayTimerID)
       RegisterForCustomEvent(AAF_API, "OnSceneEnd")
     EndIf
+
     if (aiTimerID == sexTimerID)
       OnSex()
     EndIf
@@ -210,12 +208,9 @@ Event OnTimerGameTime(int aiTimerID)
   EndIf
 EndEvent
 
-
-
 Function OnTick()
-  If SD_Beastess_Tentacle_Enabled.GetValueInt() == 1
-    ;SDF.DNotify("InCombat: " + PlayerRef.IsInCombat() + " InScene: " + PlayerRef.IsInScene() + " IsGhost: " + PlayerRef.IsGhost() + " HavingSex: " + havingSex + " HasKeyword: " + PlayerRef.HasKeyword(AAF_API.AAF_ActorBusy) + " Teleported: " + playerTeleport + " Power Armour: " + PlayerRef.IsInPowerArmor() + " Interior: " + PlayerRef.IsInInterior())
-    if !PlayerRef.IsInCombat() && !PlayerRef.IsInScene() && !havingSex && !PlayerRef.IsGhost() && !PlayerRef.HasKeyword(AAF_API.AAF_ActorBusy) && !playerTeleport && !PlayerRef.IsInPowerArmor() && PlayerRef.IsAIEnabled() && !playerCrafting
+  If SD_Beastess_Tentacle_Enabled.GetValueInt() == 1   
+    if !PlayerRef.IsInCombat() && !PlayerRef.IsInScene() && !havingSex && !PlayerRef.IsGhost() && !PlayerRef.HasKeyword(AAF_API.AAF_ActorBusy) && !playerTeleport && !PlayerRef.IsInPowerArmor() && !playerCrafting
       If SD_Beastess_Tentacle_Ignore_Preg.GetValueInt() == 1 && IsPregnant
         int t = Utility.RandomInt(0, SP_TentacleTeaseMessage.Length - 1)
         Debug.Notification(SP_TentacleTeaseMessage[t])
@@ -366,9 +361,6 @@ Function LoadFPE()
       Pregnancy = Game.GetFormFromFile(0x00000FA8, "FP_FamilyPlanningEnhanced.esp") as Faction 
       FPE = Game.GetFormFromFile(0x00000F99, "FP_FamilyPlanningEnhanced.esp") as FPFP_Player_Script
       BPD = FPE.GetPregnancyInfo(PlayerRef)
-      Cumflation_Low = Game.GetFormFromFile(0x0000125B3, "FP_FamilyPlanningEnhanced.esp") as Spell
-      Cumflation_Med = Game.GetFormFromFile(0x000125B4, "FP_FamilyPlanningEnhanced.esp") as Spell
-      Cumflation_High = Game.GetFormFromFile(0x000125B5, "FP_FamilyPlanningEnhanced.esp") as Spell
       Cumflated = Game.GetFormFromFile(0x0000C223, "FP_FamilyPlanningEnhanced.esp") as Perk
       RegisterForCustomEvent(FPE, "FPFP_GetPregnant")
       RegisterForCustomEvent(FPE, "FPFP_GiveBirth")
@@ -380,7 +372,6 @@ EndFunction
 Function LoadWLD()
   if (Game.IsPluginInstalled("INVB_WastelandOffspring.esp"))
     SD_Setting_Integrate_WLD.SetValueInt(1)
-
   EndIf
 EndFunction
 
@@ -476,30 +467,11 @@ Function ShowPregnancy()
     EndIf
 EndFunction
 
-Function ShowBodyGen()
-  string[] pMorphs = BodyGen.GetMorphs(PlayerRef, PlayerRef.GetActorBase().GetSex())
-  int index = 0
-  While (index < pMorphs.Length)
-    string item = pMorphs[index]
-    string mykey
-    Keyword[] keys = BodyGen.GetKeywords(PlayerRef, PlayerRef.GetActorBase().GetSex(), item)
-    int keydex = 0
-    while (keydex < keys.Length)
-      Keyword temp = keys[keydex]
-      mykey += "* " + temp.GetName() + " = " + BodyGen.GetMorph(PlayerRef, PlayerRef.GetActorBase().GetSex(), item, temp) + "* "
-      keydex += 1
-    EndWhile
-    SDF.DNotify("Morph: " + item + " Keywords: " + mykey)
-    index += 1
-  EndWhile
-  
-EndFunction
 
 Function RemoveTentacle(Actor akActor)
   akActor.SetGhost(false)
   akActor.Kill()
-  ;akActor.Disable()
-  ;akActor.Delete()
+
 EndFunction
 
 Function TentacleAmbush(float Distance = 233.0)
@@ -548,7 +520,6 @@ Function TryTentaclePreg(Actor akActor)
     EndIf
     akActor.SetRace(SD_TentacleRace)
   ElseIf CheckPregnant() && BPD.GetCurrentMonth() <= 2
-    
      BPD.TrySpermFrom(akActor)
   EndIf
   RemoveTentacle(akActor)
@@ -558,7 +529,6 @@ EndFunction
 
 Race Function GetRandomRace()
   int ran = Utility.RandomInt(0, 100)
-  SDF.DNotify("Ran: " + ran)
   If (ran <= 13)
     int t = Utility.RandomInt(0, SD_CanineRaces.Length -1)
     return SD_CanineRaces[t]
@@ -662,7 +632,7 @@ EndFunction
 
 
 Event AAF:AAF_API.OnSceneEnd(AAF:AAF_API akSender, Var[] akArgs)
-    Actor[] actors = Utility.VarToVarArray(akArgs[1]) as Actor[]
+  Actor[] actors = Utility.VarToVarArray(akArgs[1]) as Actor[]
 	Int idx = actors.Find(PlayerRef)
 	Actor partnerActor
   int status = akArgs[0] as int
@@ -724,9 +694,7 @@ Event OnPlayerTeleport()
   playerTeleport = true 
 endEvent
 
-Function FPEDebug()
-  PlayerRef.RemoveKeyword(SD_NoPregKeyword)
-EndFunction
+
 
 Function FindWolf()
     ObjectReference[] wolves = Game.GetPlayer().FindAllReferencesWithKeyword(ActorTypeDog, 3000.0)
@@ -757,9 +725,6 @@ Function CallWolf(bool sexTime)
       Actor[] akActors = new Actor[0]
       akActors.Add(PlayerRef)
       akActors.Add(SummonedWolf)
-      
-
-
       AAF:AAF_API:SceneSettings sexScene2 = AAF_API.GetSceneSettings()
       sexScene2.meta = "SD_WolfCall"
       sexScene2.duration = 34

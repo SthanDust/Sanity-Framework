@@ -68,3 +68,15 @@ Function CheckFactions()
         index += 1
     EndWhile
 EndFunction
+
+Function GetPerks()
+    Perk[] perks = new Perk[0]
+    int index = 0
+    While (index < SD_SplintersPerks.Length)
+        perk item = SD_SplintersPerks[index]
+        if PlayerRef.HasPerk(item)
+            perks.add(item)
+        EndIf
+        index += 1
+    EndWhile    
+EndFunction 
