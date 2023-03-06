@@ -81,6 +81,7 @@ Group Tentacles
   string[] Property SP_TentacleLeaveMessages auto 
   string[] Property SP_TentacleTeaseMessage auto 
   Potion Property SD_SlimePotion auto 
+  string[] Property SD_TentacleMilkingPositions auto
 EndGroup
 
 Group Beast_Races
@@ -103,9 +104,8 @@ AAF:AAF_API AAF_API
 
 CustomEvent OnBeastess
 
+
 float hour = 0.04200
-
-
 Perk   Cumflated
  
 int   tickTimerID = 1
@@ -130,11 +130,9 @@ Event Actor.OnLocationChange(Actor akSender, Location akOldLoc, Location akNewLo
 EndEvent
 
 Event Actor.OnPlayerUseWorkBench(Actor akSender, ObjectReference akWorkBench)
-
   If (akSender == PlayerREf)
     playerCrafting = true
   EndIf
-
 EndEvent
 
 Event OnMenuOpenCloseEvent(string asMenuName, bool abOpening)
@@ -146,11 +144,9 @@ Event OnMenuOpenCloseEvent(string asMenuName, bool abOpening)
 EndEvent
 
 Event Actor.OnGetUp(Actor akSender, ObjectReference akFurniture)
-
   If akSender == PlayerRef
     playerCrafting = false
   EndIf
-
 EndEvent
 
 Event OnTimer(int aiTimerID)
@@ -231,7 +227,6 @@ EndFunction
 Function OnSex()
   If havingSex
     AAF_API.ChangePosition(PlayerRef)
-    
   EndIf
 EndFunction
 
@@ -467,11 +462,9 @@ Function ShowPregnancy()
     EndIf
 EndFunction
 
-
 Function RemoveTentacle(Actor akActor)
   akActor.SetGhost(false)
   akActor.Kill()
-
 EndFunction
 
 Function TentacleAmbush(float Distance = 233.0)
@@ -630,7 +623,6 @@ Function DoPostAmbush(int numAttackers)
     PlayerRef.EquipItem(SD_SlimePotion, false, true)
 EndFunction
 
-
 Event AAF:AAF_API.OnSceneEnd(AAF:AAF_API akSender, Var[] akArgs)
   Actor[] actors = Utility.VarToVarArray(akArgs[1]) as Actor[]
 	Int idx = actors.Find(PlayerRef)
@@ -647,15 +639,11 @@ Event AAF:AAF_API.OnSceneEnd(AAF:AAF_API akSender, Var[] akArgs)
   havingSex = false
   actors.Remove(idx)
   If (metaTag.Find("SD_TentacleAmbush") > -1)
-    
-    
+
     int i = 0
     int aLength = actors.length
     
     while i < aLength
-        
-      
-      
       int t = Utility.RandomInt()
       If i == 0 && t < SD_Beastess_Tentacle_Preg_Chance.GetValueInt() && SD_Setting_Integrate_FPE.GetValueInt() == 1
         TryTentaclePreg(actors[i])
@@ -669,32 +657,30 @@ Event AAF:AAF_API.OnSceneEnd(AAF:AAF_API akSender, Var[] akArgs)
     LastTentacleTime = Utility.GetCurrentGameTime()
   EndIf
 
-    If metatag.Find("SD_WolfCall") > -1   
+  If metatag.Find("SD_WolfCall") > -1   
+      
+      if (actors[0].IsInFaction(DLC03_WolfFaction))
+        Game.FadeOutGame(true, true, 0, 2, false)
+        SummonedWolf = actors[0]
+        Summonedwolf.MoveToMyEditorLocation()
+        SummonedWolf = None
         
-        if (actors[0].IsInFaction(DLC03_WolfFaction))
-          Game.FadeOutGame(true, true, 0, 2, false)
-          SummonedWolf = actors[0]
-          Summonedwolf.MoveToMyEditorLocation()
-          SummonedWolf = None
-          
-          Utility.Wait(1.0)
-          Debug.Notification("The wolf has pleased you and returned home...")
-        EndIf
+        Utility.Wait(1.0)
+        Debug.Notification("The wolf has pleased you and returned home...")
+      EndIf
 
-     EndIf
-     int ic = 0
-     While (ic < actors.Length)
-      CheckRace(actors[ic])
-      ic = ic + 1
-     EndWhile
+    EndIf
+    int ic = 0
+    While (ic < actors.Length)
+    CheckRace(actors[ic])
+    ic = ic + 1
+    EndWhile
 
 EndEvent
 
 Event OnPlayerTeleport()
   playerTeleport = true 
 endEvent
-
-
 
 Function FindWolf()
     ObjectReference[] wolves = Game.GetPlayer().FindAllReferencesWithKeyword(ActorTypeDog, 3000.0)
