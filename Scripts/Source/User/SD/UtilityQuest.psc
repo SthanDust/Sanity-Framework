@@ -35,12 +35,13 @@ Group Meds
     Potion              Property SD_SmileXMed                   auto 
     Potion              Property SD_MedX                        auto
     LeveledItem         Property LL_Chems_Any                   auto
+    GlobalVariable Property SD_Setting_AddedChems auto
 EndGroup
 
 AAF:AAF_API AAF_API
 SD:SanityFrameworkQuestScript SDF
 
-bool ChemsAdded = false
+
 Event OnInit()
     StartTimer(2, 1)
 EndEvent
@@ -52,10 +53,10 @@ EndEvent
 Event OnTimer(int aiTimerID)
     If (aiTimerID == 1)
         LoadSA()
-        AddChems()
         Quest Main = Game.GetFormFromFile(0x0001F59A, "SD_MainFramework.esp") as quest
         SDF = Main as SD:SanityFrameworkQuestScript
         RegisterForRemoteEvent(PlayerRef, "OnPlayerLoadGame")
+        AddChems()
     EndIf
 EndEvent
 
@@ -92,11 +93,11 @@ Function BlurEffect()
 EndFunction
 
 Function AddChems()
-    If !ChemsAdded
+    If SD_Setting_AddedChems.GetValueInt() == 0
         SDF.DNotify("Adding Chems")
         LL_Chems_Any.AddForm(SD_SmileXMed, 1, 2)
         LL_Chems_Any.AddForm(SD_MedX, 1, 1)
-        ChemsAdded = true
+        SD_Setting_AddedChems.SetValue(1.0)
     EndIf
 EndFunction 
 

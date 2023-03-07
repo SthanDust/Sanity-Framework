@@ -82,6 +82,8 @@ Group Tentacles
   string[] Property SP_TentacleTeaseMessage auto 
   Potion Property SD_SlimePotion auto 
   string[] Property SD_TentacleMilkingPositions auto
+  Potion Property SD_TentacleMilk auto
+  Potion Property SD_TentacleDeath2 auto
 EndGroup
 
 Group Beast_Races
@@ -107,6 +109,8 @@ CustomEvent OnBeastess
 
 float hour = 0.04200
 Perk   Cumflated
+Potion Spend_Milk
+Perk  Lactation
  
 int   tickTimerID = 1
 int   dayTimerID = 2
@@ -357,6 +361,7 @@ Function LoadFPE()
       FPE = Game.GetFormFromFile(0x00000F99, "FP_FamilyPlanningEnhanced.esp") as FPFP_Player_Script
       BPD = FPE.GetPregnancyInfo(PlayerRef)
       Cumflated = Game.GetFormFromFile(0x0000C223, "FP_FamilyPlanningEnhanced.esp") as Perk
+
       RegisterForCustomEvent(FPE, "FPFP_GetPregnant")
       RegisterForCustomEvent(FPE, "FPFP_GiveBirth")
       BloodyFanny = BPD.SP_BloodyBirth as Spell 
@@ -367,6 +372,8 @@ EndFunction
 Function LoadWLD()
   if (Game.IsPluginInstalled("INVB_WastelandOffspring.esp"))
     SD_Setting_Integrate_WLD.SetValueInt(1)
+      Spend_Milk = Game.GetFormFromFile(0x00005C98, "INVB_WastelandDairy.esp") as Potion
+      Lactation = Game.GetFormFromFile(0x00012357, "INVB_WastelandDairy.esp") as Perk
   EndIf
 EndFunction
 
@@ -377,7 +384,7 @@ Function LoadZazEffects()
 EndFunction
 
 Function LoadTentacles()
-  If (Game.IsPluginInstalled("AnimatedTentacles.esp") == 1)
+  If (Game.IsPluginInstalled("AnimatedTentacles.esp"))
     SD_Setting_Integrate_Tent.SetValue(1)
     SD_Tentacles = new ActorBase[4]
     SD_TentacleRace = Game.GetFormFromFile(0x00000F9A, "AnimatedTentacles.esp") as Race
@@ -464,7 +471,9 @@ EndFunction
 
 Function RemoveTentacle(Actor akActor)
   akActor.SetGhost(false)
-  akActor.Kill()
+
+  akActor.EquipItem(SD_TentacleDeath2, false, true)
+
 EndFunction
 
 Function TentacleAmbush(float Distance = 233.0)
@@ -479,7 +488,6 @@ Function TentacleAmbush(float Distance = 233.0)
   EndWhile
   Utility.Wait(1)
   
-  
   PlayerRef.AddKeyword(SD_NoPregKeyword)
   akActors.Add(PlayerRef)
   ; here we are interrupting the normal pregnancy
@@ -487,14 +495,13 @@ Function TentacleAmbush(float Distance = 233.0)
   AAF:AAF_API:SceneSettings sexScene = AAF_API.GetSceneSettings()
   sexScene.meta = "SD_TentacleAmbush"
   sexScene.duration = SD_Beastess_Tentacle_Sex_Duration.GetValueInt()
+  sexScene.skipWalk = true
   int k = Utility.RandomInt(0, SP_TentacleAttackMessages.Length - 1)
   Debug.MessageBox("<font face='$HandwrittenFont' size='20'>" + SP_TentacleAttackMessages[k] + "</font> \n \n") 
   SDF.PlaySexAnimation(akActors, sexScene)
   havingSex = true
   int posSwitch = (SD_Beastess_Tentacle_Sex_Duration.GetValueInt() / 2) as int
   StartTimer(posSwitch, 69)
-  
-   
 EndFunction
 
 Function TryTentaclePreg(Actor akActor)
@@ -505,6 +512,7 @@ Function TryTentaclePreg(Actor akActor)
   If !CheckPregnant() 
     akActor.SetPosition(Game.GetPlayer().GetPositionX(),Game.GetPlayer().GetPositionY(), 500.0)
     Race tempRace = GetRandomRace()
+
     akActor.SetRace(tempRace)
     akActor.EquipItem(SD_SplinterPotionGabryal, false, true)    
     if (BPD.TrySpermFrom(akActor))
@@ -513,6 +521,7 @@ Function TryTentaclePreg(Actor akActor)
     EndIf
     akActor.SetRace(SD_TentacleRace)
   ElseIf CheckPregnant() && BPD.GetCurrentMonth() <= 2
+
      BPD.TrySpermFrom(akActor)
   EndIf
   RemoveTentacle(akActor)
@@ -597,7 +606,7 @@ Function DoTentacleAmbush()
 ENdFunction
 
 Function DoPostAmbush(int numAttackers)
-  
+
     PlayerRef.RemoveKeyword(SD_NoPregKeyword)
     int m = Utility.RandomInt(0, SP_TentacleLeaveMessages.Length - 1)
     Debug.Notification(SP_TentacleLeaveMessages[m])
@@ -637,41 +646,35 @@ Event AAF:AAF_API.OnSceneEnd(AAF:AAF_API akSender, Var[] akArgs)
   string meta = akArgs[4] as string
   string[] metatag = LL_FourPlay.StringSplit(theString = meta, delimiter = ",")
   havingSex = false
-  actors.Remove(idx)
-  If (metaTag.Find("SD_TentacleAmbush") > -1)
 
+  If (metaTag.Find("SD_TentacleAmbush") > -1)
+    
     int i = 0
     int aLength = actors.length
-    
+
+    bool triedPreg = false
     while i < aLength
       int t = Utility.RandomInt()
-      If i == 0 && t < SD_Beastess_Tentacle_Preg_Chance.GetValueInt() && SD_Setting_Integrate_FPE.GetValueInt() == 1
-        TryTentaclePreg(actors[i])
-      Else 
-        RemoveTentacle(actors[i])   
+
+      If i != idx
+
+        If t < SD_Beastess_Tentacle_Preg_Chance.GetValueInt() && SD_Setting_Integrate_FPE.GetValueInt() && !triedPreg
+          TryTentaclePreg(actors[i])
+
+          triedPreg = true
+        Else 
+          RemoveTentacle(actors[i])   
+        EndIf
       EndIf
       i = i + 1
     EndWhile
-    Utility.Wait(2)
+    CheckTentacleMilk(position)
     DoPostAmbush(aLength)
     LastTentacleTime = Utility.GetCurrentGameTime()
   EndIf
 
-  If metatag.Find("SD_WolfCall") > -1   
-      
-      if (actors[0].IsInFaction(DLC03_WolfFaction))
-        Game.FadeOutGame(true, true, 0, 2, false)
-        SummonedWolf = actors[0]
-        Summonedwolf.MoveToMyEditorLocation()
-        SummonedWolf = None
-        
-        Utility.Wait(1.0)
-        Debug.Notification("The wolf has pleased you and returned home...")
-      EndIf
-
-    EndIf
     int ic = 0
-    While (ic < actors.Length)
+    While (ic < actors.Length && ic != idx)
     CheckRace(actors[ic])
     ic = ic + 1
     EndWhile
@@ -682,38 +685,17 @@ Event OnPlayerTeleport()
   playerTeleport = true 
 endEvent
 
-Function FindWolf()
-    ObjectReference[] wolves = Game.GetPlayer().FindAllReferencesWithKeyword(ActorTypeDog, 3000.0)
-    int index = 0
-    
-    If wolves.Length != 0
-        While (index < wolves.Length)
-            SummonedWolf = wolves[index] as Actor
-            If (SummonedWolf.IsInFaction(DLC03_WolfFaction))
-                CallWolf(true)
-                return 
-            EndIf
-            index += 1
-        EndWhile
-    Else
-        Debug.Notification("Nothing answered your call...")
-    EndIf
-
+function ResetAnimVars()
+  playerTeleport = false
+  playerCrafting = false 
+  havingSex = false 
+  PlayerRef.RemoveKeyword(SD_NoPregKeyword)
 EndFunction
 
-Function CallWolf(bool sexTime)
-    Debug.Notification("A wolf has answered your summoning...")
-    if (sexTime)
-      havingSex = true
-     
-      Game.FadeOutGame(true, true, 0, 2, false)
-      SummonedWolf.MoveTo(PlayerRef, 5.0,5.0)
-      Actor[] akActors = new Actor[0]
-      akActors.Add(PlayerRef)
-      akActors.Add(SummonedWolf)
-      AAF:AAF_API:SceneSettings sexScene2 = AAF_API.GetSceneSettings()
-      sexScene2.meta = "SD_WolfCall"
-      sexScene2.duration = 34
-      SDF.PlaySexAnimation(akActors, sexScene2)
-    EndIf
+Function CheckTentacleMilk(string akPosition)
+  if SD_TentacleMilkingPositions.Find(akPosition) > -1 && PlayerRef.HasPerk(Lactation) && SD_Setting_Integrate_WLD.GetValueInt() == 1
+    PlayerRef.AddItem(SD_TentacleMilk, 1, false)
+    PlayerRef.EquipItem(Spend_Milk, false, true)
+    SDF.DNotify("The tentacles took all your milk and converted it into something else...")
+  EndIf
 EndFunction

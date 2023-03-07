@@ -126,16 +126,6 @@
                     "type": "section"
                 },
                 {
-                    "text": "Call a Wolf",
-                    "type": "button",
-                    "help": "Calls a nearby wolf.  (THIS IS EXPERIMENTAL!)",
-                    "action": {
-                        "type": "CallFunction",
-                        "form": "SD_MainFramework.esp|27F62",
-                        "function": "FindWolf"
-                    }
-                },
-                {
                     "text": "Tentacles",
                     "align": "left",
                     "type": "section"
@@ -286,6 +276,16 @@
                         "type": "CallFunction",
                         "form": "SD_MainFramework.esp|27F62",
                         "function": "DoTentacleAmbush"
+                    }
+                },
+                {
+                    "text": "Reset Blocking Variables",
+                    "type": "button",
+                    "help": "This resets certain variables that may not get properly reset after an attack.",
+                    "action": {
+                        "type": "CallFunction",
+                        "form": "SD_MainFramework.esp|27F62",
+                        "function": "ResetAnimVars"
                     }
                 }
 
