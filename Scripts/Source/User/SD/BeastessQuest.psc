@@ -5,6 +5,7 @@ import Actor
 import Debug
 import Game
 import BodyGen
+import AAF:AAF_API
 
 
 Group Global_Vars
@@ -111,6 +112,7 @@ float hour = 0.04200
 Perk   Cumflated
 Potion Spend_Milk
 Perk  Lactation
+Perk BreastMilkSpent
  
 int   tickTimerID = 1
 int   dayTimerID = 2
@@ -175,7 +177,6 @@ Event OnTimer(int aiTimerID)
     if (aiTimerID == sexTimerID)
       OnSex()
     EndIf
-
 EndEvent
 
 Function ResetBeastess()
@@ -235,12 +236,10 @@ Function OnSex()
 EndFunction
 
 float Function GetCurrentHourOfDay() 
- 
 	float Time = Utility.GetCurrentGameTime()
 	Time -= Math.Floor(Time) ; Remove "previous in-game days passed" bit
 	Time *= 24 ; Convert from fraction of a day to number of hours
 	Return Time
- 
 EndFunction
 
 Function CheckRace(Actor akActor)
@@ -374,6 +373,7 @@ Function LoadWLD()
     SD_Setting_Integrate_WLD.SetValueInt(1)
       Spend_Milk = Game.GetFormFromFile(0x00005C98, "INVB_WastelandDairy.esp") as Potion
       Lactation = Game.GetFormFromFile(0x00012357, "INVB_WastelandDairy.esp") as Perk
+      BreastMilkSpent = Game.GetFormFromFile(0x00005C96, "INVB_WastelandDairy.esp") as Perk
   EndIf
 EndFunction
 
@@ -471,7 +471,7 @@ EndFunction
 
 Function RemoveTentacle(Actor akActor)
   akActor.SetGhost(false)
-
+  akActor.RemoveKeyword(AAF_API.AAF_ActorBusy)
   akActor.EquipItem(SD_TentacleDeath2, false, true)
 
 EndFunction
@@ -693,9 +693,11 @@ function ResetAnimVars()
 EndFunction
 
 Function CheckTentacleMilk(string akPosition)
-  if SD_TentacleMilkingPositions.Find(akPosition) > -1 && PlayerRef.HasPerk(Lactation) && SD_Setting_Integrate_WLD.GetValueInt() == 1
-    PlayerRef.AddItem(SD_TentacleMilk, 1, false)
-    PlayerRef.EquipItem(Spend_Milk, false, true)
-    SDF.DNotify("The tentacles took all your milk and converted it into something else...")
+  if SD_TentacleMilkingPositions.Find(akPosition) > -1 && PlayerRef.HasPerk(Lactation) && SD_Setting_Integrate_WLD.GetValueInt() == 1 && !PlayerRef.HasPerk(BreastMilkSpent)
+    int rnd = Utility.RandomInt()
+    if (rnd < 10)
+      PlayerRef.AddItem(SD_TentacleMilk, 1, false)
+      PlayerRef.EquipItem(Spend_Milk, false, true)
+    EndIf
   EndIf
 EndFunction
