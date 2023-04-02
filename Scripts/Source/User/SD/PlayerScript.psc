@@ -98,7 +98,8 @@ int timesOne = 0
 int timesAlex = 0
 
 SD:SanityFrameworkQuestScript SF_Main
-
+SD:BeastessQuest Beastess
+Scene test 
 
 float function CalculateModifiers()
   float weightWill = 0.3
@@ -106,7 +107,6 @@ float function CalculateModifiers()
   float weightSpirit = 0.2 
   float weightTrauma = 0.4 
   float baseNormal = 500.0
- 
   float DecayModifier = (weightWill * willpower) + (weightEsteem * selfesteem) + (weightSpirit * spirit) + (weightTrauma * (trauma * 20))
   float finalVal = (DecayModifier / baseNormal) + baseDecay
   ;SF_Main.DNotify("New Trauma: " + finalVal);
@@ -126,8 +126,9 @@ Event OnTimer(int aiTimerID)
   if(aiTimerID == 1)
     
     Quest Main = Game.GetFormFromFile(0x0001F59A, "SD_MainFramework.esp") as quest
-
+    Quest Main2 = Game.GetFormFromFile(0x00027F62, "SD_MainFramework.esp") as quest
     SF_Main = Main as SD:SanityFrameworkQuestScript
+    Beastess = Main2 as SD:BeastessQuest
 
     SF_Main.LoadSDF()
     if (Game.IsPluginInstalled("FP_FamilyPlanningEnhanced.esp") && SD_Setting_Integrate_FPE.Value == 1)
@@ -148,12 +149,17 @@ Event OnTimer(int aiTimerID)
     float chaos = Utility.RandomFloat(-0.5, 0.5)
     RegisterForRemoteEvent(PlayerRef, "OnLocationChange")
     RegisterForRemoteEvent(PlayerRef, "OnCombatStateChanged")
+    RegisterForCustomEvent(Beastess, "OnBeastess")
     RegisterForRadiationDamageEvent(PlayerRef)
     chaos += tickFrequency
     StartTimerGameTime(1.0, tickTimerID)
     StartTimerGameTime(24, dayTimerID)
     LoadMessages()
   EndIf
+EndEvent
+
+Event SD:BeastessQuest.OnBeastess(SD:BeastessQuest akSender, Var[] akArgs)
+  SF_Main.DNotify("Received a beastess update. Player had sex with " + (akArgs[0] as Race).GetName() + " " + (akArgs[1] as int) )
 EndEvent
 
 function LoadMessages()

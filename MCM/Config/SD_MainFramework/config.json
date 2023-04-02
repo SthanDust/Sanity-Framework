@@ -269,6 +269,19 @@
                     }
                 },
                 {
+                    "id": "fTentacleMilkChance:Beastess",
+                    "text": "Tentacle Milking Chance",
+                    "help": "Chance tentacles will steal your milk if lactating (Requires Wasteland Dairy).  Also depends on which animation is played.",
+                    "type": "slider",
+                    "valueOptions": {
+                        "min": 0,
+                        "max": 100,
+                        "step": 1,
+                        "sourceType": "GlobalValue",
+                        "sourceForm": "SD_MainFramework.esp|41A85"
+                    }
+                },
+                {
                     "text": "Force a Tentacle Encounter",
                     "type": "button",
                     "help": "This spawns a random tentacle encounter.  Make sure you set the values to allow for 100% chance and no wait.",

@@ -39,6 +39,7 @@ Group Global_Vars
   GlobalVariable Property SD_Beastess_Tentacle_Spawn_Type auto 
   GlobalVariable Property SD_Beastess_Tentacle_Spawn_Count auto 
   GlobalVariable Property SD_Beastess_Tentacle_Ignore_Preg auto
+  GlobalVariable Property SD_Beastess_Tentacle_Milk_Chance auto
   Actor Property PlayerRef auto
   Race Property HumanRace auto
   Potion Property SD_SplinterPotionGabryal auto 
@@ -65,6 +66,7 @@ Group Random_Beasts
   Faction Property DLC03_WolfFaction auto 
   Keyword Property ActorTypeDog auto 
   Actor property SummonedWolf auto
+  Keyword Property SD_BeastessDialogue auto
 EndGroup
 
 Group Tentacles
@@ -85,6 +87,8 @@ Group Tentacles
   string[] Property SD_TentacleMilkingPositions auto
   Potion Property SD_TentacleMilk auto
   Potion Property SD_TentacleDeath2 auto
+  Book Property SD_TentaclesMilking auto 
+  Faction Property SD_TentacleMilker auto 
 EndGroup
 
 Group Beast_Races
@@ -231,7 +235,7 @@ EndFunction
 
 Function OnSex()
   If havingSex
-    AAF_API.ChangePosition(PlayerRef)
+    ;AAF_API.ChangePosition(PlayerRef)
   EndIf
 EndFunction
 
@@ -244,56 +248,54 @@ EndFunction
 
 Function CheckRace(Actor akActor)
   Race akRace = akActor.GetRace()
-
+  Var[] akArgs = new Var[2]
+  akArgs[0] = akRace
+   
   if SD_CanineRaces.Find(akRace) > -1
     SD_Beastess_Canine.Value += 1
-    SendCustomEvent("OnBeastess")
-    return
+    akArgs[1] = SD_Beastess_Canine.Value
   endif
   If SD_ReptileRaces.Find(akRace) > -1
     SD_Beastess_Reptile.Value += 1
-    SendCustomEvent("OnBeastess")
-    return
+    akArgs[1] = SD_Beastess_Reptile.Value
   EndIf
   If SD_HumanRaces.Find(akRace) > -1
     SD_Beastess_Human.Value += 1
-    SendCustomEvent("OnBeastess")
-    return
+    akArgs[1] = (SD_Beastess_Human.Value)
   EndIf
 
   If SD_NecroRaces.Find(akRace) > -1
     SD_Beastess_Necro.Value += 1
-    SendCustomEvent("OnBeastess")
-    return
+    akArgs[1] = (SD_Beastess_Necro.Value)
+    
   EndIf
 
   If SD_InsectRaces.Find(akRace) > -1
     SD_Beastess_Insect.Value += 1
-    SendCustomEvent("OnBeastess")
-    return
+    akArgs[1] = (SD_Beastess_Insect.Value)
   EndIf
 
   If SD_MolluskRaces.Find(akRace) > -1
     SD_Beastess_Mollusk.Value += 1
-    SendCustomEvent("OnBeastess")
+    akArgs[1] = (SD_Beastess_Mollusk.Value)
   EndIf
 
   If SD_MutantRaces.Find(akRace) > -1
     SD_Beastess_Mutant.Value += 1
-    SendCustomEvent("OnBeastess")
-    return
+    akArgs[1] = (SD_Beastess_Mutant.Value)
   EndIf
 
   If SD_AlienRaces.Find(akRace) > -1
     SD_Beastess_Alien.Value += 1
-    SendCustomEvent("OnBeastess")
-    return
+    akArgs[1] = (SD_Beastess_Alien.Value)
   EndIf
   If akRace.GetName() == "Tentacle"
     SD_Beastess_Tentacle.Value += 1
-    SendCustomEvent("OnBeastess")
-    return
+    akArgs[1] = (SD_Beastess_Tentacle.Value)
   EndIf
+  
+  SendCustomEvent("OnBeastess", akArgs)
+  PlayerRef.SayCustom(SD_BeastessDialogue, PlayerRef, true)
 EndFunction
 
 Function ImpregnateRace(Actor akActor)
@@ -438,6 +440,8 @@ Event FPFP_Player_Script.FPFP_GiveBirth(FPFP_Player_Script akSender, Var[] akArg
   EndIF
 EndEvent
 
+; There are all debug or info functions #DEBUG
+
 Function GetStats()
     string beastString = "<font face='$HandwrittenFont' size='20'>Beastess Statistics</font> \n \n"
       beastString += "<font face='$ConsoleFont' size='15'>"
@@ -469,6 +473,9 @@ Function ShowPregnancy()
     EndIf
 EndFunction
 
+; There are all tentacle functions
+;#TENTACLES
+
 Function RemoveTentacle(Actor akActor)
   akActor.SetGhost(false)
   akActor.RemoveKeyword(AAF_API.AAF_ActorBusy)
@@ -498,8 +505,9 @@ Function TentacleAmbush(float Distance = 233.0)
   sexScene.skipWalk = true
   int k = Utility.RandomInt(0, SP_TentacleAttackMessages.Length - 1)
   Debug.MessageBox("<font face='$HandwrittenFont' size='20'>" + SP_TentacleAttackMessages[k] + "</font> \n \n") 
-  SDF.PlaySexAnimation(akActors, sexScene)
+  ;SDF.PlaySexAnimation(akActors, sexScene)
   havingSex = true
+  AAF_API.StartScene(akActors, sexScene) 
   int posSwitch = (SD_Beastess_Tentacle_Sex_Duration.GetValueInt() / 2) as int
   StartTimer(posSwitch, 69)
 EndFunction
@@ -674,8 +682,10 @@ Event AAF:AAF_API.OnSceneEnd(AAF:AAF_API akSender, Var[] akArgs)
   EndIf
 
     int ic = 0
-    While (ic < actors.Length && ic != idx)
-    CheckRace(actors[ic])
+    While (ic < actors.Length)
+      If (ic != idx)
+        CheckRace(actors[ic])
+      EndIf
     ic = ic + 1
     EndWhile
 
@@ -695,9 +705,25 @@ EndFunction
 Function CheckTentacleMilk(string akPosition)
   if SD_TentacleMilkingPositions.Find(akPosition) > -1 && PlayerRef.HasPerk(Lactation) && SD_Setting_Integrate_WLD.GetValueInt() == 1 && !PlayerRef.HasPerk(BreastMilkSpent)
     int rnd = Utility.RandomInt()
-    if (rnd < 10)
+    if (rnd < SD_Beastess_Tentacle_Milk_Chance.GetValueInt())
       PlayerRef.AddItem(SD_TentacleMilk, 1, false)
       PlayerRef.EquipItem(Spend_Milk, false, true)
+      EvaluateTentacleMilkFaction(PlayerRef)
     EndIf
+  EndIf
+EndFunction
+
+Function EvaluateTentacleMilkFaction(Actor akActor)
+  If akActor == PlayerRef
+    
+    If !PlayerRef.IsInFaction(SD_TentacleMilker)
+     
+      PlayerRef.AddItem(SD_TentaclesMilking, 1, false)
+      Debug.Notification("I feel drained...")
+      PlayerRef.AddToFaction(SD_TentacleMilker)
+    Else 
+      
+      PlayerRef.SetFactionRank(SD_TentacleMilker, PlayerRef.GetFactionRank(SD_TentacleMilker) + 1)
+    EndIf 
   EndIf
 EndFunction
