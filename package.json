@@ -2,7 +2,8 @@
   "homepage": "https://sthandust.github.io/Sanity-Framework/tree/gh-pages",
 "scripts": {
   "predeploy": "npm run build",
-  "deploy": "gh-pages -d build"
+  "deploy": "gh-pages -d build",
+  "build": "webpack --config webpack.config.js"
 },
   "devDependencies": {
     "gh-pages": "^6.1.1"
