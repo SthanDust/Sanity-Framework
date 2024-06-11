@@ -11,4 +11,6 @@ This mod will add the concepts of sanity, alignment and mental illness to Fallou
 
 ## Fallout 76
 
-I stream on [Twitch](https://www.twitch.tv/sthandust) most nights!  Don't look for commentary, because I don't stream video or talk. I just like to enjoy Fallout 76.  My stream is just for fun and exploration.
+Don't look for commentary, because I don't stream video or talk. I just like to enjoy Fallout 76.  My stream is just for fun and exploration.
+
+You can find me on Twitter/X @SthanDust
