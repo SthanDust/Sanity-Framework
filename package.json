@@ -3,7 +3,7 @@
 "scripts": {
   "predeploy": "npm run build",
   "deploy": "gh-pages -d build",
-  "build": "webpack --config webpack.config.js"
+  "build": "webpack --config=webpack.config.js"
 },
   "devDependencies": {
     "gh-pages": "^6.1.1"
