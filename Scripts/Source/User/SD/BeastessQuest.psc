@@ -7,7 +7,6 @@ import Game
 import BodyGen
 import AAF:AAF_API
 
-
 Group Global_Vars
   GlobalVariable Property SD_Beastess_Canine auto
   GlobalVariable Property SD_Beastess_Reptile auto
